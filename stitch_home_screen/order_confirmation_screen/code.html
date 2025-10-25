@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Order Confirmation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4CAF50",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#112111",
+                    },
+                    fontFamily: {
+                        "display": ["Work Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#333333] dark:text-gray-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden" style='font-family: "Work Sans", "Noto Sans", sans-serif;'>
+<div class="layout-container flex h-full grow flex-col">
+<div class="px-4 md:px-20 lg:px-40 flex flex-1 justify-center py-5">
+<div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+<div class="flex flex-wrap justify-between gap-3 p-4 items-center">
+<div class="flex min-w-72 flex-col gap-3">
+<p class="text-primary text-4xl font-black leading-tight tracking-[-0.033em]">Thank You for Your Order!</p>
+<p class="text-[#333333] dark:text-gray-300 text-base font-normal leading-normal">Your order #EC-123456789 has been placed.</p>
+<p class="text-[#333333] dark:text-gray-400 text-sm font-normal">An email confirmation has been sent to your address.</p>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1A291A] rounded-xl shadow-md my-6 p-6">
+<h2 class="text-xl font-bold mb-4 text-[#333333] dark:text-white">Order Summary</h2>
+<div class="flex flex-col gap-y-4">
+<div class="flex items-center gap-4 bg-transparent px-4 min-h-[72px] py-2 justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" data-alt="Coaxial Cable - 50ft" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBOWNMGf0EzSdvHZ5VWgyDJ3zE3qziC2BhGqHE9hSXeaKecOd0dHKvTFGf64PekmvkoMqR2gBdzOTIW-9TcnLzOn5A-LZHXY-7kjoQx64cEbEAOu0-kAB_0c_dpdW0_vXqrmmNEUWBA7fCa1UcZq3Pt5C0FEZ0fxScq98vf4NhQbJwClLE4smQenK43m8NLDNTPCBr4mwGOfbZzVunwxqazto1f-l5oRodaQJwIipsanSHCt7K9DWYn7LNmQuUOnjk5uzlpUpOnkC4K");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-[#333333] dark:text-gray-200 text-base font-medium leading-normal line-clamp-1">Coaxial Cable - 50ft</p>
+<p class="text-primary text-sm font-normal leading-normal line-clamp-2">Quantity: 1</p>
+</div>
+</div>
+<div class="shrink-0"><p class="text-[#333333] dark:text-gray-200 text-base font-normal leading-normal">$25.00</p></div>
+</div>
+<div class="flex items-center gap-4 bg-transparent px-4 min-h-[72px] py-2 justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-14" data-alt="Cable Ties - Pack of 100" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDSLSXw_-Zv19GxO8wxrann8DJneX6BCJoKgJESO5jfYJtbPzcm_6zRsuRPl9dWIfV6YJjvGKHsUNsJrJldesqzVVMmyyIXNiquZuc3QZ8M28e2ln1qCFa-8Hlmh0M3JjvxHtS5mTw8NzKd8Z3-Q-tw1s3h_hLXzFFGX7r7kwoxCzXcObGssXW0_FGmLM0mX2dMP93Ypkcm8C2RYIAU1GyTeUUExYzEMAB-8h4-Dryvj7T23ngsFaLJBOHqKXt7YgxxAhodt3Qvto8c");'></div>
+<div class="flex flex-col justify-center">
+<p class="text-[#333333] dark:text-gray-200 text-base font-medium leading-normal line-clamp-1">Cable Ties - Pack of 100</p>
+<p class="text-primary text-sm font-normal leading-normal line-clamp-2">Quantity: 2</p>
+</div>
+</div>
+<div class="shrink-0"><p class="text-[#333333] dark:text-gray-200 text-base font-normal leading-normal">$10.00</p></div>
+</div>
+</div>
+</div>
+<div class="grid md:grid-cols-2 gap-6">
+<div class="bg-white dark:bg-[#1A291A] rounded-xl shadow-md p-6">
+<h3 class="text-lg font-bold mb-4 text-[#333333] dark:text-white">Shipping Details</h3>
+<div class="p-4 grid grid-cols-[auto_1fr] gap-x-6">
+<div class="col-span-2 grid grid-cols-subgrid border-t border-t-gray-200 dark:border-t-gray-700 py-5">
+<p class="text-primary text-sm font-normal leading-normal">Shipping Address</p>
+<p class="text-[#333333] dark:text-gray-300 text-sm font-normal leading-normal">123 Electric Ave, Circuit City, CA 90210</p>
+</div>
+<div class="col-span-2 grid grid-cols-subgrid border-t border-t-gray-200 dark:border-t-gray-700 py-5">
+<p class="text-primary text-sm font-normal leading-normal">Shipping Method</p>
+<p class="text-[#333333] dark:text-gray-300 text-sm font-normal leading-normal">Standard Shipping</p>
+</div>
+<div class="col-span-2 grid grid-cols-subgrid border-t border-t-gray-200 dark:border-t-gray-700 py-5">
+<p class="text-primary text-sm font-normal leading-normal">Estimated Delivery</p>
+<p class="text-[#333333] dark:text-gray-300 text-sm font-bold leading-normal">June 5, 2024 - June 8, 2024</p>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-[#1A291A] rounded-xl shadow-md p-6">
+<h3 class="text-lg font-bold mb-4 text-[#333333] dark:text-white">Order Totals</h3>
+<div class="p-4">
+<div class="flex justify-between gap-x-6 py-2 border-b border-b-gray-200 dark:border-b-gray-700">
+<p class="text-[#333333] dark:text-gray-400 text-sm font-normal leading-normal">Subtotal</p>
+<p class="text-[#333333] dark:text-gray-200 text-sm font-normal leading-normal text-right">$35.00</p>
+</div>
+<div class="flex justify-between gap-x-6 py-2 border-b border-b-gray-200 dark:border-b-gray-700">
+<p class="text-[#333333] dark:text-gray-400 text-sm font-normal leading-normal">Shipping</p>
+<p class="text-[#333333] dark:text-gray-200 text-sm font-normal leading-normal text-right">$5.00</p>
+</div>
+<div class="flex justify-between gap-x-6 py-2 border-b border-b-gray-200 dark:border-b-gray-700">
+<p class="text-[#333333] dark:text-gray-400 text-sm font-normal leading-normal">Taxes</p>
+<p class="text-[#333333] dark:text-gray-200 text-sm font-normal leading-normal text-right">$2.80</p>
+</div>
+<div class="flex justify-between gap-x-6 pt-4">
+<p class="text-[#333333] dark:text-white text-base font-bold leading-normal">Total</p>
+<p class="text-[#333333] dark:text-white text-base font-bold leading-normal text-right">$42.80</p>
+</div>
+</div>
+<div class="border-t border-t-gray-200 dark:border-t-gray-700 mt-4 pt-4">
+<p class="text-primary text-sm font-normal leading-normal mb-2">Billing Information</p>
+<p class="text-[#333333] dark:text-gray-300 text-sm font-normal leading-normal">Visa ending in 1234</p>
+</div>
+</div>
+</div>
+<div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+<button class="bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">local_shipping</span>
+                            Track Your Order
+                        </button>
+<button class="bg-primary/20 text-primary font-bold py-3 px-6 rounded-lg hover:bg-primary/30 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">history</span>
+                            View Order History
+                        </button>
+<a class="text-primary font-bold py-3 px-6 rounded-lg hover:underline text-center" href="#">
+                            Continue Shopping
+                        </a>
+</div>
+<footer class="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8 text-center text-sm text-[#333333] dark:text-gray-400">
+<div class="flex justify-center gap-6 mb-4">
+<a class="hover:text-primary hover:underline" href="#">Customer Support</a>
+<a class="hover:text-primary hover:underline" href="#">Returns Policy</a>
+<a class="hover:text-primary hover:underline" href="#">FAQ</a>
+</div>
+<p>© 2024 Electro Cables Inc. All rights reserved.</p>
+</footer>
+</div>
+</div>
+</div>
+</div>
+</body></html>
