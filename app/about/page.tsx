@@ -37,8 +37,8 @@ export default function AboutPage() {
     <div className="min-h-screen flex flex-col">
       <SEO
         title="Biz haqimizda"
-        description="ElektroMart - O'zbekistonda professional elektr mahsulotlari yetkazib beruvchi. Siemens, Schneider, ABB, Legrand brendlari. Yuqori sifat, ishonchli xizmat va professional jamoa."
-        keywords="elektromart haqida, elektr mahsulotlari kompaniya, professional elektr, Toshkent elektr do'kon"
+        description="Sobirov Market - O'zbekistonda professional elektr mahsulotlari yetkazib beruvchi. Siemens, Schneider, ABB, Legrand brendlari. Yuqori sifat, ishonchli xizmat va professional jamoa."
+        keywords="sobirov market haqida, elektr mahsulotlari kompaniya, professional elektr, Toshkent elektr do'kon"
         canonical="/about"
       />
       <Header />

@@ -8,10 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, Star, StarHalf, CheckCircle, Minus, Plus, ChevronLeft, ChevronRight, Share2 } from "lucide-react";
+import { ShoppingCart, CheckCircle, Minus, Plus, ChevronLeft, ChevronRight, Share2, Tag } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { ProductCard } from "@/components/product-card";
 import useEmblaCarousel from "embla-carousel-react";
@@ -34,18 +32,27 @@ export default function ProductDetailPage() {
   const product = {
     name: "RG6 Koaksial Kabel - 75 Ohm CATV, Sun'iy yo'ldosh va Keng polosali aloqa uchun",
     sku: "RG6-100FT-BLK",
+    productCode: "KABEL-RG6-2024",
     price: "45,000",
     rating: 4.5,
     reviews: 125,
     inStock: true,
     category: "Ma'lumot kabellari",
+    categoryRu: "Информационные кабели",
     brand: "Philips",
     description: "Yuqori samarali RG6 koaksial kabel sun'iy yo'ldosh antenalari, kabel televideniyesi (CATV) va yuqori tezlikdagi internet uchun ideal. Chidamli PVC qobiq va optimal signal sifati uchun 75 Ohm impedansga ega.",
+    descriptionRu: "Высокоэффективный коаксиальный кабель RG6 идеально подходит для спутниковых антенн, кабельного телевидения (CATV) и высокоскоростного интернета. Имеет прочную оболочку из ПВХ и импеданс 75 Ом для оптимального качества сигнала.",
     images: [
       "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=800&fit=crop",
       "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&h=800&fit=crop",
       "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=800&fit=crop",
       "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=800&h=800&fit=crop"
+    ],
+    specifications: [
+      { label: "Impedans", labelRu: "Импеданс", value: "75 Ohm" },
+      { label: "O'tkazgich", labelRu: "Проводник", value: "Mis bilan qoplangan po'lat", valueRu: "Медь покрытая сталь" },
+      { label: "Himoya", labelRu: "Экранирование", value: "Ikki qavatli alyuminiy folga va to'qima", valueRu: "Двухслойная алюминиевая фольга и оплетка" },
+      { label: "Qobiq", labelRu: "Оболочка", value: "PVX, ob-havoga chidamli", valueRu: "PVC, устойчивый к погоде" }
     ]
   };
 
@@ -151,23 +158,28 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          {/* Image Gallery */}
+          {/* Image Slider */}
           <div className="space-y-3">
-            <div 
-              className="aspect-square bg-cover bg-center rounded-xl border shadow-lg w-full"
-              style={{ backgroundImage: `url(${product.images[selectedImage]})` }}
-            />
-            <div className="grid grid-cols-4 gap-2.5">
-              {product.images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedImage(idx)}
-                  className={`aspect-square bg-cover bg-center rounded-lg border-2 transition-all ${
-                    selectedImage === idx ? "border-primary" : "border-border"
-                  }`}
-                  style={{ backgroundImage: `url(${img})` }}
-                />
-              ))}
+            <div className="relative aspect-square bg-cover bg-center rounded-xl border shadow-lg w-full" style={{ backgroundImage: `url(${product.images[selectedImage]})` }}>
+              {/* Slider buttons on top */}
+              <div className="absolute top-4 left-0 right-0 flex justify-center gap-3 z-10">
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  onClick={() => setSelectedImage((selectedImage - 1 + product.images.length) % product.images.length)}
+                  className="h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  onClick={() => setSelectedImage((selectedImage + 1) % product.images.length)}
+                  className="h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -175,31 +187,32 @@ export default function ProductDetailPage() {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl lg:text-4xl font-black mb-2">{product.name}</h1>
-              <p className="text-muted-foreground">SKU: {product.sku}</p>
             </div>
 
-            {/* Category and Brand Badges */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary" className="text-sm px-3 py-1">
-                {t("Kategoriya", "Категория")}: {product.category}
-              </Badge>
-              <Badge variant="outline" className="text-sm px-3 py-1">
-                {t("Brend", "Бренд")}: {product.brand}
-              </Badge>
-            </div>
-
-            {/* Rating */}
-            <div className="flex items-center gap-2">
-              <div className="flex text-primary">
-                {[...Array(4)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-current" />
-                ))}
-                <StarHalf className="h-5 w-5 fill-current" />
+            {/* Category, Product Code, Brand */}
+            <div className="space-y-3 bg-accent/50 p-4 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">{t("Kategoriya", "Категория")}:</span>
+                <span className="text-sm">{t(product.category, product.categoryRu)}</span>
               </div>
-              <Link href="#reviews" className="text-sm text-primary hover:underline">
-                ({product.reviews} Reviews)
-              </Link>
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">{t("Mahsulot kodi", "Код товара")}:</span>
+                <span className="text-sm font-mono">{product.productCode}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">{t("Brend", "Бренд")}:</span>
+                <span className="text-sm">{product.brand}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">SKU:</span>
+                <span className="text-sm font-mono">{product.sku}</span>
+              </div>
             </div>
+
 
             <p className="text-3xl font-bold text-primary">{product.price} UZS</p>
 
@@ -304,40 +317,33 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="description" className="mb-12">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="description">{t("Tavsif", "Описание")}</TabsTrigger>
-            <TabsTrigger value="specifications">{t("Xususiyatlari", "Характеристики")}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="description" className="py-6">
-            <h3 className="text-xl font-bold mb-2">{t("Mahsulot tavsifi", "Описание товара")}</h3>
-            <p className="text-base leading-relaxed">
-              {t("Bizning RG6 Koaksial Kabelimiz mukammallik uchun ishlab chiqilgan bo'lib, barcha yuqori chastotali ehtiyojlaringiz uchun ishonchli ulanishni ta'minlaydi. Uy kinoteatrini o'rnatyapsizmi, sun'iy yo'ldosh antennasini o'rnatyapsizmi yoki eng tez keng polosali ulanishga ega bo'lishni ta'minlayapsizmi, bu kabel signal yo'qotilishi va shovqinni minimallashtirish uchun mo'ljallangan. Qattiq mis bilan qoplangan po'lat o'tkazgich, ikki qavatli alyuminiy folga va to'qilgan himoya bilan birgalikda aniq va toza signalni kafolatlaydi. Ob-havoga chidamli PVX qobiq uni ichki va tashqi o'rnatish uchun mos qiladi, har qanday muhitda uzoq umr va ishlashni ta'minlaydi.", "Наш коаксиальный кабель RG6 разработан для обеспечения надежного соединения для всех ваших высокочастотных потребностей. Независимо от того, устанавливаете ли вы домашний кинотеатр, спутниковую антенну или обеспечиваете самое быстрое широкополосное подключение, этот кабель разработан для минимизации потерь сигнала и помех.")}
-            </p>
-          </TabsContent>
-          <TabsContent value="specifications" className="py-6">
-            <h3 className="text-xl font-bold mb-4">{t("Texnik xususiyatlari", "Технические характеристики")}</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between py-2 border-b">
-                <span className="font-medium">{t("Impedans:", "Импеданс:")} </span>
-                <span>75 Ohm</span>
+        {/* Description and Specifications Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {/* Description */}
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold mb-4">{t("Mahsulot tavsifi", "Описание товара")}</h3>
+              <p className="text-base leading-relaxed">
+                {t(product.description, product.descriptionRu)}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Specifications */}
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-xl font-bold mb-4">{t("Texnik xususiyatlari", "Технические характеристики")}</h3>
+              <div className="space-y-3">
+                {product.specifications.map((spec, idx) => (
+                  <div key={idx} className="flex justify-between py-2 border-b last:border-0">
+                    <span className="font-medium">{t(spec.label, spec.labelRu)}:</span>
+                    <span className="text-right">{t(spec.value, spec.valueRu || spec.value)}</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="font-medium">{t("O'tkazgich:", "Проводник:")}</span>
-                <span>{t("Mis bilan qoplangan po'lat", "Медь покрытая сталь")}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="font-medium">{t("Himoya:", "Экранирование:")}</span>
-                <span>{t("Ikki qavatli alyuminiy folga va to'qima", "Двухслойная алюминиевая фольга и оплетка")}</span>
-              </div>
-              <div className="flex justify-between py-2 border-b">
-                <span className="font-medium">{t("Qobiq:", "Оболочка:")}</span>
-                <span>{t("PVX, ob-havoga chidamli", "PVC, устойчивый к погоде")}</span>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Related Products Slider */}
         <div>

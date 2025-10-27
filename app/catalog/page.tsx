@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ProductCard } from "@/components/product-card";
@@ -16,9 +17,14 @@ import { useLanguage } from "@/contexts/language-context";
 
 export default function CatalogPage() {
   const { t } = useLanguage();
+  const searchParams = useSearchParams();
+  const brandParam = searchParams.get('brand');
+  
   const [sortBy, setSortBy] = useState("best");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(() => {
+    return brandParam ? [brandParam] : [];
+  });
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
 
@@ -103,7 +109,7 @@ export default function CatalogPage() {
     <div className="min-h-screen flex flex-col">
       <SEO
         title="Katalog - Barcha mahsulotlar"
-        description="ElektroMart katalogi - elektr kabel, ulagichlar, rozetkalar, avtomatlar va boshqa elektr aksessuarlar. Siemens, Schneider, ABB, Legrand brendlari. Eng yaxshi narxlar va sifat kafolati."
+        description="Sobirov Market katalogi - elektr kabel, ulagichlar, rozetkalar, avtomatlar va boshqa elektr aksessuarlar. Siemens, Schneider, ABB, Legrand brendlari. Eng yaxshi narxlar va sifat kafolati."
         keywords="elektr katalog, kabel katalog, elektr mahsulotlari, ulagichlar, rozetkalar, avtomatlar, elektr aksessuarlar katalog"
         canonical="/catalog"
       />

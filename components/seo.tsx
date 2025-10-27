@@ -22,7 +22,7 @@ export function SEO({
     canonical,
     noindex = false,
 }: SEOProps) {
-    const fullTitle = `${title} | ElektroMart`;
+    const fullTitle = `${title} | Sobirov Market`;
     const siteUrl = "https://elektromart.uz";
     const canonicalUrl = canonical ? `${siteUrl}${canonical}` : siteUrl;
 
@@ -75,7 +75,7 @@ export function SEO({
             { property: "og:type", content: ogType },
             { property: "og:url", content: canonicalUrl },
             { property: "og:image", content: `${siteUrl}${ogImage}` },
-            { property: "og:site_name", content: "ElektroMart" },
+            { property: "og:site_name", content: "Sobirov Market" },
         ];
 
         ogTags.forEach(({ property, content }) => {

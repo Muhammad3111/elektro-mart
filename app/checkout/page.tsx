@@ -141,7 +141,7 @@ export default function CheckoutPage() {
         <div className="min-h-screen flex flex-col bg-background">
             <SEO
                 title="Buyurtmani rasmiylashtirish"
-                description="Buyurtmangizni rasmiylashtiring. Tez yetkazib berish va xavfsiz to'lov. ElektroMart - professional elektr mahsulotlari."
+                description="Buyurtmangizni rasmiylashtiring. Tez yetkazib berish va xavfsiz to'lov. Sobirov Market - professional elektr mahsulotlari."
                 canonical="/checkout"
                 noindex={true}
             />

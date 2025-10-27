@@ -11,7 +11,6 @@ import { StructuredData } from "@/components/structured-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    ShoppingCart,
     Zap,
     Cable,
     Plug,
@@ -30,12 +29,12 @@ export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState("Barchasi");
 
     const categories = [
-        { name: "Quvvat kabellari", icon: Zap, id: "power" },
-        { name: "Ma'lumot kabellari", icon: Cable, id: "data" },
-        { name: "Ulagichlar", icon: Plug, id: "connectors" },
-        { name: "Asboblar", icon: Wrench, id: "tools" },
-        { name: "Yoritish", icon: Lightbulb, id: "lighting" },
-        { name: "Aksessuarlar", icon: Package, id: "accessories" },
+        { name: "Kabellar", nameRu: "Кабели", icon: Cable, id: "kabellar", slug: "kabellar", image: "" },
+        { name: "Yoritish", nameRu: "Освещение", icon: Lightbulb, id: "yoritish", slug: "yoritish", image: "" },
+        { name: "Rozetkalar", nameRu: "Розетки", icon: Plug, id: "rozetkalar", slug: "rozetkalar", image: "" },
+        { name: "Avtomatlar", nameRu: "Автоматы", icon: Zap, id: "avtomatlar", slug: "avtomatlar", image: "" },
+        { name: "Asboblar", nameRu: "Инструменты", icon: Wrench, id: "asboblar", slug: "asboblar", image: "" },
+        { name: "Aksessuarlar", nameRu: "Аксессуары", icon: Package, id: "aksessuarlar", slug: "aksessuarlar", image: "" },
     ];
 
     const allProducts = [
@@ -166,16 +165,22 @@ export default function Home() {
                         {categories.map((category) => {
                             const Icon = category.icon;
                             return (
-                                <Link key={category.id} href="/catalog">
+                                <Link key={category.id} href={`/categories/${category.slug}`}>
                                     <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 group">
                                         <CardContent className="p-6 text-center space-y-3">
                                             <div className="flex justify-center">
-                                                <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors">
-                                                    <Icon className="h-8 w-8 text-primary" />
-                                                </div>
+                                                {category.image ? (
+                                                    <div className="w-16 h-16 rounded-full overflow-hidden">
+                                                        <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors">
+                                                        <Icon className="h-8 w-8 text-primary" />
+                                                    </div>
+                                                )}
                                             </div>
                                             <p className="font-medium text-sm">
-                                                {category.name}
+                                                {t(category.name, category.nameRu)}
                                             </p>
                                         </CardContent>
                                     </Card>
@@ -273,8 +278,8 @@ export default function Home() {
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
                                         {t(
-                                            "24 soat ichida bepul yetkazib berish",
-                                            "Бесплатная доставка в течение 24 часов"
+                                            "Tezkor yetkazib berish",
+                                            "Быстрая доставка"
                                         )}
                                     </p>
                                 </CardContent>
@@ -292,8 +297,8 @@ export default function Home() {
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
                                         {t(
-                                            "Barcha mahsulotlarga 12 oy kafolat",
-                                            "12 месяцев гарантии на все товары"
+                                            "Mahsulotlarga kafolat beriladi",
+                                            "Гарантия на товары"
                                         )}
                                     </p>
                                 </CardContent>
@@ -361,16 +366,15 @@ export default function Home() {
                             "Philips",
                             "Osram",
                         ].map((brand) => (
-                            <Card
-                                key={brand}
-                                className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2"
-                            >
-                                <CardContent className="p-6 flex items-center justify-center">
-                                    <p className="font-bold text-lg text-muted-foreground hover:text-primary transition-colors">
-                                        {brand}
-                                    </p>
-                                </CardContent>
-                            </Card>
+                            <Link key={brand} href={`/catalog?brand=${brand}`}>
+                                <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2">
+                                    <CardContent className="p-6 flex items-center justify-center">
+                                        <p className="font-bold text-lg text-muted-foreground hover:text-primary transition-colors">
+                                            {brand}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
                         ))}
                     </div>
                     </div>

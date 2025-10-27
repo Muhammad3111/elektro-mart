@@ -30,7 +30,7 @@ export default function CartPage() {
     <div className="min-h-screen flex flex-col">
       <SEO
         title="Savat - Xarid qilish"
-        description="Sizning xarid savatangiz. Buyurtmani rasmiylashtirish va tez yetkazib berish xizmati. ElektroMart - professional elektr mahsulotlari."
+        description="Sizning xarid savatangiz. Buyurtmani rasmiylashtirish va tez yetkazib berish xizmati. Sobirov Market - professional elektr mahsulotlari."
         canonical="/cart"
         noindex={true}
       />

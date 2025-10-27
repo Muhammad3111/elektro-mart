@@ -60,7 +60,7 @@ export function Footer() {
               </a>
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-primary mt-0.5" />
-                <span>{t("Toshkent sh., Chilonzor tumani", "г. Ташкент, Чиланзарский район")}</span>
+                <span>{t("O'zbekiston, Toshkent, Shayxontoxir tumani, Taxtapul, To'raqurgon ko'chasi 12b, Mo'ljal: Malika bozori", "Узбекистан, Ташкент, Шайхантахурский район, Тахтапуль, улица Туракурган 12б, Ориентир: рынок Малика")}</span>
               </div>
               <div>
                 <h5 className="font-semibold mb-2">{t("Bizni kuzatib boring", "Следите за нами")}</h5>

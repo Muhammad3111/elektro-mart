@@ -26,7 +26,7 @@ export function StructuredData({ type, data, product }: StructuredDataProps) {
             structuredData = {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": "ElektroMart",
+                "name": "Sobirov Market",
                 "url": "https://elektromart.uz",
                 "description": "O'zbekistonda eng yaxshi elektr kabel va aksessuarlar",
                 "potentialAction": {
@@ -41,7 +41,7 @@ export function StructuredData({ type, data, product }: StructuredDataProps) {
             structuredData = {
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                "name": "ElektroMart",
+                "name": "Sobirov Market",
                 "url": "https://elektromart.uz",
                 "logo": "https://elektromart.uz/logo.png",
                 "description": "Professional elektr kabel va aksessuarlar do'koni",
@@ -56,8 +56,8 @@ export function StructuredData({ type, data, product }: StructuredDataProps) {
                     "contactType": "customer service"
                 },
                 "sameAs": [
-                    "https://t.me/elektromart",
-                    "https://instagram.com/elektromart"
+                    "https://t.me/sobirovmarket",
+                    "https://instagram.com/sobirovmarket"
                 ]
             };
             break;
@@ -72,7 +72,7 @@ export function StructuredData({ type, data, product }: StructuredDataProps) {
                     "image": product.image,
                     "brand": {
                         "@type": "Brand",
-                        "name": product.brand || "ElektroMart"
+                        "name": product.brand || "Sobirov Market"
                     },
                     "offers": {
                         "@type": "Offer",
@@ -81,7 +81,7 @@ export function StructuredData({ type, data, product }: StructuredDataProps) {
                         "availability": "https://schema.org/InStock",
                         "seller": {
                             "@type": "Organization",
-                            "name": "ElektroMart"
+                            "name": "Sobirov Market"
                         }
                     },
                     ...(product.rating && {

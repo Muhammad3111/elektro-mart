@@ -35,7 +35,7 @@ export function FloatingButtons() {
             <Button
                 onClick={handleCall}
                 size="icon"
-                className="h-14 w-14 rounded-full bg-green-500 hover:bg-green-600 text-white shadow-2xl hover:scale-110 transition-all duration-300 animate-pulse"
+                className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 text-white shadow-2xl hover:scale-110 transition-all duration-300 animate-pulse"
                 aria-label={t("Qo'ng'iroq qilish", "Позвонить")}
             >
                 <Phone className="h-6 w-6" />

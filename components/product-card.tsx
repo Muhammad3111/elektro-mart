@@ -65,12 +65,12 @@ export function ProductCard({
                     )}
                 </div>
 
-                {/* Quick Actions */}
-                <div className="absolute top-2 right-2 z-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Quick Actions - Always Visible */}
+                <div className="absolute top-2 right-2 z-10 flex flex-col gap-2">
                     <Button
                         size="icon"
                         variant="secondary"
-                        className="h-9 w-9 rounded-full bg-white hover:bg-primary hover:text-white"
+                        className="h-9 w-9 rounded-full bg-white/90 hover:bg-primary hover:text-white shadow-md"
                         onClick={(e) => {
                             e.preventDefault();
                             if (isInFavorites) {
@@ -86,15 +86,17 @@ export function ProductCard({
                             }`}
                         />
                     </Button>
-                    <Link href={`/products/${id}`}>
-                        <Button
-                            size="icon"
-                            variant="secondary"
-                            className="h-9 w-9 rounded-full bg-white hover:bg-primary hover:text-white"
-                        >
-                            <Eye className="h-4 w-4" />
-                        </Button>
-                    </Link>
+                    <Button
+                        size="icon"
+                        variant="secondary"
+                        className="h-9 w-9 rounded-full bg-white/90 hover:bg-primary hover:text-white shadow-md"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            // View action without redirect
+                        }}
+                    >
+                        <Eye className="h-4 w-4" />
+                    </Button>
                 </div>
 
                 {/* Product Image */}
@@ -122,21 +124,21 @@ export function ProductCard({
                     </p>
                 )}
 
-                {/* Price */}
-                <div className="flex flex-col gap-0.5">
+                {/* Price - Mobile: stacked, Desktop: side by side */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-0.5 md:gap-2">
                     <span className="text-lg md:text-xl font-bold text-primary">
                         {price} UZS
                     </span>
                     {oldPrice && (
-                        <span className="text-xs text-muted-foreground line-through">
+                        <span className="text-xs text-muted-foreground line-through md:order-first">
                             {oldPrice} UZS
                         </span>
                     )}
                 </div>
 
-                {/* Add to Cart Button */}
+                {/* Add to Cart Button - Fixed height */}
                 <Button
-                    className="w-full bg-primary hover:bg-primary/90 text-white gap-2 group-hover:shadow-lg transition-shadow text-xs md:text-sm h-9 md:h-10"
+                    className="w-full bg-primary hover:bg-primary/90 text-white gap-2 group-hover:shadow-lg transition-shadow text-xs md:text-sm h-10"
                     onClick={handleAddToCart}
                 >
                     <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" />
