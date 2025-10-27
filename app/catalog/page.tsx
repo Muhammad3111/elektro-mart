@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
-export default function CatalogPage() {
+function CatalogContent() {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const brandParam = searchParams.get('brand');
@@ -279,5 +279,13 @@ export default function CatalogPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <CatalogContent />
+    </Suspense>
   );
 }

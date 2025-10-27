@@ -185,8 +185,8 @@ export default function SubcategoryPage() {
               oldPrice={product.oldPrice}
               image={product.image}
               rating={product.rating}
-              isNew={product.isNew}
-              discount={product.discount}
+              isNew={'isNew' in product ? product.isNew : undefined}
+              discount={'discount' in product ? product.discount : undefined}
             />
           ))}
         </div>
