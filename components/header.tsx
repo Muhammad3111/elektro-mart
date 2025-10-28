@@ -467,7 +467,10 @@ export function Header() {
                 <div className="flex flex-col h-full">
                     {/* Mobile Menu Header */}
                     <div className="flex items-center justify-between p-4 border-b">
-                        <Link href="/" className="flex flex-col gap-0.5 cursor-pointer">
+                        <Link
+                            href="/"
+                            className="flex flex-col gap-0.5 cursor-pointer"
+                        >
                             <div className="flex items-center gap-2">
                                 <Zap className="h-8 w-8 text-primary" />
                                 <span className="font-black text-xl">
