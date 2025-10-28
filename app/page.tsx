@@ -8,6 +8,7 @@ import { HeroSlider } from "@/components/hero-slider";
 import { ProductCard } from "@/components/product-card";
 import { SectionTitle } from "@/components/section-title";
 import { CategorySlider } from "@/components/category-slider";
+import { BrandsSlider } from "@/components/brands-slider";
 import { ContactInfo } from "@/components/contact-info";
 import { YandexMap } from "@/components/yandex-map";
 import { SEO } from "@/components/seo";
@@ -399,26 +400,20 @@ export default function Home() {
                     <SectionTitle highlight={t("Brendlarimiz", "бренды")}>
                         {t("Brendlarimiz", "Наши бренды")}
                     </SectionTitle>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                        {[
-                            "Siemens",
-                            "Schneider",
-                            "ABB",
-                            "Legrand",
-                            "Philips",
-                            "Osram",
-                        ].map((brand) => (
-                            <Link key={brand} href={`/catalog?brand=${brand}`}>
-                                <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2">
-                                    <CardContent className="p-6 flex items-center justify-center">
-                                        <p className="font-bold text-lg text-muted-foreground hover:text-primary transition-colors">
-                                            {brand}
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        ))}
-                    </div>
+                    <BrandsSlider 
+                        brands={[
+                            { name: "Siemens" },
+                            { name: "Schneider Electric" },
+                            { name: "ABB" },
+                            { name: "Legrand" },
+                            { name: "Philips" },
+                            { name: "Osram" },
+                            { name: "Hager" },
+                            { name: "Eaton" },
+                            { name: "GE" },
+                            { name: "Honeywell" },
+                        ]}
+                    />
                     </div>
                 </section>
 

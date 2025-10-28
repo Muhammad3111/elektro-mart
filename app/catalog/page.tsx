@@ -8,10 +8,10 @@ import { CatalogSlider } from "@/components/catalog-slider";
 import { ProductCard } from "@/components/product-card";
 import { SEO } from "@/components/seo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
 import {
     Select,
     SelectContent,
@@ -32,8 +32,8 @@ function CatalogContent() {
     const [selectedBrands, setSelectedBrands] = useState<string[]>(() => {
         return brandParam ? [brandParam] : [];
     });
-    const [priceMin, setPriceMin] = useState("");
-    const [priceMax, setPriceMax] = useState("");
+    const [priceRange, setPriceRange] = useState<number[]>([0, 500000]);
+    const maxPrice = 500000;
 
     const allProducts = Array.from({ length: 20 }, (_, i) => ({
         id: i + 1,
@@ -79,17 +79,13 @@ function CatalogContent() {
         );
     }
 
-    if (priceMin) {
-        filteredProducts = filteredProducts.filter(
-            (p) => parseInt(p.price.replace(/,/g, "")) >= parseInt(priceMin)
-        );
-    }
-
-    if (priceMax) {
-        filteredProducts = filteredProducts.filter(
-            (p) => parseInt(p.price.replace(/,/g, "")) <= parseInt(priceMax)
-        );
-    }
+    // Filter by price range
+    filteredProducts = filteredProducts.filter(
+        (p) => {
+            const price = parseInt(p.price.replace(/,/g, ""));
+            return price >= priceRange[0] && price <= priceRange[1];
+        }
+    );
 
     // Sort products
     if (sortBy === "price-low") {
@@ -127,8 +123,7 @@ function CatalogContent() {
     const clearFilters = () => {
         setSelectedCategories([]);
         setSelectedBrands([]);
-        setPriceMin("");
-        setPriceMax("");
+        setPriceRange([0, maxPrice]);
     };
 
     return (
@@ -203,28 +198,24 @@ function CatalogContent() {
                                     <h4 className="text-base font-semibold mb-3">
                                         {t("Narx oralig'i", "Диапазон цен")}
                                     </h4>
-                                    <div className="flex items-center gap-2">
-                                        <Input
-                                            type="number"
-                                            placeholder={t("Min", "Мин")}
+                                    <div className="space-y-4">
+                                        <Slider
+                                            min={0}
+                                            max={maxPrice}
+                                            step={10000}
+                                            value={priceRange}
+                                            onValueChange={setPriceRange}
                                             className="w-full"
-                                            value={priceMin}
-                                            onChange={(e) =>
-                                                setPriceMin(e.target.value)
-                                            }
                                         />
-                                        <span className="text-muted-foreground">
-                                            -
-                                        </span>
-                                        <Input
-                                            type="number"
-                                            placeholder={t("Max", "Макс")}
-                                            className="w-full"
-                                            value={priceMax}
-                                            onChange={(e) =>
-                                                setPriceMax(e.target.value)
-                                            }
-                                        />
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="font-medium text-primary">
+                                                {priceRange[0].toLocaleString()} UZS
+                                            </span>
+                                            <span className="text-muted-foreground">-</span>
+                                            <span className="font-medium text-primary">
+                                                {priceRange[1].toLocaleString()} UZS
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 

@@ -5,6 +5,7 @@ import { CartProvider } from "@/contexts/cart-context";
 import { SearchProvider } from "@/contexts/search-context";
 import { FavoritesProvider } from "@/contexts/favorites-context";
 import { FloatingButtons } from "@/components/floating-buttons";
+import { PageLoading } from "@/components/page-loading";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -101,6 +102,7 @@ export default function RootLayout({
                     <SearchProvider>
                         <CartProvider>
                             <FavoritesProvider>
+                                <PageLoading />
                                 {children}
                                 <FloatingButtons />
                                 <Toaster position="top-center" richColors />

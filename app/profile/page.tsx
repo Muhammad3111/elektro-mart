@@ -20,12 +20,24 @@ import {
     Clock,
     CheckCircle,
     XCircle,
+    LogOut,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
     const { t } = useLanguage();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState("profile");
+    
+    const handleLogout = () => {
+        // Clear user session/token here
+        toast.success(t("Tizimdan chiqdingiz", "Вы вышли из системы"));
+        setTimeout(() => {
+            router.push("/");
+        }, 1000);
+    };
 
     // Mock user data
     const userData = {
@@ -150,6 +162,17 @@ export default function ProfilePage() {
                                     >
                                         <ShoppingBag className="h-5 w-5" />
                                         {t("Buyurtmalar", "Заказы")}
+                                    </Button>
+                                    
+                                    <Separator className="my-2" />
+                                    
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full justify-start gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="h-5 w-5" />
+                                        {t("Chiqish", "Выйти")}
                                     </Button>
                                 </nav>
                             </CardContent>

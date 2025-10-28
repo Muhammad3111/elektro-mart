@@ -45,14 +45,11 @@ export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
-    const prevPathnameRef = useRef(pathname);
-
     // Close mobile menu on route change - proper pattern
-    if (prevPathnameRef.current !== pathname) {
-        prevPathnameRef.current = pathname;
-        if (mobileMenuOpen) setMobileMenuOpen(false);
-        if (mobileSearchOpen) setMobileSearchOpen(false);
-    }
+    useEffect(() => {
+        setMobileMenuOpen(false);
+        setMobileSearchOpen(false);
+    }, [pathname]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -499,7 +496,7 @@ export function Header() {
                                 onClick={() => setMobileMenuOpen(false)}
                                 className="cursor-pointer"
                             >
-                                <Button className="w-full justify-start gap-2 bg-green-600 hover:bg-green-700 text-white">
+                                <Button className="w-full justify-start gap-2 bg-primary hover:bg-primary/90 text-white">
                                     <User className="h-5 w-5" />
                                     {t("Kirish", "Войти")}
                                 </Button>

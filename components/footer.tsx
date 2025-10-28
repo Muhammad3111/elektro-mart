@@ -55,15 +55,15 @@ export function Footer() {
             <h4 className="font-bold text-lg mb-2">{t("Aloqa", "Контакты")}</h4>
             <div className="space-y-3 text-sm">
               <a href="tel:+998334704700" className="flex items-center gap-2 hover:text-primary transition-colors">
-                <Phone className="w-4 h-4 text-primary" />
+                <Phone className="w-5 h-5 md:w-4 md:h-4 text-primary flex-shrink-0" />
                 <span>+998 33 470 47 00</span>
               </a>
               <a href="mailto:sobirovsardor138@gmail.com" className="flex items-center gap-2 hover:text-primary transition-colors">
-                <Mail className="w-4 h-4 text-primary" />
+                <Mail className="w-5 h-5 md:w-4 md:h-4 text-primary flex-shrink-0" />
                 <span>sobirovsardor138@gmail.com</span>
               </a>
               <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-primary mt-0.5" />
+                <MapPin className="w-5 h-5 md:w-4 md:h-4 text-primary mt-0.5 flex-shrink-0" />
                 <span>{t("O'zbekiston, Toshkent, Shayxontoxir tumani, Taxtapul, To'raqurgon ko'chasi 12b, Mo'ljal: Malika bozori", "Узбекистан, Ташкент, Шайхантахурский район, Тахтапуль, улица Туракурган 12б, Ориентир: рынок Малика")}</span>
               </div>
               <div>

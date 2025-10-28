@@ -4,10 +4,11 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Heart, Eye } from "lucide-react";
+import { ShoppingCart, Heart, Eye, ImageIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
+import { useState } from "react";
 
 interface ProductCardProps {
     id: number;
@@ -35,6 +36,7 @@ export function ProductCard({
     const { t } = useLanguage();
     const { addToCart } = useCart();
     const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+    const [imageError, setImageError] = useState(false);
     
     const isInFavorites = isFavorite(id);
 
@@ -49,8 +51,9 @@ export function ProductCard({
     };
 
     return (
-        <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 py-0 flex flex-col h-full">
-            <div className="relative h-[60%] overflow-hidden flex-shrink-0">
+        <Link href={`/products/${id}`} className="cursor-pointer block">
+            <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 py-0 flex flex-col h-full">
+                <div className="relative aspect-square overflow-hidden flex-shrink-0">
                 {/* Badges */}
                 <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
                     {isNew && (
@@ -100,23 +103,26 @@ export function ProductCard({
                 </div>
 
                 {/* Product Image */}
-                <Link href={`/products/${id}`} className="cursor-pointer">
+                {!image || imageError ? (
+                    <div className="w-full h-full flex items-center justify-center bg-muted">
+                        <ImageIcon className="w-16 h-16 text-muted-foreground/50" />
+                    </div>
+                ) : (
                     <img
                         src={image}
                         alt={name}
                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                        onError={() => setImageError(true)}
                     />
-                </Link>
+                )}
             </div>
 
-            <CardContent className="p-3 flex flex-col justify-between h-full space-y-2">
-                <div className="space-y-2">
+            <CardContent className="p-3 flex flex-col justify-between flex-1 space-y-2">
+                <div className="space-y-2 flex-1">
                     {/* Product Name - 1 line */}
-                    <Link href={`/products/${id}`} className="cursor-pointer">
-                        <h3 className="font-bold text-xs md:text-sm line-clamp-1 hover:text-primary transition-colors">
-                            {name}
-                        </h3>
-                    </Link>
+                    <h3 className="font-bold text-xs md:text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                        {name}
+                    </h3>
 
                     {/* Description - 3 lines */}
                     {description && (
@@ -140,7 +146,7 @@ export function ProductCard({
 
                 {/* Add to Cart Button - Always at bottom */}
                 <Button
-                    className="w-full bg-primary hover:bg-primary/90 text-white gap-2 group-hover:shadow-lg transition-shadow text-xs md:text-sm h-10"
+                    className="w-full bg-primary hover:bg-primary/90 text-white gap-2 group-hover:shadow-lg transition-shadow text-xs md:text-sm h-9 md:h-10 mt-auto flex-shrink-0"
                     onClick={handleAddToCart}
                 >
                     <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -148,5 +154,6 @@ export function ProductCard({
                 </Button>
             </CardContent>
         </Card>
+        </Link>
     );
 }

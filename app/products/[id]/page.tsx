@@ -9,13 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ShoppingCart, CheckCircle, Minus, Plus, ChevronLeft, ChevronRight, Share2, Tag } from "lucide-react";
+import { ShoppingCart, CheckCircle, Minus, Plus, ChevronLeft, ChevronRight, Share2, Tag, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
+import { useCart } from "@/contexts/cart-context";
+import { useFavorites } from "@/contexts/favorites-context";
 import { ProductCard } from "@/components/product-card";
 import useEmblaCarousel from "embla-carousel-react";
 
 export default function ProductDetailPage() {
   const { t } = useLanguage();
+  const { addToCart } = useCart();
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState("black");
@@ -285,18 +289,55 @@ export default function ProductDetailPage() {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                <Link href="/cart" className="flex-1">
-                  <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-white gap-2">
-                    <ShoppingCart className="h-5 w-5" />
-                    {t("Savatga qo'shish", "Добавить в корзину")}
-                  </Button>
-                </Link>
+                <Button 
+                  className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white gap-2"
+                  onClick={() => {
+                    for (let i = 0; i < quantity; i++) {
+                      addToCart({
+                        id: 1,
+                        name: product.name,
+                        price: product.price,
+                        image: product.images[0],
+                      });
+                    }
+                  }}
+                >
+                  <ShoppingCart className="h-5 w-5" />
+                  {t("Savatga qo'shish", "Добавить в корзину")}
+                </Button>
               </div>
               
-              {/* Share Button */}
-              <Button 
+              {/* Favorites and Share Buttons */}
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-12 gap-2"
+                  onClick={() => {
+                    const isInFavorites = isFavorite(1);
+                    if (isInFavorites) {
+                      removeFromFavorites(1);
+                    } else {
+                      addToFavorites({
+                        id: 1,
+                        name: product.name,
+                        price: product.price,
+                        image: product.images[0],
+                        description: product.description,
+                      });
+                    }
+                  }}
+                >
+                  <Heart className={`h-5 w-5 ${
+                    isFavorite(1) ? "fill-current text-red-500" : ""
+                  }`} />
+                  {isFavorite(1) 
+                    ? t("Sevimlilardan olib tashlash", "Удалить из избранного")
+                    : t("Sevimlilarga qo'shish", "Добавить в избранное")
+                  }
+                </Button>
+                <Button 
                 variant="outline" 
-                className="w-full h-12 gap-2"
+                className="flex-1 h-12 gap-2"
                 onClick={() => {
                   if (navigator.share) {
                     navigator.share({
@@ -313,6 +354,7 @@ export default function ProductDetailPage() {
                 <Share2 className="h-5 w-5" />
                 {t("Ulashish", "Поделиться")}
               </Button>
+              </div>
             </div>
           </div>
         </div>
