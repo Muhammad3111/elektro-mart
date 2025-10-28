@@ -140,12 +140,12 @@ export function ProductCard({
                         )}
 
                         {/* Price - Old price on right */}
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-0.5 md:gap-2">
-                            <span className="text-lg md:text-xl font-bold text-primary">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-base md:text-lg font-bold text-primary break-words">
                                 {price} UZS
                             </span>
                             {oldPrice && (
-                                <span className="text-xs text-muted-foreground line-through">
+                                <span className="text-[10px] md:text-xs text-muted-foreground line-through">
                                     {oldPrice} UZS
                                 </span>
                             )}
