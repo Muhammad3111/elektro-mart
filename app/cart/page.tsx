@@ -40,10 +40,21 @@ export default function CartPage() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Cart Items */}
           <div className="w-full lg:w-2/3">
-            <div className="flex justify-between items-baseline border-b pb-6 mb-6">
+            {/* Desktop Header */}
+            <div className="hidden md:flex justify-between items-baseline border-b pb-6 mb-6">
               <h1 className="text-4xl font-black">{t("Savatingiz", "Ваша корзина")}</h1>
               <Link href="/" className="text-sm font-medium text-primary hover:underline">
                 {t("Xarid qilishda davom eting", "Продолжить покупки")}
+              </Link>
+            </div>
+
+            {/* Mobile Header */}
+            <div className="md:hidden border-b pb-6 mb-6 space-y-4">
+              <h1 className="text-3xl font-black">{t("Savatingiz", "Ваша корзина")}</h1>
+              <Link href="/" className="block">
+                <Button variant="outline" className="w-full">
+                  {t("Xarid qilishda davom eting", "Продолжить покупки")}
+                </Button>
               </Link>
             </div>
 
@@ -61,7 +72,8 @@ export default function CartPage() {
                 {cartItems.map((item) => (
                   <Card key={item.id}>
                     <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
+                      {/* Desktop Layout */}
+                      <div className="hidden md:flex items-center gap-4">
                         <div 
                           className="w-24 h-24 bg-cover bg-center rounded-lg flex-shrink-0"
                           style={{ backgroundImage: `url(${item.image})` }}
@@ -115,6 +127,66 @@ export default function CartPage() {
                         >
                           <Trash2 className="h-5 w-5" />
                         </Button>
+                      </div>
+
+                      {/* Mobile Layout */}
+                      <div className="md:hidden space-y-3">
+                        {/* Image and Title */}
+                        <div className="flex gap-3">
+                          <div 
+                            className="w-20 h-20 bg-cover bg-center rounded-lg flex-shrink-0"
+                            style={{ backgroundImage: `url(${item.image})` }}
+                          />
+                          <div className="flex-1">
+                            <p className="font-medium text-sm line-clamp-2">{item.name}</p>
+                            {item.category && (
+                              <p className="text-xs text-muted-foreground">{item.category}</p>
+                            )}
+                            {item.brand && (
+                              <p className="text-xs text-muted-foreground">{item.brand}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Quantity, Price, Delete */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 rounded-full"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <Input
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) => updateQuantity(item.id, parseInt(e.target.value) || 1)}
+                              className="w-12 text-center h-8 text-sm"
+                            />
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8 rounded-full"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-sm">{(parsePrice(item.price) * item.quantity).toLocaleString()} UZS</p>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive h-8 w-8"
+                              onClick={() => removeFromCart(item.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

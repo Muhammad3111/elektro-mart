@@ -31,23 +31,25 @@ export default function FavoritesPage() {
             <main className="flex-1 container mx-auto px-4 py-10">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                            <Heart className="h-8 w-8 text-red-500 fill-current" />
-                            <h1 className="text-4xl font-black">
-                                {t("Sevimlilar", "Избранное")}
-                            </h1>
+                    <div className="mb-8">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <Heart className="h-8 w-8 text-red-500 fill-current" />
+                                <h1 className="text-3xl md:text-4xl font-black">
+                                    {t("Sevimlilar", "Избранное")}
+                                </h1>
+                            </div>
+                            {favorites.length > 0 && (
+                                <Button
+                                    variant="outline"
+                                    onClick={clearFavorites}
+                                    className="text-red-500 hover:text-red-600 hover:bg-red-50 w-full md:w-auto"
+                                >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    {t("Hammasini o'chirish", "Очистить все")}
+                                </Button>
+                            )}
                         </div>
-                        {favorites.length > 0 && (
-                            <Button
-                                variant="outline"
-                                onClick={clearFavorites}
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                            >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                {t("Hammasini o'chirish", "Очистить все")}
-                            </Button>
-                        )}
                     </div>
 
                     {/* Empty State */}
@@ -86,7 +88,7 @@ export default function FavoritesPage() {
                             </p>
 
                             {/* Products Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                                 {favorites.map((item) => (
                                     <Card
                                         key={item.id}
