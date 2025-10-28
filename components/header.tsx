@@ -111,7 +111,7 @@ export function Header() {
                     {/* Logo and Brand */}
                     <Link
                         href="/"
-                        className="flex flex-col gap-0.5 flex-shrink-0"
+                        className="flex flex-col gap-0.5 flex-shrink-0 cursor-pointer"
                     >
                         <div className="flex items-center gap-2">
                             <Zap className="h-7 w-7 text-primary" />
@@ -241,7 +241,7 @@ export function Header() {
                     <nav className="hidden lg:flex items-center gap-8">
                         <Link
                             href="/"
-                            className={`text-lg font-medium hover:text-primary transition-colors relative ${
+                            className={`text-lg font-medium hover:text-primary transition-colors relative cursor-pointer ${
                                 isActive("/") ? "text-primary" : ""
                             }`}
                         >
@@ -252,7 +252,7 @@ export function Header() {
                         </Link>
                         <Link
                             href="/catalog"
-                            className={`text-lg font-medium hover:text-primary transition-colors relative ${
+                            className={`text-lg font-medium hover:text-primary transition-colors relative cursor-pointer ${
                                 isActive("/catalog") ? "text-primary" : ""
                             }`}
                         >
@@ -263,7 +263,7 @@ export function Header() {
                         </Link>
                         <Link
                             href="/about"
-                            className={`text-lg font-medium hover:text-primary transition-colors relative ${
+                            className={`text-lg font-medium hover:text-primary transition-colors relative cursor-pointer ${
                                 isActive("/about") ? "text-primary" : ""
                             }`}
                         >
@@ -274,7 +274,7 @@ export function Header() {
                         </Link>
                         <Link
                             href="/contact"
-                            className={`text-lg font-medium hover:text-primary transition-colors relative ${
+                            className={`text-lg font-medium hover:text-primary transition-colors relative cursor-pointer ${
                                 isActive("/contact") ? "text-primary" : ""
                             }`}
                         >
@@ -470,7 +470,7 @@ export function Header() {
                 <div className="flex flex-col h-full">
                     {/* Mobile Menu Header */}
                     <div className="flex items-center justify-between p-4 border-b">
-                        <Link href="/" className="flex flex-col gap-0.5">
+                        <Link href="/" className="flex flex-col gap-0.5 cursor-pointer">
                             <div className="flex items-center gap-2">
                                 <Zap className="h-8 w-8 text-primary" />
                                 <span className="font-black text-xl">
@@ -497,6 +497,7 @@ export function Header() {
                             <Link
                                 href="/auth"
                                 onClick={() => setMobileMenuOpen(false)}
+                                className="cursor-pointer"
                             >
                                 <Button className="w-full justify-start gap-2 bg-green-600 hover:bg-green-700 text-white">
                                     <User className="h-5 w-5" />
@@ -510,7 +511,7 @@ export function Header() {
                             <Link
                                 href="/"
                                 onClick={() => setMobileMenuOpen(false)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer ${
                                     isActive("/")
                                         ? "bg-primary text-white"
                                         : "hover:bg-accent"
@@ -521,7 +522,7 @@ export function Header() {
                             <Link
                                 href="/catalog"
                                 onClick={() => setMobileMenuOpen(false)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer ${
                                     isActive("/catalog")
                                         ? "bg-primary text-white"
                                         : "hover:bg-accent"
@@ -532,7 +533,7 @@ export function Header() {
                             <Link
                                 href="/about"
                                 onClick={() => setMobileMenuOpen(false)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer ${
                                     isActive("/about")
                                         ? "bg-primary text-white"
                                         : "hover:bg-accent"
@@ -543,7 +544,7 @@ export function Header() {
                             <Link
                                 href="/contact"
                                 onClick={() => setMobileMenuOpen(false)}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors cursor-pointer ${
                                     isActive("/contact")
                                         ? "bg-primary text-white"
                                         : "hover:bg-accent"

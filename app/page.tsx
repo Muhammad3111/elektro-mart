@@ -6,6 +6,10 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { HeroSlider } from "@/components/hero-slider";
 import { ProductCard } from "@/components/product-card";
+import { SectionTitle } from "@/components/section-title";
+import { CategorySlider } from "@/components/category-slider";
+import { ContactInfo } from "@/components/contact-info";
+import { YandexMap } from "@/components/yandex-map";
 import { SEO } from "@/components/seo";
 import { StructuredData } from "@/components/structured-data";
 import { Button } from "@/components/ui/button";
@@ -29,12 +33,54 @@ export default function Home() {
     const [selectedCategory, setSelectedCategory] = useState("Barchasi");
 
     const categories = [
-        { name: "Kabellar", nameRu: "Кабели", icon: Cable, id: "kabellar", slug: "kabellar", image: "" },
-        { name: "Yoritish", nameRu: "Освещение", icon: Lightbulb, id: "yoritish", slug: "yoritish", image: "" },
-        { name: "Rozetkalar", nameRu: "Розетки", icon: Plug, id: "rozetkalar", slug: "rozetkalar", image: "" },
-        { name: "Avtomatlar", nameRu: "Автоматы", icon: Zap, id: "avtomatlar", slug: "avtomatlar", image: "" },
-        { name: "Asboblar", nameRu: "Инструменты", icon: Wrench, id: "asboblar", slug: "asboblar", image: "" },
-        { name: "Aksessuarlar", nameRu: "Аксессуары", icon: Package, id: "aksessuarlar", slug: "aksessuarlar", image: "" },
+        { 
+            name: "Kabellar", 
+            nameRu: "Кабели", 
+            icon: Cable, 
+            id: "kabellar", 
+            slug: "kabellar", 
+            image: "https://api.iconify.design/mdi/cable-data.svg?color=%23031697&width=40&height=40" 
+        },
+        { 
+            name: "Yoritish", 
+            nameRu: "Освещение", 
+            icon: Lightbulb, 
+            id: "yoritish", 
+            slug: "yoritish", 
+            image: "https://api.iconify.design/mdi/lightbulb-on.svg?color=%23031697&width=40&height=40" 
+        },
+        { 
+            name: "Rozetkalar", 
+            nameRu: "Розетки", 
+            icon: Plug, 
+            id: "rozetkalar", 
+            slug: "rozetkalar", 
+            image: "https://api.iconify.design/mdi/power-socket.svg?color=%23031697&width=40&height=40" 
+        },
+        { 
+            name: "Avtomatlar", 
+            nameRu: "Автоматы", 
+            icon: Zap, 
+            id: "avtomatlar", 
+            slug: "avtomatlar", 
+            image: "https://api.iconify.design/mdi/electric-switch.svg?color=%23031697&width=40&height=40" 
+        },
+        { 
+            name: "Asboblar", 
+            nameRu: "Инструменты", 
+            icon: Wrench, 
+            id: "asboblar", 
+            slug: "asboblar", 
+            image: "https://api.iconify.design/mdi/tools.svg?color=%23031697&width=40&height=40" 
+        },
+        { 
+            name: "Aksessuarlar", 
+            nameRu: "Аксессуары", 
+            icon: Package, 
+            id: "aksessuarlar", 
+            slug: "aksessuarlar", 
+            image: "https://api.iconify.design/mdi/package-variant.svg?color=%23031697&width=40&height=40" 
+        },
     ];
 
     const allProducts = [
@@ -132,7 +178,7 @@ export default function Home() {
 
     const filteredProducts =
         selectedCategory === "Barchasi"
-            ? allProducts.slice(0, 9)
+            ? allProducts.slice(0, 10)
             : allProducts
                   .filter(
                       (p) =>
@@ -140,7 +186,7 @@ export default function Home() {
                           categories.find((c) => c.name === selectedCategory)
                               ?.id
                   )
-                  .slice(0, 9);
+                  .slice(0, 10);
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -158,47 +204,31 @@ export default function Home() {
                 {/* Hero Slider */}
                 <HeroSlider />
 
-                {/* Categories - 6 in one row */}
-                <section className="bg-background py-12">
+                {/* Categories Slider */}
+                <section className="bg-background py-16">
                     <div className="container mx-auto px-4">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        {categories.map((category) => {
-                            const Icon = category.icon;
-                            return (
-                                <Link key={category.id} href={`/categories/${category.slug}`}>
-                                    <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 group">
-                                        <CardContent className="p-6 text-center space-y-3">
-                                            <div className="flex justify-center">
-                                                {category.image ? (
-                                                    <div className="w-16 h-16 rounded-full overflow-hidden">
-                                                        <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors">
-                                                        <Icon className="h-8 w-8 text-primary" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <p className="font-medium text-sm">
-                                                {t(category.name, category.nameRu)}
-                                            </p>
-                                        </CardContent>
-                                    </Card>
-                                </Link>
-                            );
-                        })}
-                    </div>
+                        <SectionTitle highlight={t("kategoriyalari", "категории")}>
+                            {t("Mahsulot kategoriyalari", "Категории товаров")}
+                        </SectionTitle>
+                        <CategorySlider categories={categories} />
+                        
+                        {/* View All Categories Button */}
+                        <div className="mt-8 text-center">
+                            <Link href="/catalog">
+                                <Button size="lg" className="bg-primary hover:bg-primary/90 text-white h-12 px-8">
+                                    {t("Barchasini ko'rish", "Посмотреть все")}
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
                 </section>
 
                 {/* Featured Products with Category Filter */}
-                <section className="bg-primary/5 py-12">
+                <section className="bg-primary/5 py-16">
                     <div className="container mx-auto px-4">
-                    <div className="flex items-center justify-between mb-8">
-                        <h3 className="text-3xl font-bold">
-                            {t("Tanlangan mahsulotlar", "Избранные товары")}
-                        </h3>
-                    </div>
+                    <SectionTitle highlight={t("Tanlangan", "Избранные")}>
+                        {t("Tanlangan mahsulotlar", "Избранные товары")}
+                    </SectionTitle>
 
                     {/* Category Filter Tabs */}
                     <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
@@ -256,12 +286,24 @@ export default function Home() {
                             />
                         ))}
                     </div>
+
+                    {/* View All Button */}
+                    <div className="mt-8 text-center">
+                        <Link href="/catalog">
+                            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white h-12 px-8">
+                                {t("Barchasini ko'rish", "Посмотреть все")}
+                            </Button>
+                        </Link>
+                    </div>
                     </div>
                 </section>
 
-                {/* Features Section */}
+                {/* Why Choose Us Section */}
                 <section className="bg-background py-16">
                     <div className="container mx-auto px-4">
+                        <SectionTitle highlight={t("biz", "нас")}>
+                            {t("Nega aynan biz", "Почему именно мы")}
+                        </SectionTitle>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <Card className="text-center border-none shadow-none bg-transparent">
                                 <CardContent className="p-6 space-y-3">
@@ -354,9 +396,9 @@ export default function Home() {
                 {/* Brands Section */}
                 <section className="bg-primary/5 py-16">
                     <div className="container mx-auto px-4">
-                    <h3 className="text-3xl font-bold text-center mb-12">
+                    <SectionTitle highlight={t("Brendlarimiz", "бренды")}>
                         {t("Brendlarimiz", "Наши бренды")}
-                    </h3>
+                    </SectionTitle>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                         {[
                             "Siemens",
@@ -380,15 +422,30 @@ export default function Home() {
                     </div>
                 </section>
 
+                {/* Contact Information Section */}
+                <section className="bg-background py-16">
+                    <div className="container mx-auto px-4">
+                        <SectionTitle highlight={t("ma'lumotlarimiz", "информация")}>
+                            {t("Bizning aloqa ma'lumotlarimiz", "Наша контактная информация")}
+                        </SectionTitle>
+                        <ContactInfo />
+                        
+                        {/* Yandex Map */}
+                        <div className="mt-12">
+                            <YandexMap />
+                        </div>
+                    </div>
+                </section>
+
                 {/* CTA Section */}
                 <section className="bg-background py-16">
                     <div className="container mx-auto px-4 text-center space-y-6">
-                        <h2 className="text-3xl md:text-4xl font-black">
+                        <SectionTitle highlight={t("maxsus", "Специальные")}>
                             {t(
                                 "Professional loyihalar uchun maxsus takliflar",
                                 "Специальные предложения для профессиональных проектов"
                             )}
-                        </h2>
+                        </SectionTitle>
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             {t(
                                 "Katta hajmdagi buyurtmalar uchun maxsus narxlar va shaxsiy menejer",

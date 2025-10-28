@@ -49,8 +49,8 @@ export function ProductCard({
     };
 
     return (
-        <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 py-0">
-            <div className="relative aspect-square overflow-hidden">
+        <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 py-0 flex flex-col h-full">
+            <div className="relative h-[60%] overflow-hidden flex-shrink-0">
                 {/* Badges */}
                 <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
                     {isNew && (
@@ -100,7 +100,7 @@ export function ProductCard({
                 </div>
 
                 {/* Product Image */}
-                <Link href={`/products/${id}`}>
+                <Link href={`/products/${id}`} className="cursor-pointer">
                     <img
                         src={image}
                         alt={name}
@@ -109,34 +109,36 @@ export function ProductCard({
                 </Link>
             </div>
 
-            <CardContent className="p-3 space-y-2">
-                {/* Product Name */}
-                <Link href={`/products/${id}`}>
-                    <h3 className="font-bold text-xs md:text-sm line-clamp-1 hover:text-primary transition-colors">
-                        {name}
-                    </h3>
-                </Link>
+            <CardContent className="p-3 flex flex-col justify-between h-full space-y-2">
+                <div className="space-y-2">
+                    {/* Product Name - 1 line */}
+                    <Link href={`/products/${id}`} className="cursor-pointer">
+                        <h3 className="font-bold text-xs md:text-sm line-clamp-1 hover:text-primary transition-colors">
+                            {name}
+                        </h3>
+                    </Link>
 
-                {/* Description */}
-                {description && (
-                    <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-2 min-h-[28px] md:min-h-[32px]">
-                        {description}
-                    </p>
-                )}
-
-                {/* Price - Mobile: stacked, Desktop: side by side */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-0.5 md:gap-2">
-                    <span className="text-lg md:text-xl font-bold text-primary">
-                        {price} UZS
-                    </span>
-                    {oldPrice && (
-                        <span className="text-xs text-muted-foreground line-through md:order-first">
-                            {oldPrice} UZS
-                        </span>
+                    {/* Description - 3 lines */}
+                    {description && (
+                        <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-3">
+                            {description}
+                        </p>
                     )}
+
+                    {/* Price - Old price on right */}
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-0.5 md:gap-2">
+                        <span className="text-lg md:text-xl font-bold text-primary">
+                            {price} UZS
+                        </span>
+                        {oldPrice && (
+                            <span className="text-xs text-muted-foreground line-through">
+                                {oldPrice} UZS
+                            </span>
+                        )}
+                    </div>
                 </div>
 
-                {/* Add to Cart Button - Fixed height */}
+                {/* Add to Cart Button - Always at bottom */}
                 <Button
                     className="w-full bg-primary hover:bg-primary/90 text-white gap-2 group-hover:shadow-lg transition-shadow text-xs md:text-sm h-10"
                     onClick={handleAddToCart}

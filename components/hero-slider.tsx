@@ -13,7 +13,7 @@ const slides = [
     buttonText: "Xarid qilish",
     buttonLink: "/products",
     image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=600&fit=crop",
-    bgColor: "from-primary/10 to-primary/5"
+    bgColor: "from-primary/20 to-primary/10"
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ const slides = [
     buttonText: "Katalogni ko'rish",
     buttonLink: "/products",
     image: "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=600&h=600&fit=crop",
-    bgColor: "from-blue-50 to-blue-100"
+    bgColor: "from-primary/20 to-primary/10"
   },
   {
     id: 3,
@@ -31,7 +31,7 @@ const slides = [
     buttonText: "Batafsil",
     buttonLink: "/products",
     image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=600&h=600&fit=crop",
-    bgColor: "from-green-50 to-green-100"
+    bgColor: "from-primary/20 to-primary/10"
   }
 ];
 
@@ -76,7 +76,7 @@ export function HeroSlider() {
                     <p className="text-lg md:text-xl text-muted-foreground max-w-lg">
                       {slide.subtitle}
                     </p>
-                    <Link href={slide.buttonLink}>
+                    <Link href={slide.buttonLink} className="cursor-pointer">
                       <Button size="lg" className="bg-primary hover:bg-primary/90 text-white h-14 px-8 text-lg">
                         {slide.buttonText}
                       </Button>
