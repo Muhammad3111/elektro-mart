@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
-export default function NotFoundPage() {
+export default function NotFound() {
   const { t } = useLanguage();
 
   return (
@@ -25,11 +25,11 @@ export default function NotFoundPage() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg" variant="outline">
-            <Link href="javascript:history.back()">
+          <Button asChild size="lg" variant="outline" onClick={() => window.history.back()}>
+            <button>
               <ArrowLeft className="mr-2 h-5 w-5" />
               {t("Orqaga", "Назад")}
-            </Link>
+            </button>
           </Button>
           <Button asChild size="lg">
             <Link href="/">
