@@ -6,7 +6,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 export interface ApiRequestOptions extends RequestInit {
-  params?: Record<string, string | number | boolean>;
+  params?: Record<string, unknown>;
 }
 
 /**
@@ -28,7 +28,13 @@ export async function apiRequest<T>(
   if (params) {
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
-      searchParams.append(key, String(value));
+      if (Array.isArray(value)) {
+        // Comma-separated arrays to match backend spec: key=a,b,c
+        const joined = value.map((v) => String(v)).join(",");
+        searchParams.append(key, joined);
+      } else if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
     });
     url += `?${searchParams.toString()}`;
   }

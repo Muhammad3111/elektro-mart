@@ -33,8 +33,8 @@ export default function CategoryPage() {
       setError(null);
       
       const [categoryData, subCategoriesData] = await Promise.all([
-        categoriesAPI.getById(categoryId),
-        categoriesAPI.getSubCategories(categoryId),
+        categoriesAPI.getById(categoryId.toString()),
+        categoriesAPI.getSubCategories(categoryId.toString()),
       ]);
       
       setCategory(categoryData);

@@ -16,7 +16,7 @@ export { categoriesAPI } from "./categories";
 
 // Products
 export { productsAPI } from "./products";
-export type { Product, CreateProductDto, UpdateProductDto, ProductsResponse } from "./products";
+export type { Product, CreateProductDto, UpdateProductDto, ProductsResponse, QueryProductDto } from "@/types/product";
 
 // Users
 export { usersAPI } from "./users";

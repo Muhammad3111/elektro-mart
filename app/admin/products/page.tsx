@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,26 +17,21 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { Pagination } from "@/components/admin/pagination";
-import {
-    Plus,
-    Search,
-    Edit,
-    Trash2,
-    Eye,
-    Package,
-    Filter,
-} from "lucide-react";
+import { Plus, Search, Edit, Trash2, Package } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { productsAPI, categoriesAPI } from "@/lib/api";
 import { validateForm, productValidationRules, ValidationErrors } from "@/lib/validation";
 import { toast } from "sonner";
+import type { Category } from "@/types/category";
+import type { QueryProductDto, Product as ApiProduct } from "@/types/product";
 
-interface Product {
-    id: number;
+interface AdminProductRow {
+    id: string;
     name: string;
     nameRu: string;
     category: string;
-    price: string;
+    categoryId?: string;
+    price: number;
     stock: number;
     status: string;
     image: string;
@@ -48,8 +43,8 @@ export default function AdminProductsPageFull() {
     const { t } = useLanguage();
     
     // State
-    const [products, setProducts] = useState<Product[]>([]);
-    const [categories, setCategories] = useState<any[]>([]);
+    const [products, setProducts] = useState<AdminProductRow[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
@@ -63,7 +58,7 @@ export default function AdminProductsPageFull() {
     
     // Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [editingProduct, setEditingProduct] = useState<AdminProductRow | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         nameRu: "",
@@ -77,99 +72,72 @@ export default function AdminProductsPageFull() {
     const [errors, setErrors] = useState<ValidationErrors>({});
     const [submitting, setSubmitting] = useState(false);
 
-    // Load data
-    useEffect(() => {
-        loadProducts();
-        loadCategories();
-    }, [currentPage, searchQuery, selectedCategory, sortBy]);
-
-    const loadProducts = async () => {
+    const loadProducts = useCallback(async () => {
         setLoading(true);
         try {
-            // Mock data for demo - replace with real API call
-            const mockProducts: Product[] = Array.from({ length: 45 }, (_, i) => ({
-                id: i + 1,
-                name: `HDMI Kabel ${i + 1}`,
-                nameRu: `HDMI Кабель ${i + 1}`,
-                category: ["Kabellar", "Yoritish", "Rozetkalar"][i % 3],
-                price: `${(i + 1) * 10000}`,
-                stock: Math.floor(Math.random() * 200),
-                status: i % 5 === 0 ? "out_of_stock" : "active",
-                image: `https://images.unsplash.com/photo-1558618666-fcd25c85cd${64 + (i % 5)}?w=100&h=100&fit=crop`,
+            const params: QueryProductDto = {
+                page: currentPage,
+                limit: itemsPerPage,
+                search: searchQuery || undefined,
+                categoryId: selectedCategory !== "all" ? selectedCategory : undefined,
+                sortBy: sortBy === "price" ? "price" : "name",
+                sortOrder: "ASC",
+            };
+
+            const result = await productsAPI.getAll(params);
+
+            const mapped: AdminProductRow[] = result.data.map((p: ApiProduct) => ({
+                id: p.id,
+                name: p.nameUz,
+                nameRu: p.nameRu,
+                category: p.category?.nameUz || "",
+                categoryId: p.categoryId,
+                price: p.price,
+                stock: p.stockQuantity,
+                status: p.isActive ? "active" : "out_of_stock",
+                image: p.mainImage || (p.images && p.images[0]) || "",
+                description: p.descriptionUz || "",
+                descriptionRu: p.descriptionRu || "",
             }));
 
-            // Filter
-            let filtered = mockProducts;
-            if (searchQuery) {
-                filtered = filtered.filter(p => 
-                    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    p.nameRu.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-            }
-            if (selectedCategory !== "all") {
-                filtered = filtered.filter(p => p.category === selectedCategory);
-            }
-
-            // Sort
-            filtered.sort((a, b) => {
-                if (sortBy === "name") return a.name.localeCompare(b.name);
-                if (sortBy === "price") return parseInt(a.price) - parseInt(b.price);
-                if (sortBy === "stock") return a.stock - b.stock;
-                return 0;
-            });
-
-            // Paginate
-            const start = (currentPage - 1) * itemsPerPage;
-            const end = start + itemsPerPage;
-            const paginated = filtered.slice(start, end);
-
-            setProducts(paginated);
-            setTotalItems(filtered.length);
-            setTotalPages(Math.ceil(filtered.length / itemsPerPage));
-
-            // Real API call would be:
-            // const result = await productsAPI.getAll({
-            //     page: currentPage,
-            //     limit: itemsPerPage,
-            //     search: searchQuery,
-            //     category: selectedCategory !== "all" ? selectedCategory : undefined,
-            // });
-            // setProducts(result.data);
-            // setTotalPages(result.totalPages);
-            // setTotalItems(result.total);
+            setProducts(mapped);
+            setTotalItems(result.total);
+            setTotalPages(Math.ceil(result.total / result.limit));
         } catch (error) {
             console.error("Error loading products:", error);
             toast.error(t("Mahsulotlarni yuklashda xatolik", "Ошибка при загрузке товаров"));
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, itemsPerPage, searchQuery, selectedCategory, sortBy, t]);
+
+    // Load products when filters/pagination change
+    useEffect(() => {
+        loadProducts();
+    }, [loadProducts]);
+
+    // Load categories once
+    useEffect(() => {
+        loadCategories();
+    }, []);
 
     const loadCategories = async () => {
         try {
-            // Mock categories
-            setCategories([
-                { id: 1, name: "Kabellar", nameRu: "Кабели" },
-                { id: 2, name: "Yoritish", nameRu: "Освещение" },
-                { id: 3, name: "Rozetkalar", nameRu: "Розетки" },
-            ]);
-
-            // Real API call:
-            // const result = await categoriesAPI.getAll();
-            // setCategories(result);
+            const result = await categoriesAPI.getAll();
+            setCategories(result);
         } catch (error) {
             console.error("Error loading categories:", error);
         }
     };
 
-    const handleOpenModal = (product?: Product) => {
+    const handleOpenModal = (product?: AdminProductRow) => {
         if (product) {
             setEditingProduct(product);
             setFormData({
                 name: product.name,
                 nameRu: product.nameRu,
-                category: product.category,
-                price: product.price,
+                category: product.categoryId || "",
+                price: String(product.price),
                 stock: product.stock,
                 image: product.image,
                 description: product.description || "",
@@ -221,13 +189,23 @@ export default function AdminProductsPageFull() {
         setSubmitting(true);
 
         try {
+            const payload = {
+                nameUz: formData.name,
+                nameRu: formData.nameRu,
+                descriptionUz: formData.description,
+                descriptionRu: formData.descriptionRu,
+                price: Number(formData.price),
+                stockQuantity: Number(formData.stock),
+                categoryId: formData.category,
+                mainImage: formData.image || undefined,
+                inStock: Number(formData.stock) > 0,
+            } as const;
+
             if (editingProduct) {
-                // Update
-                // await productsAPI.update(editingProduct.id, formData);
+                await productsAPI.update(editingProduct.id, payload);
                 toast.success(t("Mahsulot yangilandi", "Товар обновлен"));
             } else {
-                // Create
-                // await productsAPI.create(formData);
+                await productsAPI.create(payload);
                 toast.success(t("Mahsulot qo'shildi", "Товар добавлен"));
             }
 
@@ -241,13 +219,13 @@ export default function AdminProductsPageFull() {
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: string) => {
         if (!confirm(t("Rostdan ham o'chirmoqchimisiz?", "Вы уверены, что хотите удалить?"))) {
             return;
         }
 
         try {
-            // await productsAPI.delete(id);
+            await productsAPI.delete(id);
             toast.success(t("Mahsulot o'chirildi", "Товар удален"));
             loadProducts();
         } catch (error) {
@@ -329,9 +307,9 @@ export default function AdminProductsPageFull() {
                                     <SelectItem value="all">
                                         {t("Barchasi", "Все")}
                                     </SelectItem>
-                                    {categories.map((cat) => (
-                                        <SelectItem key={cat.id} value={cat.name}>
-                                            {cat.name}
+                                    {categories.map((cat: Category) => (
+                                        <SelectItem key={cat.id} value={cat.id}>
+                                            {cat.nameUz}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -408,7 +386,7 @@ export default function AdminProductsPageFull() {
                                                 >
                                                     <td className="p-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-accent flex-shrink-0">
+                                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-accent shrink-0">
                                                                 <img
                                                                     src={product.image}
                                                                     alt={product.name}
@@ -581,9 +559,9 @@ export default function AdminProductsPageFull() {
                                         <SelectValue placeholder={t("Tanlang", "Выберите")} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {categories.map((cat) => (
-                                            <SelectItem key={cat.id} value={cat.name}>
-                                                {cat.name}
+                                        {categories.map((cat: Category) => (
+                                            <SelectItem key={cat.id} value={cat.id}>
+                                                {cat.nameUz}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

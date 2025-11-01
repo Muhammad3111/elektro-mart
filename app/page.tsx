@@ -372,16 +372,16 @@ export default function Home() {
                     </SectionTitle>
                     <BrandsSlider 
                         brands={[
-                            { name: "Siemens" },
-                            { name: "Schneider Electric" },
-                            { name: "ABB" },
-                            { name: "Legrand" },
-                            { name: "Philips" },
-                            { name: "Osram" },
-                            { name: "Hager" },
-                            { name: "Eaton" },
-                            { name: "GE" },
-                            { name: "Honeywell" },
+                            { id: "1", nameUz: "Siemens", nameRu: "Siemens", isActive: true, order: 1, createdAt: "", updatedAt: "" },
+                            { id: "2", nameUz: "Schneider Electric", nameRu: "Schneider Electric", isActive: true, order: 2, createdAt: "", updatedAt: "" },
+                            { id: "3", nameUz: "ABB", nameRu: "ABB", isActive: true, order: 3, createdAt: "", updatedAt: "" },
+                            { id: "4", nameUz: "Legrand", nameRu: "Legrand", isActive: true, order: 4, createdAt: "", updatedAt: "" },
+                            { id: "5", nameUz: "Philips", nameRu: "Philips", isActive: true, order: 5, createdAt: "", updatedAt: "" },
+                            { id: "6", nameUz: "Osram", nameRu: "Osram", isActive: true, order: 6, createdAt: "", updatedAt: "" },
+                            { id: "7", nameUz: "Hager", nameRu: "Hager", isActive: true, order: 7, createdAt: "", updatedAt: "" },
+                            { id: "8", nameUz: "Eaton", nameRu: "Eaton", isActive: true, order: 8, createdAt: "", updatedAt: "" },
+                            { id: "9", nameUz: "GE", nameRu: "GE", isActive: true, order: 9, createdAt: "", updatedAt: "" },
+                            { id: "10", nameUz: "Honeywell", nameRu: "Honeywell", isActive: true, order: 10, createdAt: "", updatedAt: "" },
                         ]}
                     />
                     </div>

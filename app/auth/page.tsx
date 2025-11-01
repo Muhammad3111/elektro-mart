@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
-export default function AuthPage() {
+function AuthPageContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
@@ -50,7 +50,7 @@ export default function AuthPage() {
     setLoading(true);
     try {
       await login(loginData);
-    } catch (error) {
+    } catch {
       // Error handled in auth context
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ export default function AuthPage() {
     setLoading(true);
     try {
       await register(registerData);
-    } catch (error) {
+    } catch {
       // Error handled in auth context
     } finally {
       setLoading(false);
@@ -274,5 +274,29 @@ export default function AuthPage() {
       
       <Footer />
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center bg-background p-4">
+          <div className="w-full max-w-md">
+            <Card>
+              <CardContent className="p-8">
+                <div className="flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <AuthPageContent />
+    </Suspense>
   );
 }

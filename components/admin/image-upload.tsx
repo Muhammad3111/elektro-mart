@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
-import { uploadAPI } from "@/lib/api";
+import { uploadImage } from "@/lib/api";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/language-context";
 
@@ -43,19 +43,9 @@ export function ImageUpload({
         setUploading(true);
 
         try {
-            // In real app, this would upload to your server/cloud storage
-            // For now, we'll create a local URL
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                onChange(reader.result as string);
-                toast.success(t("Rasm muvaffaqiyatli yuklandi", "Изображение успешно загружено"));
-            };
-            reader.readAsDataURL(file);
-
-            // Uncomment this for real API upload:
-            // const result = await uploadAPI.uploadImage(file);
-            // onChange(result.url);
-            // toast.success(t("Rasm muvaffaqiyatli yuklandi", "Изображение успешно загружено"));
+            const result = await uploadImage(file);
+            onChange(result.url);
+            toast.success(t("Rasm muvaffaqiyatli yuklandi", "Изображение успешно загружено"));
         } catch (error) {
             console.error("Upload error:", error);
             toast.error(t("Rasm yuklashda xatolik", "Ошибка при загрузке изображения"));
