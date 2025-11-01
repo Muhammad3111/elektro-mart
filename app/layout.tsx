@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { LanguageProvider } from "@/contexts/language-context";
+import { AuthProvider } from "@/contexts/auth-context";
 import { CartProvider } from "@/contexts/cart-context";
 import { SearchProvider } from "@/contexts/search-context";
 import { FavoritesProvider } from "@/contexts/favorites-context";
@@ -97,18 +98,21 @@ export default function RootLayout({
         <html lang="uz">
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                suppressHydrationWarning
             >
                 <LanguageProvider>
-                    <SearchProvider>
-                        <CartProvider>
-                            <FavoritesProvider>
-                                <PageLoading />
-                                {children}
-                                <FloatingButtons />
-                                <Toaster position="top-center" richColors />
-                            </FavoritesProvider>
-                        </CartProvider>
-                    </SearchProvider>
+                    <AuthProvider>
+                        <SearchProvider>
+                            <CartProvider>
+                                <FavoritesProvider>
+                                    <PageLoading />
+                                    {children}
+                                    <FloatingButtons />
+                                    <Toaster position="top-center" richColors />
+                                </FavoritesProvider>
+                            </CartProvider>
+                        </SearchProvider>
+                    </AuthProvider>
                 </LanguageProvider>
             </body>
         </html>

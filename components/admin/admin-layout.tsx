@@ -4,6 +4,8 @@ import { useState, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { AdminGuard } from "./admin-guard";
+import { useAuth } from "@/contexts/auth-context";
 import {
     LayoutDashboard,
     Package,
@@ -16,6 +18,7 @@ import {
     LogOut,
     Settings,
     Globe,
+    Tag,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import {
@@ -32,6 +35,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
     const { t, language, setLanguage } = useLanguage();
+    const { logout, user } = useAuth();
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -57,6 +61,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             href: "/admin/categories",
         },
         {
+            title: t("Brendlar", "Бренды"),
+            icon: Tag,
+            href: "/admin/brands",
+        },
+        {
             title: t("Galereya", "Галерея"),
             icon: Image,
             href: "/admin/gallery",
@@ -76,6 +85,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     };
 
     return (
+        <AdminGuard>
         <div className="min-h-screen bg-background">
             {/* Top Header */}
             <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -129,7 +139,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     </Button>
 
                     {/* Logout */}
-                    <Button variant="ghost" size="icon">
+                    <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={logout}
+                        title={t("Chiqish", "Выход")}
+                    >
                         <LogOut className="h-5 w-5" />
                     </Button>
                 </div>
@@ -181,5 +196,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 <main className="flex-1 p-6 lg:p-8">{children}</main>
             </div>
         </div>
+        </AdminGuard>
     );
 }

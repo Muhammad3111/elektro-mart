@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Heart, Eye, ImageIcon } from "lucide-react";
+import { ShoppingCart, Heart, ImageIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
@@ -52,9 +52,9 @@ export function ProductCard({
 
     return (
         <Link href={`/products/${id}`} className="cursor-pointer block">
-            <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 hover:shadow-primary/50 py-0 flex flex-col h-full border-0">
+            <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:shadow-primary/50 py-0 flex flex-col h-full border-0">
                 <div className="relative aspect-square overflow-hidden shrink-0">
-                    {/* Badges */}
+                    {/* Badges - Always Visible */}
                     <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
                         {isNew && (
                             <Badge className="bg-primary text-white">
@@ -68,8 +68,8 @@ export function ProductCard({
                         )}
                     </div>
 
-                    {/* Quick Actions - Always Visible */}
-                    <div className="absolute top-2 right-2 z-10 flex flex-col gap-2">
+                    {/* Favorite Icon - Only visible on hover */}
+                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <Button
                             size="icon"
                             variant="secondary"
@@ -97,17 +97,15 @@ export function ProductCard({
                                 }`}
                             />
                         </Button>
-                        <Button
-                            size="icon"
-                            variant="secondary"
-                            className="h-9 w-9 rounded-full bg-white/90 hover:bg-primary hover:text-white shadow-md"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                // View action without redirect
-                            }}
-                        >
-                            <Eye className="h-4 w-4" />
-                        </Button>
+                    </div>
+
+                    {/* Quick View Text - Center on hover */}
+                    <div className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="bg-white/95 px-6 py-3 rounded-lg shadow-lg">
+                            <span className="text-sm font-semibold text-gray-800">
+                                {t("Tez ko'rish", "Быстрый просмотр")}
+                            </span>
+                        </div>
                     </div>
 
                     {/* Product Image */}
@@ -125,41 +123,45 @@ export function ProductCard({
                     )}
                 </div>
 
-                <CardContent className="p-3 flex flex-col justify-between flex-1 space-y-2">
+                <CardContent className="p-3 flex flex-col flex-1">
+                    {/* Top section - grows to fill space */}
                     <div className="space-y-2 flex-1">
                         {/* Product Name - 1 line */}
                         <h3 className="font-bold text-xs md:text-sm line-clamp-1 group-hover:text-primary transition-colors">
                             {name}
                         </h3>
 
-                        {/* Description - 3 lines */}
+                        {/* Description - 3 lines with ellipsis */}
                         {description && (
                             <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-3">
                                 {description}
                             </p>
                         )}
+                    </div>
 
-                        {/* Price - Old price on right */}
-                        <div className="flex flex-col gap-1">
-                            <span className="text-base md:text-lg font-bold text-primary break-words">
-                                {price} UZS
-                            </span>
+                    {/* Bottom section - always at bottom */}
+                    <div className="flex items-end justify-between gap-2 pt-2 mt-auto">
+                        {/* Left side: Prices */}
+                        <div className="flex flex-col gap-0.5">
                             {oldPrice && (
                                 <span className="text-[10px] md:text-xs text-muted-foreground line-through">
                                     {oldPrice} UZS
                                 </span>
                             )}
+                            <span className="text-base md:text-lg font-bold text-primary break-words">
+                                {price} UZS
+                            </span>
                         </div>
-                    </div>
 
-                    {/* Add to Cart Button - Always at bottom */}
-                    <Button
-                        className="w-full bg-primary hover:bg-primary/90 text-white gap-2 group-hover:shadow-lg transition-shadow text-xs md:text-sm h-9 md:h-10 mt-auto flex-shrink-0"
-                        onClick={handleAddToCart}
-                    >
-                        <ShoppingCart className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                        {t("Savatga qo'shish", "Добавить в корзину")}
-                    </Button>
+                        {/* Right side: Cart Icon Button */}
+                        <Button
+                            size="icon"
+                            className="bg-primary hover:bg-primary/90 text-white shadow-md group-hover:shadow-lg transition-shadow h-9 w-9 md:h-10 md:w-10 flex-shrink-0"
+                            onClick={handleAddToCart}
+                        >
+                            <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
         </Link>

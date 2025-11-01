@@ -1,27 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import {
     ShoppingCart,
     CheckCircle,
     Minus,
     Plus,
-    ChevronLeft,
-    ChevronRight,
     Share2,
     Tag,
     Heart,
@@ -38,19 +28,15 @@ export default function ProductDetailPage() {
     const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
-    const [selectedColor, setSelectedColor] = useState("black");
-    const [emblaRef, emblaApi] = useEmblaCarousel({
+    const [emblaRef] = useEmblaCarousel({
         loop: false,
         align: "start",
     });
-
-    const scrollPrev = useCallback(() => {
-        if (emblaApi) emblaApi.scrollPrev();
-    }, [emblaApi]);
-
-    const scrollNext = useCallback(() => {
-        if (emblaApi) emblaApi.scrollNext();
-    }, [emblaApi]);
+    const [galleryRef] = useEmblaCarousel({
+        loop: true,
+        align: "center",
+        containScroll: "trimSnaps",
+    });
 
     const product = {
         name: "RG6 Koaksial Kabel - 75 Ohm CATV, Sun'iy yo'ldosh va Keng polosali aloqa uchun",
@@ -213,43 +199,54 @@ export default function ProductDetailPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
                     {/* Image Slider */}
-                    <div className="space-y-3">
-                        <div
-                            className="relative aspect-square bg-cover bg-center rounded-xl border shadow-lg w-full"
-                            style={{
-                                backgroundImage: `url(${product.images[selectedImage]})`,
-                            }}
-                        >
-                            {/* Slider buttons on top */}
-                            <div className="absolute top-4 left-0 right-0 flex justify-center gap-3 z-10">
-                                <Button
-                                    variant="secondary"
-                                    size="icon"
-                                    onClick={() =>
-                                        setSelectedImage(
-                                            (selectedImage -
-                                                1 +
-                                                product.images.length) %
-                                                product.images.length
-                                        )
-                                    }
-                                    className="h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
-                                >
-                                    <ChevronLeft className="h-5 w-5" />
-                                </Button>
-                                <Button
-                                    variant="secondary"
-                                    size="icon"
-                                    onClick={() =>
-                                        setSelectedImage(
-                                            (selectedImage + 1) %
-                                                product.images.length
-                                        )
-                                    }
-                                    className="h-10 w-10 rounded-full bg-white/90 hover:bg-white shadow-lg"
-                                >
-                                    <ChevronRight className="h-5 w-5" />
-                                </Button>
+                    <div className="space-y-4">
+                        {/* Main Cover Image */}
+                        <div className="relative">
+                            <div
+                                className="aspect-square bg-cover bg-center rounded-xl border shadow-lg w-full cursor-pointer"
+                                style={{
+                                    backgroundImage: `url(${product.images[selectedImage]})`,
+                                }}
+                                onClick={() => setSelectedImage((selectedImage + 1) % product.images.length)}
+                            />
+                            
+                            {/* Indicator dots below cover image */}
+                            <div className="flex justify-center gap-2 mt-4">
+                                {product.images.map((_, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setSelectedImage(index)}
+                                        className={`h-2 rounded-full transition-all ${
+                                            index === selectedImage
+                                                ? "w-6 bg-primary"
+                                                : "w-2 bg-gray-300"
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Gallery Slider - shows 4 full images with 5th half visible */}
+                        <div className="overflow-hidden" ref={galleryRef}>
+                            <div className="flex gap-2">
+                                {product.images.map((image, index) => (
+                                    <div
+                                        key={index}
+                                        className="flex-[0_0_calc(20%-6.4px)] min-w-0 cursor-pointer"
+                                        onClick={() => setSelectedImage(index)}
+                                    >
+                                        <div
+                                            className={`aspect-square bg-cover bg-center rounded-lg border-2 transition-all ${
+                                                index === selectedImage
+                                                    ? "border-primary shadow-md"
+                                                    : "border-gray-200 hover:border-primary/50"
+                                            }`}
+                                            style={{
+                                                backgroundImage: `url(${image})`,
+                                            }}
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -289,15 +286,6 @@ export default function ProductDetailPage() {
                                 </span>
                                 <span className="text-sm">{product.brand}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Tag className="h-4 w-4 text-primary" />
-                                <span className="text-sm font-medium">
-                                    SKU:
-                                </span>
-                                <span className="text-sm font-mono">
-                                    {product.sku}
-                                </span>
-                            </div>
                         </div>
 
                         <p className="text-3xl font-bold text-primary">
@@ -313,65 +301,12 @@ export default function ProductDetailPage() {
                                 <CheckCircle className="h-5 w-5" />
                                 <span>
                                     {t(
-                                        "Omborda bor - 24 soat ichida yetkaziladi",
+                                        "Omborda mavjud - 24 soat ichida yetkaziladi",
                                         "В наличии - Доставка в течение 24 часов"
                                     )}
                                 </span>
                             </div>
                         )}
-
-                        {/* Options */}
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="length" className="mb-2 block">
-                                    {t("Uzunlik:", "Длина:")}{" "}
-                                </Label>
-                                <Select defaultValue="100">
-                                    <SelectTrigger id="length">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="50">
-                                            50 ft
-                                        </SelectItem>
-                                        <SelectItem value="100">
-                                            100 ft
-                                        </SelectItem>
-                                        <SelectItem value="250">
-                                            250 ft
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div>
-                                <Label className="mb-2 block">
-                                    {t("Rang:", "Цвет:")}
-                                </Label>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() =>
-                                            setSelectedColor("black")
-                                        }
-                                        className={`w-8 h-8 rounded-full bg-black border-2 transition-all ${
-                                            selectedColor === "black"
-                                                ? "border-primary ring-2 ring-primary ring-offset-2"
-                                                : "border-border hover:border-primary/50"
-                                        }`}
-                                    />
-                                    <button
-                                        onClick={() =>
-                                            setSelectedColor("white")
-                                        }
-                                        className={`w-8 h-8 rounded-full bg-white border-2 transition-all ${
-                                            selectedColor === "white"
-                                                ? "border-primary ring-2 ring-primary ring-offset-2"
-                                                : "border-border hover:border-primary/50"
-                                        }`}
-                                    />
-                                </div>
-                            </div>
-                        </div>
 
                         {/* Quantity and Add to Cart */}
                         <div className="space-y-3">
@@ -549,29 +484,9 @@ export default function ProductDetailPage() {
 
                 {/* Related Products Slider */}
                 <div>
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-2xl font-bold">
-                            {t("O'xshash mahsulotlar", "Похожие товары")}
-                        </h2>
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={scrollPrev}
-                                className="h-9 w-9"
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={scrollNext}
-                                className="h-9 w-9"
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
+                    <h2 className="text-2xl font-bold mb-6">
+                        {t("O'xshash mahsulotlar", "Похожие товары")}
+                    </h2>
                     <div className="overflow-hidden" ref={emblaRef}>
                         <div className="flex gap-3 md:gap-4 py-5">
                             {relatedProducts.map((product) => (

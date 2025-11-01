@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -16,73 +16,39 @@ import { StructuredData } from "@/components/structured-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Zap,
-    Cable,
-    Plug,
-    Wrench,
-    Lightbulb,
-    Package,
     Truck,
     Shield,
     Headphones,
     Award,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
+import { Category } from "@/types/category";
+import { categoriesAPI } from "@/lib/api";
+import { CategorySkeleton } from "@/components/category-skeleton";
 
 export default function Home() {
     const { t } = useLanguage();
     const [selectedCategory, setSelectedCategory] = useState("Barchasi");
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
 
-    const categories = [
-        { 
-            name: "Kabellar", 
-            nameRu: "Кабели", 
-            icon: Cable, 
-            id: "kabellar", 
-            slug: "kabellar", 
-            image: "https://api.iconify.design/mdi/cable-data.svg?color=%23031697&width=40&height=40" 
-        },
-        { 
-            name: "Yoritish", 
-            nameRu: "Освещение", 
-            icon: Lightbulb, 
-            id: "yoritish", 
-            slug: "yoritish", 
-            image: "https://api.iconify.design/mdi/lightbulb-on.svg?color=%23031697&width=40&height=40" 
-        },
-        { 
-            name: "Rozetkalar", 
-            nameRu: "Розетки", 
-            icon: Plug, 
-            id: "rozetkalar", 
-            slug: "rozetkalar", 
-            image: "https://api.iconify.design/mdi/power-socket.svg?color=%23031697&width=40&height=40" 
-        },
-        { 
-            name: "Avtomatlar", 
-            nameRu: "Автоматы", 
-            icon: Zap, 
-            id: "avtomatlar", 
-            slug: "avtomatlar", 
-            image: "https://api.iconify.design/mdi/electric-switch.svg?color=%23031697&width=40&height=40" 
-        },
-        { 
-            name: "Asboblar", 
-            nameRu: "Инструменты", 
-            icon: Wrench, 
-            id: "asboblar", 
-            slug: "asboblar", 
-            image: "https://api.iconify.design/mdi/tools.svg?color=%23031697&width=40&height=40" 
-        },
-        { 
-            name: "Aksessuarlar", 
-            nameRu: "Аксессуары", 
-            icon: Package, 
-            id: "aksessuarlar", 
-            slug: "aksessuarlar", 
-            image: "https://api.iconify.design/mdi/package-variant.svg?color=%23031697&width=40&height=40" 
-        },
-    ];
+    useEffect(() => {
+        loadCategories();
+    }, []);
+
+    const loadCategories = async () => {
+        try {
+            setLoadingCategories(true);
+            const data = await categoriesAPI.getAll();
+            // Only get parent categories
+            const parentCategories = data.filter((c) => !c.parentId && c.isActive);
+            setCategories(parentCategories);
+        } catch (err) {
+            console.error("Failed to load categories:", err);
+        } finally {
+            setLoadingCategories(false);
+        }
+    };
 
     const allProducts = [
         {
@@ -184,7 +150,7 @@ export default function Home() {
                   .filter(
                       (p) =>
                           p.category ===
-                          categories.find((c) => c.name === selectedCategory)
+                          categories.find((c) => c.nameUz === selectedCategory)
                               ?.id
                   )
                   .slice(0, 10);
@@ -211,7 +177,11 @@ export default function Home() {
                         <SectionTitle highlight={t("kategoriyalari", "категории")}>
                             {t("Mahsulot kategoriyalari", "Категории товаров")}
                         </SectionTitle>
-                        <CategorySlider categories={categories} />
+                        {loadingCategories ? (
+                            <CategorySkeleton />
+                        ) : (
+                            <CategorySlider categories={categories} />
+                        )}
                         
                         {/* View All Categories Button */}
                         <div className="mt-8 text-center">
@@ -252,20 +222,20 @@ export default function Home() {
                             <Button
                                 key={category.id}
                                 variant={
-                                    selectedCategory === category.name
+                                    selectedCategory === category.nameUz
                                         ? "default"
                                         : "outline"
                                 }
                                 onClick={() =>
-                                    setSelectedCategory(category.name)
+                                    setSelectedCategory(category.nameUz)
                                 }
                                 className={
-                                    selectedCategory === category.name
+                                    selectedCategory === category.nameUz
                                         ? "bg-primary hover:bg-primary/90 text-white"
                                         : ""
                                 }
                             >
-                                {category.name}
+                                {t(category.nameUz, category.nameRu)}
                             </Button>
                         ))}
                     </div>

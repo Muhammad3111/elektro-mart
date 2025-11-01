@@ -2,81 +2,107 @@
 
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-
-interface Brand {
-    name: string;
-    logo?: string;
-}
+import { useLanguage } from "@/contexts/language-context";
+import { Brand } from "@/types/brand";
+import { brandsAPI } from "@/lib/api";
+import { ImageOff } from "lucide-react";
 
 interface BrandsSliderProps {
-    brands: Brand[];
+    brands?: Brand[];
 }
 
-export function BrandsSlider({ brands }: BrandsSliderProps) {
-    const [emblaRef, emblaApi] = useEmblaCarousel({
-        loop: true,
-        align: "start",
-        slidesToScroll: 1,
-        breakpoints: {
-            "(min-width: 640px)": { slidesToScroll: 2 },
-            "(min-width: 768px)": { slidesToScroll: 3 },
-            "(min-width: 1024px)": { slidesToScroll: 4 },
+export function BrandsSlider({ brands: propBrands }: BrandsSliderProps) {
+    const { t } = useLanguage();
+    const [brands, setBrands] = useState<Brand[]>(propBrands || []);
+    const [loading, setLoading] = useState(!propBrands);
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [emblaRef, emblaApi] = useEmblaCarousel(
+        {
+            loop: true,
+            align: "center",
+            slidesToScroll: 1,
         },
-    });
+        [Autoplay({ delay: 3500, stopOnInteraction: true })]
+    );
 
-    const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
-    const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
+    useEffect(() => {
+        if (!propBrands) {
+            loadBrands();
+        }
+    }, [propBrands]);
 
-    const scrollPrev = useCallback(() => {
-        if (emblaApi) emblaApi.scrollPrev();
-    }, [emblaApi]);
+    const loadBrands = async () => {
+        try {
+            setLoading(true);
+            const data = await brandsAPI.getAllActive();
+            setBrands(data);
+        } catch (error) {
+            console.error("Failed to load brands:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    const scrollNext = useCallback(() => {
-        if (emblaApi) emblaApi.scrollNext();
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setSelectedIndex(emblaApi.selectedScrollSnap());
     }, [emblaApi]);
 
     useEffect(() => {
         if (!emblaApi) return;
-
-        const handleSelect = () => {
-            setPrevBtnEnabled(emblaApi.canScrollPrev());
-            setNextBtnEnabled(emblaApi.canScrollNext());
-        };
-
-        emblaApi.on("select", handleSelect);
-        emblaApi.on("reInit", handleSelect);
-
-        // Initial check
-        handleSelect();
-
+        onSelect();
+        emblaApi.on("select", onSelect);
         return () => {
-            emblaApi.off("select", handleSelect);
-            emblaApi.off("reInit", handleSelect);
+            emblaApi.off("select", onSelect);
         };
-    }, [emblaApi]);
+    }, [emblaApi, onSelect]);
+
+    if (loading) {
+        return (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                {[...Array(6)].map((_, i) => (
+                    <Card key={i} className="border-2">
+                        <CardContent className="p-6 flex items-center justify-center h-24">
+                            <div className="w-16 h-8 bg-muted animate-pulse rounded" />
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        );
+    }
+
+    if (brands.length === 0) {
+        return null;
+    }
 
     // If 6 or less brands, show grid instead of slider
     if (brands.length <= 6) {
         return (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                 {brands.map((brand) => (
-                    <Link key={brand.name} href={`/catalog?brand=${brand.name}`}>
+                    <Link key={brand.id} href={`/brands/${brand.id}`}>
                         <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2">
                             <CardContent className="p-6 flex items-center justify-center h-24">
-                                {brand.logo ? (
-                                    <img
-                                        src={brand.logo}
-                                        alt={brand.name}
-                                        className="max-h-12 max-w-full object-contain"
-                                    />
+                                {brand.image ? (
+                                    <div className="relative w-16 h-8">
+                                        <Image
+                                            src={brand.image}
+                                            alt={t(brand.nameUz, brand.nameRu)}
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
                                 ) : (
-                                    <p className="font-bold text-lg text-muted-foreground hover:text-primary transition-colors">
-                                        {brand.name}
-                                    </p>
+                                    <div className="flex flex-col items-center gap-1">
+                                        <ImageOff className="w-6 h-6 text-muted-foreground" />
+                                        <p className="font-bold text-sm text-muted-foreground hover:text-primary transition-colors">
+                                            {t(brand.nameUz, brand.nameRu)}
+                                        </p>
+                                    </div>
                                 )}
                             </CardContent>
                         </Card>
@@ -89,48 +115,33 @@ export function BrandsSlider({ brands }: BrandsSliderProps) {
     // Show slider for more than 6 brands
     return (
         <div className="relative">
-            {/* Navigation Buttons */}
-            <Button
-                variant="outline"
-                size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/95 backdrop-blur shadow-lg hover:bg-background disabled:opacity-50"
-                onClick={scrollPrev}
-                disabled={!prevBtnEnabled}
-            >
-                <ChevronLeft className="h-5 w-5" />
-            </Button>
-
-            <Button
-                variant="outline"
-                size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/95 backdrop-blur shadow-lg hover:bg-background disabled:opacity-50"
-                onClick={scrollNext}
-                disabled={!nextBtnEnabled}
-            >
-                <ChevronRight className="h-5 w-5" />
-            </Button>
-
             {/* Slider */}
-            <div className="overflow-hidden px-12" ref={emblaRef}>
+            <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex gap-6">
                     {brands.map((brand) => (
                         <div
-                            key={brand.name}
+                            key={brand.id}
                             className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(16.666%-20px)]"
                         >
-                            <Link href={`/catalog?brand=${brand.name}`}>
+                            <Link href={`/brands/${brand.id}`}>
                                 <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2">
                                     <CardContent className="p-6 flex items-center justify-center h-24">
-                                        {brand.logo ? (
-                                            <img
-                                                src={brand.logo}
-                                                alt={brand.name}
-                                                className="max-h-12 max-w-full object-contain"
-                                            />
+                                        {brand.image ? (
+                                            <div className="relative w-16 h-8">
+                                                <Image
+                                                    src={brand.image}
+                                                    alt={t(brand.nameUz, brand.nameRu)}
+                                                    fill
+                                                    className="object-contain"
+                                                />
+                                            </div>
                                         ) : (
-                                            <p className="font-bold text-lg text-muted-foreground hover:text-primary transition-colors">
-                                                {brand.name}
-                                            </p>
+                                            <div className="flex flex-col items-center gap-1">
+                                                <ImageOff className="w-6 h-6 text-muted-foreground" />
+                                                <p className="font-bold text-sm text-muted-foreground hover:text-primary transition-colors">
+                                                    {t(brand.nameUz, brand.nameRu)}
+                                                </p>
+                                            </div>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -138,6 +149,21 @@ export function BrandsSlider({ brands }: BrandsSliderProps) {
                         </div>
                     ))}
                 </div>
+            </div>
+
+            {/* Dots indicator */}
+            <div className="flex justify-center gap-2 mt-6">
+                {brands.map((brand, index) => (
+                    <button
+                        key={brand.id}
+                        onClick={() => emblaApi?.scrollTo(index)}
+                        className={`h-2 rounded-full transition-all ${
+                            index === selectedIndex
+                                ? "w-6 bg-primary"
+                                : "w-2 bg-gray-300"
+                        }`}
+                    />
+                ))}
             </div>
         </div>
     );

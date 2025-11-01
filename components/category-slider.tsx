@@ -2,19 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
-
-interface Category {
-    id: string;
-    name: string;
-    nameRu: string;
-    slug: string;
-    image: string;
-}
+import { Category } from "@/types/category";
+import { ImageOff } from "lucide-react";
 
 interface CategorySliderProps {
     categories: Category[];
@@ -22,102 +16,85 @@ interface CategorySliderProps {
 
 export function CategorySlider({ categories }: CategorySliderProps) {
     const { t } = useLanguage();
-    const [emblaRef, emblaApi] = useEmblaCarousel({
-        loop: true,
-        align: "start",
-        slidesToScroll: 1,
-        breakpoints: {
-            "(min-width: 640px)": { slidesToScroll: 1 },
-            "(min-width: 768px)": { slidesToScroll: 1 },
-            "(min-width: 1024px)": { slidesToScroll: 1 },
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [emblaRef, emblaApi] = useEmblaCarousel(
+        {
+            loop: true,
+            align: "center",
+            slidesToScroll: 1,
+            containScroll: "trimSnaps",
         },
-    });
+        [Autoplay({ delay: 3500, stopOnInteraction: true })]
+    );
 
-    const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
-    const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
-
-    const scrollPrev = useCallback(() => {
-        if (emblaApi) emblaApi.scrollPrev();
-    }, [emblaApi]);
-
-    const scrollNext = useCallback(() => {
-        if (emblaApi) emblaApi.scrollNext();
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setSelectedIndex(emblaApi.selectedScrollSnap());
     }, [emblaApi]);
 
     useEffect(() => {
         if (!emblaApi) return;
-
-        const handleSelect = () => {
-            setPrevBtnEnabled(emblaApi.canScrollPrev());
-            setNextBtnEnabled(emblaApi.canScrollNext());
-        };
-
-        emblaApi.on("select", handleSelect);
-        emblaApi.on("reInit", handleSelect);
-
-        // Initial check
-        handleSelect();
-
+        onSelect();
+        emblaApi.on("select", onSelect);
         return () => {
-            emblaApi.off("select", handleSelect);
-            emblaApi.off("reInit", handleSelect);
+            emblaApi.off("select", onSelect);
         };
-    }, [emblaApi]);
+    }, [emblaApi, onSelect]);
 
     return (
         <div className="relative">
-            {/* Navigation Buttons */}
-            <Button
-                variant="outline"
-                size="icon"
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/95 backdrop-blur shadow-lg hover:bg-background disabled:opacity-50"
-                onClick={scrollPrev}
-                disabled={!prevBtnEnabled}
-            >
-                <ChevronLeft className="h-5 w-5" />
-            </Button>
-
-            <Button
-                variant="outline"
-                size="icon"
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/95 backdrop-blur shadow-lg hover:bg-background disabled:opacity-50"
-                onClick={scrollNext}
-                disabled={!nextBtnEnabled}
-            >
-                <ChevronRight className="h-5 w-5" />
-            </Button>
-
             {/* Slider */}
-            <div className="overflow-hidden px-12" ref={emblaRef}>
+            <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex gap-4">
                     {categories.map((category) => (
                         <div
                             key={category.id}
-                            className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-8px)] md:flex-[0_0_calc(33.333%-11px)] lg:flex-[0_0_calc(16.666%-14px)]"
+                            className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-8px)] md:flex-[0_0_calc(33.333%-11px)] lg:flex-[0_0_calc(15.38%-13px)]"
                         >
-                            <Link href={`/categories/${category.slug}`} className="cursor-pointer">
+                            <Link href={`/categories/${category.id}`} className="cursor-pointer">
                                 <div className="flex flex-col items-center group">
                                     {/* Square Card with Image */}
-                                    <Card className="w-full hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border-2 hover:border-primary/50 bg-primary/10 py-10">
+                                    <Card className="w-full hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden border-2 hover:border-primary/50 bg-primary/10 py-10">
                                         <CardContent className="p-0 h-full flex items-center justify-center">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img
-                                                src={category.image}
-                                                alt={category.name}
-                                                className="w-12 h-12 md:w-14 md:h-14 object-contain group-hover:scale-110 transition-transform duration-300"
-                                            />
+                                            {category.image ? (
+                                                <div className="relative w-12 h-12 md:w-14 md:h-14">
+                                                    <Image
+                                                        src={category.image}
+                                                        alt={category.nameUz}
+                                                        fill
+                                                        className="object-contain group-hover:scale-110 transition-transform duration-300"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <ImageOff className="w-12 h-12 md:w-14 md:h-14 text-muted-foreground" />
+                                            )}
                                         </CardContent>
                                     </Card>
 
                                     {/* Title Below Card */}
                                     <h3 className="font-bold text-sm md:text-base text-center mt-3 group-hover:text-primary transition-colors">
-                                        {t(category.name, category.nameRu)}
+                                        {t(category.nameUz, category.nameRu)}
                                     </h3>
                                 </div>
                             </Link>
                         </div>
                     ))}
                 </div>
+            </div>
+
+            {/* Dots indicator */}
+            <div className="flex justify-center gap-2 mt-6">
+                {categories.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => emblaApi?.scrollTo(index)}
+                        className={`h-2 rounded-full transition-all ${
+                            index === selectedIndex
+                                ? "w-6 bg-primary"
+                                : "w-2 bg-gray-300"
+                        }`}
+                    />
+                ))}
             </div>
         </div>
     );

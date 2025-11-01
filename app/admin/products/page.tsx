@@ -6,14 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+import { CrudModal } from "@/components/admin/shared";
 import {
     Select,
     SelectContent,
@@ -495,23 +488,23 @@ export default function AdminProductsPageFull() {
             </div>
 
             {/* Add/Edit Modal */}
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>
-                            {editingProduct
-                                ? t("Mahsulotni tahrirlash", "Редактировать товар")
-                                : t("Yangi mahsulot qo'shish", "Добавить новый товар")}
-                        </DialogTitle>
-                        <DialogDescription>
-                            {t(
-                                "Mahsulot ma'lumotlarini kiriting",
-                                "Введите информацию о товаре"
-                            )}
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
+            <CrudModal
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
+                titleUz={
+                    editingProduct
+                        ? "Mahsulotni tahrirlash"
+                        : "Yangi mahsulot qo'shish"
+                }
+                titleRu={
+                    editingProduct
+                        ? "Редактировать товар"
+                        : "Добавить новый товар"
+                }
+                descriptionUz="Mahsulot ma'lumotlarini kiriting"
+                descriptionRu="Введите информацию о товаре"
+            >
+                <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Image Upload */}
                         <div>
                             <Label>{t("Rasm", "Изображение")}</Label>
@@ -682,26 +675,25 @@ export default function AdminProductsPageFull() {
                             />
                         </div>
 
-                        <DialogFooter>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleCloseModal}
-                                disabled={submitting}
-                            >
-                                {t("Bekor qilish", "Отмена")}
-                            </Button>
-                            <Button type="submit" disabled={submitting}>
-                                {submitting
-                                    ? t("Saqlanmoqda...", "Сохранение...")
-                                    : editingProduct
-                                    ? t("Yangilash", "Обновить")
-                                    : t("Qo'shish", "Добавить")}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+                    <div className="flex gap-4 justify-end pt-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleCloseModal}
+                            disabled={submitting}
+                        >
+                            {t("Bekor qilish", "Отмена")}
+                        </Button>
+                        <Button type="submit" disabled={submitting}>
+                            {submitting
+                                ? t("Saqlanmoqda...", "Сохранение...")
+                                : editingProduct
+                                ? t("Yangilash", "Обновить")
+                                : t("Qo'shish", "Добавить")}
+                        </Button>
+                    </div>
+                </form>
+            </CrudModal>
         </AdminLayout>
     );
 }
