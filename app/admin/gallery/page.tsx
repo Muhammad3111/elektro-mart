@@ -13,6 +13,9 @@ import {
     Image as ImageIcon,
     Loader2,
     X,
+    Eye,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { listObjectsFromS3, type S3ObjectInfo } from "@/lib/s3/list";
@@ -27,6 +30,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const BUCKET_NAME = process.env.NEXT_PUBLIC_S3_BUCKET || "elektromart";
 const S3_BASE_URL = process.env.NEXT_PUBLIC_S3_URL || "";
@@ -50,6 +60,9 @@ export default function AdminGalleryPage() {
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const [uploadFiles, setUploadFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
+    const [itemsPerPage, setItemsPerPage] = useState(20);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [viewImageModal, setViewImageModal] = useState<ImageWithUrl | null>(null);
 
     const loadImages = useCallback(async () => {
         try {
@@ -169,10 +182,10 @@ export default function AdminGalleryPage() {
     };
 
     const toggleSelectAll = () => {
-        if (selectedImages.length === filteredImages.length) {
+        if (selectedImages.length === paginatedImages.length && paginatedImages.length > 0) {
             setSelectedImages([]);
         } else {
-            setSelectedImages(filteredImages.map(img => img.key));
+            setSelectedImages(paginatedImages.map(img => img.key));
         }
     };
 
@@ -198,6 +211,17 @@ export default function AdminGalleryPage() {
     const filteredImages = images.filter(img =>
         img.key.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // Pagination
+    const totalPages = Math.ceil(filteredImages.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedImages = filteredImages.slice(startIndex, endIndex);
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, itemsPerPage]);
 
     return (
         <AdminLayout>
@@ -241,20 +265,20 @@ export default function AdminGalleryPage() {
                     </div>
                 </div>
 
-                {/* Search */}
+                {/* Search and Filters */}
                 <Card>
                     <CardContent className="p-4">
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <Checkbox
-                                    checked={selectedImages.length === filteredImages.length && filteredImages.length > 0}
+                                    checked={selectedImages.length === paginatedImages.length && paginatedImages.length > 0}
                                     onCheckedChange={toggleSelectAll}
                                 />
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-sm text-muted-foreground whitespace-nowrap">
                                     {t("Barchasini tanlash", "Выбрать все")}
                                 </span>
                             </div>
-                            <div className="relative flex-1">
+                            <div className="relative flex-1 w-full">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                 <Input
                                     placeholder={t(
@@ -263,34 +287,62 @@ export default function AdminGalleryPage() {
                                     )}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 h-12"
+                                    className="pl-10 h-10"
                                 />
+                            </div>
+                            <div className="flex items-center gap-2 whitespace-nowrap">
+                                <span className="text-sm text-muted-foreground">
+                                    {t("Ko'rsatish:", "Показать:")}
+                                </span>
+                                <Select
+                                    value={itemsPerPage.toString()}
+                                    onValueChange={(value) => setItemsPerPage(parseInt(value))}
+                                >
+                                    <SelectTrigger className="w-[80px] h-10">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="20">20</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                        <SelectItem value="100">100</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
-                {/* Loading State */}
+                {/* Loading Skeletons */}
                 {loading && (
-                    <div className="flex items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                        {Array.from({ length: 12 }).map((_, i) => (
+                            <Card key={i} className="overflow-hidden">
+                                <CardContent className="p-0">
+                                    <div className="aspect-square bg-gray-200 animate-pulse" />
+                                    <div className="p-3 space-y-2">
+                                        <div className="h-3 bg-gray-200 rounded animate-pulse" />
+                                        <div className="h-2 bg-gray-200 rounded w-2/3 animate-pulse" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
                     </div>
                 )}
 
                 {/* Images Grid */}
                 {!loading && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {filteredImages.map((image) => {
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                        {paginatedImages.map((image) => {
                             const isSelected = selectedImages.includes(image.key);
                             const fileName = image.key.split("/").pop() || image.key;
                             
                             return (
                                 <Card
                                     key={image.key}
-                                    className={`group overflow-hidden hover:shadow-lg transition-all cursor-pointer ${
+                                    className={`group overflow-hidden hover:shadow-lg transition-all ${
                                         isSelected ? "ring-2 ring-primary" : ""
                                     }`}
-                                    onClick={() => toggleImageSelection(image.key)}
                                 >
                                     <CardContent className="p-0">
                                         <div className="relative aspect-square bg-gray-100">
@@ -302,34 +354,42 @@ export default function AdminGalleryPage() {
                                                     console.error("Image load error for:", image.key);
                                                     e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EError%3C/text%3E%3C/svg%3E";
                                                 }}
-                                                onLoad={() => {
-                                                    console.log("Image loaded successfully:", image.key);
-                                                }}
                                             />
-                                            <div className="absolute top-2 left-2">
+                                            <div className="absolute top-2 left-2 z-10">
                                                 <Checkbox
                                                     checked={isSelected}
                                                     onCheckedChange={() => toggleImageSelection(image.key)}
                                                     onClick={(e) => e.stopPropagation()}
-                                                    className="bg-white"
+                                                    className="bg-white shadow-md"
                                                 />
                                             </div>
-                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
+                                                <Button
+                                                    variant="secondary"
+                                                    size="icon"
+                                                    className="h-9 w-9 bg-white hover:bg-white/90"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setViewImageModal(image);
+                                                    }}
+                                                >
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
                                                 <Button
                                                     variant="destructive"
                                                     size="icon"
-                                                    className="h-10 w-10"
+                                                    className="h-9 w-9"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleDelete([image.key]);
                                                     }}
                                                 >
-                                                    <Trash2 className="h-5 w-5" />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </div>
-                                        <div className="p-3">
-                                            <p className="font-medium text-xs truncate mb-1" title={fileName}>
+                                        <div className="py-0 px-2 pb-2">
+                                            <p className="font-medium text-xs truncate mb-0.5 mt-2" title={fileName}>
                                                 {fileName}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
@@ -358,6 +418,65 @@ export default function AdminGalleryPage() {
                                         "Нажмите кнопку выше для загрузки изображений"
                                     )}
                                 </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Pagination */}
+                {!loading && filteredImages.length > 0 && totalPages > 1 && (
+                    <Card>
+                        <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">
+                                    {t(
+                                        `${startIndex + 1}-${Math.min(endIndex, filteredImages.length)} / ${filteredImages.length} ta rasm`,
+                                        `${startIndex + 1}-${Math.min(endIndex, filteredImages.length)} из ${filteredImages.length} изображений`
+                                    )}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                    <div className="flex items-center gap-1">
+                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                            let pageNum;
+                                            if (totalPages <= 5) {
+                                                pageNum = i + 1;
+                                            } else if (currentPage <= 3) {
+                                                pageNum = i + 1;
+                                            } else if (currentPage >= totalPages - 2) {
+                                                pageNum = totalPages - 4 + i;
+                                            } else {
+                                                pageNum = currentPage - 2 + i;
+                                            }
+                                            return (
+                                                <Button
+                                                    key={pageNum}
+                                                    variant={currentPage === pageNum ? "default" : "outline"}
+                                                    size="icon"
+                                                    className="h-9 w-9"
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                >
+                                                    {pageNum}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
@@ -476,6 +595,49 @@ export default function AdminGalleryPage() {
                                     )}
                                 </Button>
                             </div>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+
+                {/* View Image Modal */}
+                <Dialog open={!!viewImageModal} onOpenChange={() => setViewImageModal(null)}>
+                    <DialogContent className="max-w-4xl">
+                        <DialogHeader>
+                            <DialogTitle>
+                                {viewImageModal?.key.split("/").pop() || ""}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {viewImageModal && formatFileSize(viewImageModal.size)}
+                            </DialogDescription>
+                        </DialogHeader>
+                        {viewImageModal && (
+                            <div className="relative w-full">
+                                <img
+                                    src={getImageUrl(viewImageModal)}
+                                    alt={viewImageModal.key}
+                                    className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
+                                />
+                            </div>
+                        )}
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setViewImageModal(null)}
+                            >
+                                {t("Yopish", "Закрыть")}
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={() => {
+                                    if (viewImageModal) {
+                                        handleDelete([viewImageModal.key]);
+                                        setViewImageModal(null);
+                                    }
+                                }}
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {t("O'chirish", "Удалить")}
+                            </Button>
                         </div>
                     </DialogContent>
                 </Dialog>
