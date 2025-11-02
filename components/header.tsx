@@ -23,8 +23,11 @@ import {
 } from "@/components/ui/select";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
-import { useSearch } from "@/contexts/search-context";
 import { useFavorites } from "@/contexts/favorites-context";
+import { useAuth } from "@/contexts/auth-context";
+import { useSearch } from "@/contexts/search-context";
+import { UserAvatar } from "@/components/user-avatar";
+import { formatPrice } from "@/lib/utils/format-price";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -32,6 +35,7 @@ export function Header() {
     const { language, setLanguage, t } = useLanguage();
     const { cartCount } = useCart();
     const { favoritesCount } = useFavorites();
+    const { user, isAuthenticated } = useAuth();
     const {
         searchQuery,
         setSearchQuery,
@@ -93,9 +97,16 @@ export function Header() {
 
     const handleViewAll = () => {
         setShowResults(false);
+        setSearchQuery("");
         router.push(
-            `/catalog?search=${searchQuery}&category=${selectedCategory}`
+            `/catalog?search=${searchQuery}`
         );
+    };
+
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && searchQuery.trim()) {
+            handleViewAll();
+        }
     };
 
     const isActive = (path: string) => {
@@ -166,6 +177,7 @@ export function Header() {
                                         onChange={(e) =>
                                             handleSearchChange(e.target.value)
                                         }
+                                        onKeyPress={handleKeyPress}
                                         onFocus={() =>
                                             searchQuery.length > 0 &&
                                             setShowResults(true)
@@ -214,7 +226,7 @@ export function Header() {
                                                         </p>
                                                     </div>
                                                     <div className="text-sm font-bold text-primary">
-                                                        {product.price.toLocaleString()} UZS
+                                                        {formatPrice(product.price)} UZS
                                                     </div>
                                                 </button>
                                             ))}
@@ -306,13 +318,23 @@ export function Header() {
                         </Select>
 
                         <Link href="/profile">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="relative"
-                            >
-                                <User className="h-5 w-5" />
-                            </Button>
+                            {isAuthenticated && user ? (
+                                <div className="cursor-pointer hover:opacity-80 transition-opacity">
+                                    <UserAvatar
+                                        firstName={user.firstName}
+                                        lastName={user.lastName}
+                                        size="md"
+                                    />
+                                </div>
+                            ) : (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="relative"
+                                >
+                                    <User className="h-5 w-5" />
+                                </Button>
+                            )}
                         </Link>
                         <Link href="/favorites">
                             <Button
@@ -442,7 +464,7 @@ export function Header() {
                                             </p>
                                         </div>
                                         <p className="font-bold text-primary text-sm">
-                                            {product.price.toLocaleString()} UZS
+                                            {formatPrice(product.price)} UZS
                                         </p>
                                     </div>
                                 ))}

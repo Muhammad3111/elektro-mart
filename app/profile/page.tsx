@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SEO } from "@/components/seo";
@@ -12,7 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import {
     User,
     ShoppingBag,
-    MapPin,
     Phone,
     Mail,
     Edit,
@@ -21,63 +20,80 @@ import {
     CheckCircle,
     XCircle,
     LogOut,
+    Settings,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
+import { ordersAPI } from "@/lib/api";
+import type { Order } from "@/types/order";
 import { toast } from "sonner";
 
-export default function ProfilePage() {
+function ProfileContent() {
     const { t } = useLanguage();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const { user, logout, isAuthenticated, loading } = useAuth();
     const [activeTab, setActiveTab] = useState("profile");
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+    
+    // Set active tab from URL parameter
+    useEffect(() => {
+        const tab = searchParams.get("tab");
+        if (tab === "orders") {
+            setActiveTab("orders");
+        }
+    }, [searchParams]);
+    
+    // Redirect if not authenticated
+    useEffect(() => {
+        if (!loading && !isAuthenticated) {
+            router.push("/auth?redirect=/profile");
+        }
+    }, [isAuthenticated, loading, router]);
+    
+    // Load user orders
+    useEffect(() => {
+        if (user && activeTab === "orders") {
+            loadOrders();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, activeTab]);
+    
+    const loadOrders = async () => {
+        setOrdersLoading(true);
+        try {
+            const data = await ordersAPI.getMyOrders();
+            setOrders(data);
+        } catch (error) {
+            console.error("Failed to load orders:", error);
+            toast.error(t("Buyurtmalarni yuklashda xatolik", "Ошибка загрузки заказов"));
+        } finally {
+            setOrdersLoading(false);
+        }
+    };
     
     const handleLogout = () => {
-        // Clear user session/token here
-        toast.success(t("Tizimdan chiqdingiz", "Вы вышли из системы"));
-        setTimeout(() => {
-            router.push("/");
-        }, 1000);
+        logout();
     };
 
-    // Mock user data
-    const userData = {
-        name: "Sardor Sobirov",
-        phone: "+998 33 470 47 00",
-        email: "sobirovsardor138@gmail.com",
-        address: "Toshkent sh., Chilonzor tumani, Bunyodkor ko'chasi 1-uy",
-    };
+    // Show loading state
+    if (loading || !user) {
+        return (
+            <div className="min-h-screen flex flex-col bg-background">
+                <Header />
+                <main className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                        <p className="mt-4 text-muted-foreground">{t("Yuklanmoqda...", "Загрузка...")}</p>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
 
-    // Mock order history
-    const orders = [
-        {
-            id: "ORD-001",
-            date: "2024-10-20",
-            status: "delivered",
-            total: "450,000",
-            items: 3,
-        },
-        {
-            id: "ORD-002",
-            date: "2024-10-18",
-            status: "processing",
-            total: "320,000",
-            items: 2,
-        },
-        {
-            id: "ORD-003",
-            date: "2024-10-15",
-            status: "cancelled",
-            total: "180,000",
-            items: 1,
-        },
-        {
-            id: "ORD-004",
-            date: "2024-10-10",
-            status: "delivered",
-            total: "890,000",
-            items: 5,
-        },
-    ];
 
     const getStatusIcon = (status: string) => {
         switch (status) {
@@ -87,6 +103,8 @@ export default function ProfilePage() {
                 return <Clock className="h-5 w-5 text-yellow-500" />;
             case "cancelled":
                 return <XCircle className="h-5 w-5 text-red-500" />;
+            case "pending":
+                return <Clock className="h-5 w-5 text-blue-500" />;
             default:
                 return <Package className="h-5 w-5 text-gray-500" />;
         }
@@ -100,9 +118,24 @@ export default function ProfilePage() {
                 return t("Jarayonda", "В обработке");
             case "cancelled":
                 return t("Bekor qilindi", "Отменено");
+            case "pending":
+                return t("Kutilmoqda", "Ожидание");
             default:
                 return status;
         }
+    };
+    
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('uz-UZ', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    };
+    
+    const formatPrice = (price: string) => {
+        return new Intl.NumberFormat('uz-UZ').format(parseFloat(price));
     };
 
     return (
@@ -129,11 +162,16 @@ export default function ProfilePage() {
                                         <User className="h-12 w-12 text-primary" />
                                     </div>
                                     <h2 className="text-xl font-bold">
-                                        {userData.name}
+                                        {user.firstName} {user.lastName}
                                     </h2>
                                     <p className="text-sm text-muted-foreground">
-                                        {userData.email}
+                                        {user.email}
                                     </p>
+                                    {user.role === "admin" && (
+                                        <span className="mt-2 px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">
+                                            {t("Administrator", "Администратор")}
+                                        </span>
+                                    )}
                                 </div>
 
                                 <Separator className="my-4" />
@@ -163,6 +201,20 @@ export default function ProfilePage() {
                                         <ShoppingBag className="h-5 w-5" />
                                         {t("Buyurtmalar", "Заказы")}
                                     </Button>
+                                    
+                                    {user.role === "admin" && (
+                                        <>
+                                            <Separator className="my-2" />
+                                            <Button
+                                                variant="ghost"
+                                                className="w-full justify-start gap-2 text-primary hover:text-primary hover:bg-primary/10"
+                                                onClick={() => router.push("/admin")}
+                                            >
+                                                <Settings className="h-5 w-5" />
+                                                {t("Admin Panel", "Админ Панель")}
+                                            </Button>
+                                        </>
+                                    )}
                                     
                                     <Separator className="my-2" />
                                     
@@ -196,13 +248,25 @@ export default function ProfilePage() {
                                         <Label htmlFor="name">
                                             {t("Ism va Familiya", "Имя и Фамилия")}
                                         </Label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input
-                                                id="name"
-                                                defaultValue={userData.name}
-                                                className="pl-10 h-12"
-                                            />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                <Input
+                                                    id="firstName"
+                                                    placeholder={t("Ism", "Имя")}
+                                                    defaultValue={user.firstName}
+                                                    className="pl-10 h-12"
+                                                />
+                                            </div>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                <Input
+                                                    id="lastName"
+                                                    placeholder={t("Familiya", "Фамилия")}
+                                                    defaultValue={user.lastName}
+                                                    className="pl-10 h-12"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
 
@@ -214,7 +278,7 @@ export default function ProfilePage() {
                                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                             <Input
                                                 id="phone"
-                                                defaultValue={userData.phone}
+                                                defaultValue={user.phone || ""}
                                                 className="pl-10 h-12"
                                             />
                                         </div>
@@ -229,25 +293,13 @@ export default function ProfilePage() {
                                             <Input
                                                 id="email"
                                                 type="email"
-                                                defaultValue={userData.email}
+                                                defaultValue={user.email}
                                                 className="pl-10 h-12"
+                                                disabled
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="address">
-                                            {t("Manzil", "Адрес")}
-                                        </Label>
-                                        <div className="relative">
-                                            <MapPin className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                                            <Input
-                                                id="address"
-                                                defaultValue={userData.address}
-                                                className="pl-10 h-12"
-                                            />
-                                        </div>
-                                    </div>
 
                                     <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-white gap-2">
                                         <Edit className="h-5 w-5" />
@@ -268,7 +320,12 @@ export default function ProfilePage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    {orders.length === 0 ? (
+                                    {ordersLoading ? (
+                                        <div className="text-center py-12">
+                                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                                            <p className="text-muted-foreground">{t("Yuklanmoqda...", "Загрузка...")}</p>
+                                        </div>
+                                    ) : orders.length === 0 ? (
                                         <div className="text-center py-12">
                                             <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                                             <p className="text-xl text-muted-foreground">
@@ -291,12 +348,12 @@ export default function ProfilePage() {
                                                                 <div className="flex items-center gap-2">
                                                                     <Package className="h-5 w-5 text-primary" />
                                                                     <span className="font-bold text-lg">
-                                                                        {order.id}
+                                                                        {order.orderNumber}
                                                                     </span>
                                                                 </div>
                                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                                     <Clock className="h-4 w-4" />
-                                                                    {order.date}
+                                                                    {formatDate(order.createdAt)}
                                                                 </div>
                                                                 <div className="flex items-center gap-2">
                                                                     {getStatusIcon(
@@ -312,10 +369,10 @@ export default function ProfilePage() {
 
                                                             <div className="text-right space-y-2">
                                                                 <div className="text-2xl font-bold text-primary">
-                                                                    {order.total} UZS
+                                                                    {formatPrice(order.totalAmount)} UZS
                                                                 </div>
                                                                 <div className="text-sm text-muted-foreground">
-                                                                    {order.items}{" "}
+                                                                    {order.items.length}{" "}
                                                                     {t(
                                                                         "ta mahsulot",
                                                                         "товаров"
@@ -324,6 +381,7 @@ export default function ProfilePage() {
                                                                 <Button
                                                                     variant="outline"
                                                                     size="sm"
+                                                                    onClick={() => router.push(`/orders/${order.id}`)}
                                                                 >
                                                                     {t(
                                                                         "Batafsil",
@@ -346,5 +404,13 @@ export default function ProfilePage() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function ProfilePage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ProfileContent />
+        </Suspense>
     );
 }

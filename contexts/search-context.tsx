@@ -36,7 +36,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
       setIsSearching(true);
       try {
         const result = await productsAPI.search({
-          q: searchQuery,
+          search: searchQuery,
           limit: 5, // Faqat 5 ta natija header dropdown uchun
         });
         setSearchResults(result.data);

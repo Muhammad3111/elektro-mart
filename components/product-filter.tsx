@@ -10,7 +10,8 @@ import { ChevronDown, ChevronUp, X, ImageOff } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Category } from "@/types/category";
 import { categoriesAPI } from "@/lib/api";
-import Image from "next/image";
+import { S3Image } from "@/components/s3-image";
+import { formatPrice } from "@/lib/utils/format-price";
 
 interface Subcategory {
     id: number;
@@ -23,6 +24,7 @@ interface Subcategory {
 interface Brand {
     id: string;
     name: string;
+    image?: string;
 }
 
 interface ProductFilterProps {
@@ -32,6 +34,8 @@ interface ProductFilterProps {
     initialCategory?: string;
     initialSubcategory?: string;
     initialBrand?: string;
+    minPrice?: number;
+    maxPrice?: number;
 }
 
 export interface FilterState {
@@ -51,10 +55,11 @@ export function ProductFilter({
     initialCategory,
     initialSubcategory,
     initialBrand,
+    minPrice = 0,
+    maxPrice = 500000,
 }: ProductFilterProps) {
     const { t } = useLanguage();
     const [isExpanded, setIsExpanded] = useState(true);
-    const maxPrice = 500000;
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [filters, setFilters] = useState<FilterState>({
@@ -62,15 +67,26 @@ export function ProductFilter({
         categories: [],
         subcategories: [],
         brands: [],
-        priceRange: [0, maxPrice],
+        priceRange: [],
         isNew: false,
         hasDiscount: false,
     });
     const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+    const [userChangedPrice, setUserChangedPrice] = useState(false);
 
     useEffect(() => {
         loadCategories();
     }, []);
+    
+    // Update price range when minPrice or maxPrice changes (only if user hasn't changed it)
+    useEffect(() => {
+        if (minPrice !== undefined && maxPrice !== undefined && !userChangedPrice) {
+            setFilters((prev) => ({
+                ...prev,
+                priceRange: [minPrice, maxPrice],
+            }));
+        }
+    }, [minPrice, maxPrice, userChangedPrice]);
 
     // Set initial category from URL if provided
     useEffect(() => {
@@ -273,7 +289,7 @@ export function ProductFilter({
                                                 <div className="flex items-center gap-2 flex-1">
                                                     {category.image ? (
                                                         <div className="relative w-4 h-4">
-                                                            <Image
+                                                            <S3Image
                                                                 src={category.image}
                                                                 alt={category.nameUz}
                                                                 fill
@@ -339,22 +355,23 @@ export function ProductFilter({
                         <Label>{t("Narx oralig'i", "Диапазон цен")}</Label>
                         <div className="space-y-4 pt-2">
                             <Slider
-                                min={0}
+                                min={minPrice}
                                 max={maxPrice}
                                 step={10000}
-                                value={filters.priceRange}
-                                onValueChange={(value) =>
-                                    updateFilters({ priceRange: value })
-                                }
+                                value={filters.priceRange.length === 2 ? filters.priceRange : [minPrice, maxPrice]}
+                                onValueChange={(value) => {
+                                    setUserChangedPrice(true);
+                                    updateFilters({ priceRange: value });
+                                }}
                                 className="w-full"
                             />
                             <div className="flex justify-between items-center text-sm">
                                 <span className="font-medium text-primary">
-                                    {filters.priceRange[0].toLocaleString()} UZS
+                                    {formatPrice(filters.priceRange[0] || minPrice)} UZS
                                 </span>
                                 <span className="text-muted-foreground">-</span>
                                 <span className="font-medium text-primary">
-                                    {filters.priceRange[1].toLocaleString()} UZS
+                                    {formatPrice(filters.priceRange[1] || maxPrice)} UZS
                                 </span>
                             </div>
                         </div>
@@ -379,12 +396,26 @@ export function ProductFilter({
                                                 handleBrandToggle(brand.id)
                                             }
                                         />
-                                        <label
-                                            htmlFor={`brand-${brand.id}`}
-                                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                                        >
-                                            {brand.name}
-                                        </label>
+                                        <div className="flex items-center gap-2 flex-1">
+                                            {brand.image ? (
+                                                <div className="relative w-4 h-4">
+                                                    <S3Image
+                                                        src={brand.image}
+                                                        alt={brand.name}
+                                                        fill
+                                                        className="object-contain"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <ImageOff className="w-4 h-4 text-muted-foreground" />
+                                            )}
+                                            <label
+                                                htmlFor={`brand-${brand.id}`}
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                                            >
+                                                {brand.name}
+                                            </label>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

@@ -13,6 +13,7 @@ import { Trash2, Minus, Plus, Info } from "lucide-react";
 import { useCart } from "@/contexts/cart-context";
 import { useLanguage } from "@/contexts/language-context";
 import { S3Image } from "@/components/s3-image";
+import { formatPrice } from "@/lib/utils/format-price";
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart } = useCart();
@@ -121,7 +122,7 @@ export default function CartPage() {
                         </div>
 
                         <div className="text-right w-32">
-                          <p className="font-bold">{(parsePrice(item.price) * item.quantity).toLocaleString()} UZS</p>
+                          <p className="font-bold">{formatPrice(parsePrice(item.price) * item.quantity)} UZS</p>
                         </div>
 
                         <Button
@@ -185,7 +186,7 @@ export default function CartPage() {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <p className="font-bold text-sm">{(parsePrice(item.price) * item.quantity).toLocaleString()} UZS</p>
+                            <p className="font-bold text-sm">{formatPrice(parsePrice(item.price) * item.quantity)} UZS</p>
                             <Button
                               variant="ghost"
                               size="icon"
@@ -213,7 +214,7 @@ export default function CartPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between py-2">
                     <p className="text-sm text-muted-foreground">{t("Oraliq jami", "Промежуточный итог")}</p>
-                    <p className="text-sm font-medium">{subtotal.toLocaleString()} UZS</p>
+                    <p className="text-sm font-medium">{formatPrice(subtotal)} UZS</p>
                   </div>
                   
                   <div className="flex justify-between py-2">
@@ -221,7 +222,7 @@ export default function CartPage() {
                       <p className="text-sm text-muted-foreground">{t("Yetkazib berish", "Доставка")}</p>
                       <Info className="h-3 w-3 text-muted-foreground" />
                     </div>
-                    <p className="text-sm font-medium">{shipping.toLocaleString()} UZS</p>
+                    <p className="text-sm font-medium">{formatPrice(shipping)} UZS</p>
                   </div>
                   
                   <div className="flex justify-between py-2">
@@ -229,14 +230,14 @@ export default function CartPage() {
                       <p className="text-sm text-muted-foreground">{t("Soliq (12%)", "Налог (12%)")}</p>
                       <Info className="h-3 w-3 text-muted-foreground" />
                     </div>
-                    <p className="text-sm font-medium">{Math.round(tax).toLocaleString()} UZS</p>
+                    <p className="text-sm font-medium">{formatPrice(Math.round(tax))} UZS</p>
                   </div>
                   
                   <Separator className="my-4" />
                   
                   <div className="flex justify-between py-2">
                     <p className="text-lg font-bold">{t("Jami", "Итого")}</p>
-                    <p className="text-lg font-bold">{Math.round(total).toLocaleString()} UZS</p>
+                    <p className="text-lg font-bold">{formatPrice(Math.round(total))} UZS</p>
                   </div>
                 </div>
 

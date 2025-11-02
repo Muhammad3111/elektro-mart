@@ -11,7 +11,7 @@ export interface User {
 }
 
 export interface LoginDto {
-  email: string;
+  phone: string;
   password: string;
 }
 

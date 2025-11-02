@@ -9,6 +9,7 @@ import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { S3Image } from "@/components/s3-image";
+import { formatPrice } from "@/lib/utils/format-price";
 
 interface ProductCardProps {
     id: number | string;
@@ -145,11 +146,11 @@ export function ProductCard({
                         <div className="flex flex-col gap-0.5">
                             {oldPrice && (
                                 <span className="text-[10px] md:text-xs text-muted-foreground line-through">
-                                    {oldPrice} UZS
+                                    {formatPrice(oldPrice)} UZS
                                 </span>
                             )}
                             <span className="text-base md:text-lg font-bold text-primary break-words">
-                                {price} UZS
+                                {formatPrice(price)} UZS
                             </span>
                         </div>
 

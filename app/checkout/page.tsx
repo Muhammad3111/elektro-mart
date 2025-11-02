@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -10,10 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Send, ShoppingBag } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Send, ShoppingBag, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
+import { useAuth } from "@/contexts/auth-context";
+import { formatPrice } from "@/lib/utils/format-price";
+import { ordersAPI } from "@/lib/api";
 import { toast } from "sonner";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const TELEGRAM_BOT_TOKEN = "8238996096:AAHpUxRmtbXBQonihgcTuZ-l2g8cQwPhAD4";
 const TELEGRAM_CHAT_ID = "266226148"; // Admin chat ID
@@ -21,10 +26,29 @@ const TELEGRAM_CHAT_ID = "266226148"; // Admin chat ID
 export default function CheckoutPage() {
     const { t } = useLanguage();
     const { cartItems, clearCart } = useCart();
+    const { user, isAuthenticated } = useAuth();
     const router = useRouter();
-    const [fullName, setFullName] = useState("");
-    const [phone, setPhone] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [phone, setPhone] = useState("+998");
+    const [address, setAddress] = useState("");
+    const [city, setCity] = useState("");
+    const [region, setRegion] = useState("");
+    const [notes, setNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Auto-fill form if user is logged in
+    useEffect(() => {
+        if (user) {
+            setFirstName(user.firstName || "");
+            setLastName(user.lastName || "");
+            setEmail(user.email || "");
+            if (user.phone) {
+                setPhone(user.phone);
+            }
+        }
+    }, [user]);
 
     // Calculate totals
     const subtotal = cartItems.reduce(
@@ -34,40 +58,35 @@ export default function CheckoutPage() {
     );
     const total = subtotal;
 
-    const formatPhoneForDisplay = (value: string) => {
-        // Remove all non-digits
-        const digits = value.replace(/\D/g, "");
-        
-        // Format as 99-999-99-99
-        let formatted = "";
-        if (digits.length > 0) formatted += digits.substring(0, 2);
-        if (digits.length > 2) formatted += "-" + digits.substring(2, 5);
-        if (digits.length > 5) formatted += "-" + digits.substring(5, 7);
-        if (digits.length > 7) formatted += "-" + digits.substring(7, 9);
-        
-        return formatted;
-    };
 
-    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        const digits = value.replace(/\D/g, "");
-        
-        // Limit to 9 digits
-        if (digits.length <= 9) {
-            setPhone(digits);
-        }
-    };
-
-    const getFullPhoneNumber = () => {
-        return `+998${phone}`;
-    };
-
-    const sendToTelegram = async () => {
-        if (!fullName.trim() || phone.length !== 9) {
+    const handleSubmitOrder = async () => {
+        // Validation - email optional, phone required
+        if (!firstName.trim() || !lastName.trim() || !phone.trim() || !address.trim() || !city.trim() || !region.trim()) {
             toast.error(
                 t(
-                    "Iltimos, barcha maydonlarni to'g'ri to'ldiring!",
-                    "Пожалуйста, правильно заполните все поля!"
+                    "Iltimos, barcha majburiy maydonlarni to'ldiring!",
+                    "Пожалуйста, заполните все обязательные поля!"
+                )
+            );
+            return;
+        }
+        
+        // Phone validation
+        if (phone.replace(/\D/g, "").length !== 12) {
+            toast.error(
+                t(
+                    "To'liq telefon raqamini kiriting",
+                    "Введите полный номер телефона"
+                )
+            );
+            return;
+        }
+
+        if (cartItems.length === 0) {
+            toast.error(
+                t(
+                    "Savatingiz bo'sh!",
+                    "Ваша корзина пуста!"
                 )
             );
             return;
@@ -75,57 +94,89 @@ export default function CheckoutPage() {
 
         setIsSubmitting(true);
 
-        // Format order message
-        const productList = cartItems
-            .map(
-                (item, index) =>
-                    `${index + 1}. ${item.name} - ${item.quantity} dona - ${
-                        item.price
-                    } UZS`
-            )
-            .join("\n");
-
-        const message =
-            `🛒 *Yangi Buyurtma!*\n\n` +
-            `👤 *Mijoz:* ${fullName}\n` +
-            `📱 *Telefon:* ${getFullPhoneNumber()}\n\n` +
-            `📦 *Mahsulotlar:*\n${productList}\n\n` +
-            `💰 *Jami summa:* ${total.toLocaleString()} UZS\n` +
-            `📊 *Mahsulotlar soni:* ${cartItems.length} ta`;
-
         try {
-            const response = await fetch(
-                `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        chat_id: TELEGRAM_CHAT_ID,
-                        text: message,
-                        parse_mode: "Markdown",
-                    }),
-                }
-            );
+            // Prepare order data for API
+            const orderData = {
+                firstName,
+                lastName,
+                email: email || "noemail@example.com",
+                phone,
+                address,
+                city,
+                region,
+                paymentMethod: "cash" as const,
+                notes: notes || undefined,
+                items: cartItems.map(item => ({
+                    productId: String(item.id),
+                    quantity: item.quantity
+                }))
+            };
 
-            if (response.ok) {
-                toast.success(
-                    t(
-                        "Buyurtma muvaffaqiyatli yuborildi! Tez orada siz bilan bog'lanamiz.",
-                        "Заказ успешно отправлен! Мы свяжемся с вами в ближайшее время."
-                    )
+            // Send to server API
+            const order = await ordersAPI.createOrder(orderData);
+
+            // Send notification to Telegram
+            const productList = cartItems
+                .map(
+                    (item, index) =>
+                        `${index + 1}. ${item.name} - ${item.quantity} dona - ${
+                            item.price
+                        } UZS`
+                )
+                .join("\n");
+
+            const message =
+                `🛒 *Yangi Buyurtma!*\n\n` +
+                `📋 *Buyurtma raqami:* ${order.orderNumber}\n` +
+                `👤 *Mijoz:* ${firstName} ${lastName}\n` +
+                `📱 *Telefon:* ${phone}\n` +
+                `📧 *Email:* ${email || "Ko'rsatilmagan"}\n` +
+                `📍 *Manzil:* ${address}, ${city}, ${region}\n\n` +
+                `📦 *Mahsulotlar:*\n${productList}\n\n` +
+                `💰 *Jami summa:* ${formatPrice(total)} UZS\n` +
+                `📊 *Mahsulotlar soni:* ${cartItems.length} ta` +
+                (notes ? `\n\n📝 *Izoh:* ${notes}` : "");
+
+            // Send to Telegram (don't fail if this fails)
+            try {
+                await fetch(
+                    `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            chat_id: TELEGRAM_CHAT_ID,
+                            text: message,
+                            parse_mode: "Markdown",
+                        }),
+                    }
                 );
-                // Clear cart after successful order
-                clearCart();
-                setTimeout(() => {
-                    router.push("/order-confirmation");
-                }, 1500);
-            } else {
-                throw new Error("Failed to send message");
+            } catch (telegramError) {
+                console.error("Failed to send Telegram notification:", telegramError);
             }
+
+            toast.success(
+                t(
+                    "Buyurtma muvaffaqiyatli yuborildi! Tez orada siz bilan bog'lanamiz.",
+                    "Заказ успешно отправлен! Мы свяжемся с вами в ближайшее время."
+                )
+            );
+            
+            // Clear cart after successful order
+            clearCart();
+            
+            // Redirect to order confirmation or profile
+            setTimeout(() => {
+                if (isAuthenticated) {
+                    router.push("/profile?tab=orders");
+                } else {
+                    router.push("/order-confirmation");
+                }
+            }, 1500);
         } catch (error) {
-            console.error("Error sending to Telegram:", error);
+            console.error("Error creating order:", error);
             toast.error(
                 t(
                     "Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.",
@@ -177,54 +228,122 @@ export default function CheckoutPage() {
                                 </h2>
 
                                 <div className="space-y-6">
+                                    {/* Name Fields */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="firstName" className="text-base">
+                                                {t("Ism", "Имя")} *
+                                            </Label>
+                                            <Input
+                                                id="firstName"
+                                                value={firstName}
+                                                onChange={(e) => setFirstName(e.target.value)}
+                                                placeholder={t("Ismingiz", "Ваше имя")}
+                                                className="h-12 mt-2"
+                                                disabled={isAuthenticated}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="lastName" className="text-base">
+                                                {t("Familiya", "Фамилия")} *
+                                            </Label>
+                                            <Input
+                                                id="lastName"
+                                                value={lastName}
+                                                onChange={(e) => setLastName(e.target.value)}
+                                                placeholder={t("Familiyangiz", "Ваша фамилия")}
+                                                className="h-12 mt-2"
+                                                disabled={isAuthenticated}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Contact Fields */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="email" className="text-base">
+                                                {t("Email", "Email")} <span className="text-muted-foreground text-sm">({t("ixtiyoriy", "необязательно")})</span>
+                                            </Label>
+                                            <Input
+                                                id="email"
+                                                type="email"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                placeholder="email@example.com"
+                                                className="h-12 mt-2"
+                                                disabled={isAuthenticated}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="phone" className="text-base">
+                                                {t("Telefon raqam", "Номер телефона")} *
+                                            </Label>
+                                            <PhoneInput
+                                                id="phone"
+                                                value={phone}
+                                                onChange={setPhone}
+                                                className="h-12 mt-2"
+                                                disabled={isAuthenticated && !!user?.phone}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Address Fields */}
                                     <div>
-                                        <Label
-                                            htmlFor="fullname"
-                                            className="text-base"
-                                        >
-                                            {t(
-                                                "Ism va Familiya",
-                                                "Имя и Фамилия"
-                                            )}
+                                        <Label htmlFor="address" className="text-base">
+                                            {t("Manzil", "Адрес")} *
                                         </Label>
                                         <Input
-                                            id="fullname"
-                                            value={fullName}
-                                            onChange={(e) =>
-                                                setFullName(e.target.value)
-                                            }
-                                            placeholder={t(
-                                                "Ismingiz va familiyangizni kiriting",
-                                                "Введите ваше имя и фамилию"
-                                            )}
-                                            className="h-14 mt-2"
+                                            id="address"
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                            placeholder={t("To'liq manzil", "Полный адрес")}
+                                            className="h-12 mt-2"
                                         />
                                     </div>
 
-                                    <div>
-                                        <Label
-                                            htmlFor="phone"
-                                            className="text-base"
-                                        >
-                                            {t(
-                                                "Telefon raqam",
-                                                "Номер телефона"
-                                            )}
-                                        </Label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-                                                +998
-                                            </span>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="city" className="text-base">
+                                                {t("Shahar", "Город")} *
+                                            </Label>
                                             <Input
-                                                id="phone"
-                                                type="tel"
-                                                value={formatPhoneForDisplay(phone)}
-                                                onChange={handlePhoneChange}
-                                                placeholder="99-999-99-99"
-                                                className="h-14 mt-2 pl-16"
-                                                maxLength={12}
+                                                id="city"
+                                                value={city}
+                                                onChange={(e) => setCity(e.target.value)}
+                                                placeholder={t("Shahar", "Город")}
+                                                className="h-12 mt-2"
                                             />
                                         </div>
+                                        <div>
+                                            <Label htmlFor="region" className="text-base">
+                                                {t("Viloyat", "Регион")} *
+                                            </Label>
+                                            <Input
+                                                id="region"
+                                                value={region}
+                                                onChange={(e) => setRegion(e.target.value)}
+                                                placeholder={t("Viloyat", "Регион")}
+                                                className="h-12 mt-2"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Notes */}
+                                    <div>
+                                        <Label htmlFor="notes" className="text-base">
+                                            {t("Izoh (ixtiyoriy)", "Примечание (необязательно)")}
+                                        </Label>
+                                        <Textarea
+                                            id="notes"
+                                            value={notes}
+                                            onChange={(e) => setNotes(e.target.value)}
+                                            placeholder={t(
+                                                "Qo'shimcha ma'lumotlar...",
+                                                "Дополнительная информация..."
+                                            )}
+                                            className="mt-2 min-h-[100px]"
+                                        />
                                     </div>
 
                                     <div className="bg-accent/50 p-4 rounded-lg">
@@ -239,20 +358,21 @@ export default function CheckoutPage() {
 
                                 <div className="mt-8">
                                     <Button
-                                        onClick={sendToTelegram}
-                                        disabled={isSubmitting}
+                                        onClick={handleSubmitOrder}
+                                        disabled={isSubmitting || cartItems.length === 0}
                                         className="w-full bg-primary hover:bg-primary/90 text-white gap-2 h-14 text-lg"
                                     >
-                                        <Send className="h-5 w-5" />
-                                        {isSubmitting
-                                            ? t(
-                                                  "Yuborilmoqda...",
-                                                  "Отправка..."
-                                              )
-                                            : t(
-                                                  "Ariza yuborish",
-                                                  "Отправить заявку"
-                                              )}
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                {t("Yuborilmoqda...", "Отправка...")}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Send className="h-5 w-5" />
+                                                {t("Buyurtma berish", "Оформить заказ")}
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </CardContent>
@@ -342,7 +462,7 @@ export default function CheckoutPage() {
                                         <div className="flex justify-between items-center font-bold text-xl">
                                             <p>{t("Jami summa", "Итого")}</p>
                                             <p className="text-primary">
-                                                {total.toLocaleString()} UZS
+                                                {formatPrice(total)} UZS
                                             </p>
                                         </div>
 

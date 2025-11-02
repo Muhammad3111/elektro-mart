@@ -19,6 +19,8 @@ import {
     Settings,
     Globe,
     Tag,
+    ShoppingCart,
+    User,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import {
@@ -44,6 +46,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             title: t("Dashboard", "Панель управления"),
             icon: LayoutDashboard,
             href: "/admin",
+        },
+        {
+            title: t("Buyurtmalar", "Заказы"),
+            icon: ShoppingCart,
+            href: "/admin/orders",
         },
         {
             title: t("Mahsulotlar", "Товары"),
@@ -152,14 +159,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
             <div className="flex">
                 {/* Sidebar */}
-                <aside
-                    className={`fixed lg:sticky top-16 left-0 z-40 h-[calc(100vh-4rem)] w-64 border-r bg-background transition-transform duration-300 ${
+<aside
+                    className={`fixed lg:sticky top-16 left-0 z-40 h-[calc(100vh-4rem)] w-64 border-r bg-background transition-transform duration-300 flex flex-col ${
                         sidebarOpen
                             ? "translate-x-0"
                             : "-translate-x-full lg:translate-x-0"
                     }`}
                 >
-                    <nav className="space-y-2 p-4">
+                    <nav className="space-y-2 p-4 flex-1">
                         {menuItems.map((item) => {
                             const Icon = item.icon;
                             return (
@@ -182,6 +189,30 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                             );
                         })}
                     </nav>
+
+                    {/* Profile Section */}
+                    <div className="p-4 border-t">
+                        <Link href="/admin/profile">
+                            <Button
+                                variant={isActive("/admin/profile") ? "default" : "ghost"}
+                                className="w-full justify-start gap-3 h-14"
+                                onClick={() => setSidebarOpen(false)}
+                            >
+                                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold shrink-0">
+                                    {user?.firstName?.[0]?.toUpperCase() || "A"}
+                                    {user?.lastName?.[0]?.toUpperCase() || "D"}
+                                </div>
+                                <div className="flex flex-col items-start overflow-hidden">
+                                    <span className="font-medium text-sm truncate w-full">
+                                        {user?.firstName || "Admin"} {user?.lastName || "User"}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground truncate w-full">
+                                        {user?.email || "admin@example.com"}
+                                    </span>
+                                </div>
+                            </Button>
+                        </Link>
+                    </div>
                 </aside>
 
                 {/* Overlay for mobile */}

@@ -18,10 +18,11 @@ export interface User {
 }
 
 export interface CreateUserDto {
-  name: string;
-  email: string;
+  firstName: string;
+  lastName: string;
+  email?: string;
   password: string;
-  phone?: string;
+  phone: string;
   role?: "admin" | "user";
 }
 
@@ -35,10 +36,13 @@ export interface UpdateUserDto {
 
 export const usersAPI = {
   /**
-   * Barcha foydalanuvchilarni olish
+   * Barcha foydalanuvchilarni olish (GET /users)
    */
-  getAll: (params?: { page?: number; limit?: number; search?: string }) =>
-    apiRequest<{ data: User[]; total: number }>("/users", { params }),
+  getAll: async (): Promise<User[]> => {
+    return apiRequest<User[]>("/users", {
+      method: "GET",
+    });
+  },
 
   /**
    * Bitta foydalanuvchini ID bo'yicha olish
@@ -46,13 +50,14 @@ export const usersAPI = {
   getById: (id: string) => apiRequest<User>(`/users/${id}`),
 
   /**
-   * Yangi foydalanuvchi yaratish
+   * Yangi foydalanuvchi yaratish (POST /auth/register)
    */
-  create: (data: CreateUserDto) =>
-    apiRequest<User>("/users", {
+  register: async (data: CreateUserDto): Promise<User> => {
+    return apiRequest<User>("/auth/register", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
+    });
+  },
 
   /**
    * Foydalanuvchini yangilash (Admin only)

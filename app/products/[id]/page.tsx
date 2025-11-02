@@ -20,6 +20,7 @@ import {
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
+import { formatPrice } from "@/lib/utils/format-price";
 import { ProductCard } from "@/components/product-card";
 import useEmblaCarousel from "embla-carousel-react";
 import { useParams } from "next/navigation";
@@ -270,11 +271,11 @@ export default function ProductDetailPage() {
                         <div className="space-y-2">
                             <div className="flex items-baseline gap-3">
                                 <span className="text-4xl font-black text-primary">
-                                    {product.price.toLocaleString()} {t("so'm", "сум")}
+                                    {formatPrice(product.price)} {t("so'm", "сум")}
                                 </span>
                                 {product.oldPrice && product.oldPrice > product.price && (
                                     <span className="text-xl text-muted-foreground line-through">
-                                        {product.oldPrice.toLocaleString()} {t("so'm", "сум")}
+                                        {formatPrice(product.oldPrice)} {t("so'm", "сум")}
                                     </span>
                                 )}
                             </div>

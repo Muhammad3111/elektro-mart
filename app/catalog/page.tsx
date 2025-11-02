@@ -37,13 +37,13 @@ function CatalogContent() {
     const searchQuery = searchParams.get("search") || "";
     const brandParam = searchParams.get("brand");
 
-    const [sortBy, setSortBy] = useState("createdAt");
+    const [sortBy, setSortBy] = useState("newest");
     const [filters, setFilters] = useState<FilterState>({
         search: searchQuery,
         categories: categoryParam ? [categoryParam] : [],
         subcategories: subcategoryParam ? [subcategoryParam] : [],
         brands: brandParam ? [brandParam] : [],
-        priceRange: [0, 500000],
+        priceRange: [],
         isNew: false,
         hasDiscount: false,
     });
@@ -60,6 +60,8 @@ function CatalogContent() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
+    const [minPrice, setMinPrice] = useState(0);
+    const [maxPrice, setMaxPrice] = useState(500000);
     const itemsPerPage = 16;
     
     const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -133,17 +135,41 @@ function CatalogContent() {
     const loadProducts = useCallback(async () => {
         try {
             setLoadingProducts(true);
+            
+            // Map sortBy values to API parameters
+            let apiSortBy = "createdAt";
+            let apiSortOrder = "DESC";
+            
+            switch (sortBy) {
+                case "newest":
+                    apiSortBy = "createdAt";
+                    apiSortOrder = "DESC";
+                    break;
+                case "best":
+                    apiSortBy = "salesCount";
+                    apiSortOrder = "DESC";
+                    break;
+                case "price-low":
+                    apiSortBy = "price";
+                    apiSortOrder = "ASC";
+                    break;
+                case "price-high":
+                    apiSortBy = "price";
+                    apiSortOrder = "DESC";
+                    break;
+            }
+            
             const params: any = {
                 page: currentPage,
                 limit: itemsPerPage,
-                sortBy: sortBy,
-                sortOrder: "DESC",
+                sortBy: apiSortBy,
+                sortOrder: apiSortOrder,
                 isActive: true,
             };
 
-            // Search - both 'search' and 'q' parameters
-            if (filters.search) params.q = filters.search;
-            if (searchQuery) params.q = searchQuery;
+            // Search parameter
+            if (filters.search) params.search = filters.search;
+            if (searchQuery) params.search = searchQuery;
             // Categories from URL and filter - birlashtirib yuborish
             const allCategories = [...new Set([
                 ...(categoryParam ? [categoryParam] : []),
@@ -154,7 +180,8 @@ function CatalogContent() {
             }
             if (filters.subcategories.length > 0) params.subcategories = filters.subcategories;
             if (filters.brands.length > 0) params.brandId = filters.brands[0];
-            if (filters.priceRange) {
+            // Only send price range if user has set it
+            if (filters.priceRange && filters.priceRange.length === 2) {
                 params.minPrice = filters.priceRange[0];
                 params.maxPrice = filters.priceRange[1];
             }
@@ -166,12 +193,24 @@ function CatalogContent() {
             setTotalItems(result.total);
             const pages = Math.ceil(result.total / result.limit);
             setTotalPages(pages > 0 ? pages : 1);
+            
+            // Calculate min and max price from products
+            if (result.data.length > 0) {
+                const prices = result.data.map(p => {
+                    const price = typeof p.price === 'string' ? parseFloat(p.price) : p.price;
+                    return price;
+                });
+                const calculatedMin = Math.floor(Math.min(...prices));
+                const calculatedMax = Math.ceil(Math.max(...prices));
+                setMinPrice(calculatedMin);
+                setMaxPrice(calculatedMax);
+            }
         } catch (err) {
             console.error("Failed to load products:", err);
         } finally {
             setLoadingProducts(false);
         }
-    }, [currentPage, itemsPerPage, sortBy, filters, categoryParam, searchQuery]);
+    }, [currentPage, itemsPerPage, sortBy, filters, categoryParam, searchQuery, minPrice, maxPrice]);
 
     useEffect(() => {
         loadProducts();
@@ -187,17 +226,23 @@ function CatalogContent() {
         return categories.filter((c) => c.parentId === currentCategory.id && c.isActive);
     }, [currentCategory, categories]);
 
-    const availableBrands = useMemo(() => brands.map(b => ({ id: b.id, name: b.nameUz })), [brands]);
+    const availableBrands = useMemo(() => brands.map(b => ({ 
+        id: b.id, 
+        name: b.nameUz,
+        image: b.image 
+    })), [brands]);
 
     // Update filters when URL params change
     useEffect(() => {
         setFilters((prev) => ({
             ...prev,
             search: searchQuery,
-            subcategories: subcategoryParam ? [subcategoryParam] : [],
+            categories: categoryParam ? [categoryParam] : prev.categories,
+            subcategories: subcategoryParam ? [subcategoryParam] : prev.subcategories,
+            brands: brandParam ? [brandParam] : prev.brands,
         }));
         setCurrentPage(1); // Reset to first page when filters change
-    }, [searchQuery, subcategoryParam]);
+    }, [searchQuery, subcategoryParam, categoryParam, brandParam]);
 
     // Reset to first page when filters change
     useEffect(() => {
@@ -327,6 +372,8 @@ function CatalogContent() {
                             onFilterChange={setFilters}
                             initialCategory={categoryParam || undefined}
                             initialBrand={brandParam || undefined}
+                            minPrice={minPrice}
+                            maxPrice={maxPrice}
                         />
                     </aside>
 
@@ -353,22 +400,17 @@ function CatalogContent() {
                                     onValueChange={setSortBy}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue
-                                            placeholder={t(
-                                                "Saralash",
-                                                "Сортировка"
-                                            )}
-                                        />
+                                        <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="newest">
+                                            {t("Yangi kelganlar", "Новинки")}
+                                        </SelectItem>
                                         <SelectItem value="best">
                                             {t(
                                                 "Eng ko'p sotilgan",
                                                 "Самые продаваемые"
                                             )}
-                                        </SelectItem>
-                                        <SelectItem value="newest">
-                                            {t("Yangi kelganlar", "Новинки")}
                                         </SelectItem>
                                         <SelectItem value="price-low">
                                             {t(

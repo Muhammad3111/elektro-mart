@@ -40,3 +40,7 @@ export { brandsAPI } from "./brands";
 export { homeSlidersAPI } from "./home-sliders";
 export { catalogBannersAPI } from "./catalog-banners";
 export { statisticsAPI } from "./statistics";
+
+// Orders
+export { ordersAPI } from "./orders";
+export type { Order, CreateOrderDto, UpdateOrderDto, OrderItem } from "@/types/order";

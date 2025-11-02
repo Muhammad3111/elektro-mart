@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, ShoppingBag, Home } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
+import { formatPrice } from "@/lib/utils/format-price";
 
 export default function OrderConfirmationPage() {
   const { t } = useLanguage();
@@ -86,7 +87,7 @@ export default function OrderConfirmationPage() {
                 <div className="bg-primary/10 p-4 rounded-lg">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold">{t("Jami summa", "Итого")}</span>
-                    <span className="text-2xl font-black text-primary">{total.toLocaleString()} UZS</span>
+                    <span className="text-2xl font-black text-primary">{formatPrice(total)} UZS</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     {t(

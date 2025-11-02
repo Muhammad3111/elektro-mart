@@ -24,7 +24,7 @@ function AuthPageContent() {
 
   // Login form state
   const [loginData, setLoginData] = useState({
-    email: "",
+    phone: "",
     password: "",
   });
 
@@ -84,14 +84,14 @@ function AuthPageContent() {
             <CardContent className="space-y-4">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">{t("Email", "Email")}</Label>
+                  <Label htmlFor="login-phone">{t("Telefon raqam", "Номер телефона")}</Label>
                   <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="admin@elektromart.com"
+                    id="login-phone"
+                    type="tel"
+                    placeholder="+998901234567"
                     className="h-12"
-                    value={loginData.email}
-                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                    value={loginData.phone}
+                    onChange={(e) => setLoginData({ ...loginData, phone: e.target.value })}
                     required
                     disabled={loading}
                   />
