@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -23,26 +23,33 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Category } from "@/types/category";
-import { categoriesAPI } from "@/lib/api";
+import { Product } from "@/types/product";
+import { Brand } from "@/types/brand";
+import { categoriesAPI, productsAPI, brandsAPI } from "@/lib/api";
 import { CategorySkeleton } from "@/components/category-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
     const { t } = useLanguage();
-    const [selectedCategory, setSelectedCategory] = useState("Barchasi");
+    const [selectedCategory, setSelectedCategory] = useState("all");
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
-
-    useEffect(() => {
-        loadCategories();
-    }, []);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [loadingProducts, setLoadingProducts] = useState(true);
+    const [brands, setBrands] = useState<Brand[]>([]);
+    const [loadingBrands, setLoadingBrands] = useState(true);
 
     const loadCategories = async () => {
         try {
             setLoadingCategories(true);
             const data = await categoriesAPI.getAll();
-            // Only get parent categories
+            // Get parent categories and attach their subcategories
             const parentCategories = data.filter((c) => !c.parentId && c.isActive);
-            setCategories(parentCategories);
+            const categoriesWithSubs = parentCategories.map(parent => ({
+                ...parent,
+                subCategories: data.filter(sub => sub.parentId === parent.id && sub.isActive)
+            }));
+            setCategories(categoriesWithSubs);
         } catch (err) {
             console.error("Failed to load categories:", err);
         } finally {
@@ -50,110 +57,48 @@ export default function Home() {
         }
     };
 
-    const allProducts = [
-        {
-            id: 1,
-            name: "RG6 Koaksial Kabel",
-            category: "data",
-            description: "Yuqori sifatli koaksial kabel, sun'iy yo'ldosh va kabel TV uchun ideal",
-            price: "45,000",
-            oldPrice: "55,000",
-            image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
-            rating: 4.8,
-            isNew: true,
-            discount: "18%",
-        },
-        {
-            id: 2,
-            name: "Optik Tolali Kabel Premium",
-            category: "data",
-            description: "Tezkor internet va ma'lumot uzatish uchun zamonaviy optik kabel",
-            price: "85,000",
-            image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=400&h=400&fit=crop",
-            rating: 5.0,
-        },
-        {
-            id: 3,
-            name: "Quvvat Kabeli NEMA 5-15P",
-            category: "power",
-            description: "Kuchli quvvat uzatish uchun ishonchli elektr kabeli",
-            price: "25,000",
-            oldPrice: "30,000",
-            image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400&h=400&fit=crop",
-            rating: 4.5,
-            discount: "17%",
-        },
-        {
-            id: 4,
-            name: "HDMI Kabel 2.1 Ultra HD",
-            category: "data",
-            description: "4K va 8K video uchun yuqori sifatli HDMI kabel",
-            price: "55,000",
-            image: "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=400&h=400&fit=crop",
-            rating: 4.7,
-            isNew: true,
-        },
-        {
-            id: 5,
-            name: "Professional Kabel Qirqgich",
-            category: "tools",
-            description: "Professional darajadagi kabel qirqish va tozalash asboblari",
-            price: "35,000",
-            image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&h=400&fit=crop",
-            rating: 4.6,
-        },
-        {
-            id: 6,
-            name: "USB-C to USB-A Kabel 3m",
-            category: "data",
-            description: "Tez zaryadlash va ma'lumot uzatish uchun 3 metrli USB kabel",
-            price: "22,000",
-            oldPrice: "28,000",
-            image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=400&h=400&fit=crop",
-            rating: 4.4,
-            discount: "21%",
-        },
-        {
-            id: 7,
-            name: "BNC Ulagich Professional",
-            category: "connectors",
-            description: "Video kuzatuv tizimlari uchun professional BNC ulagichlar",
-            price: "12,000",
-            image: "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=400&h=400&fit=crop",
-            rating: 4.3,
-        },
-        {
-            id: 8,
-            name: "LED Yoritgich 50W",
-            category: "lighting",
-            description: "Energiya tejovchi 50W LED yoritgich, yorug' va uzoq umrli",
-            price: "65,000",
-            image: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=400&h=400&fit=crop",
-            rating: 4.9,
-            isNew: true,
-        },
-        {
-            id: 9,
-            name: "Kabel Boshqaruvchi Set",
-            category: "accessories",
-            description: "Kabellarni tartibli saqlash va boshqarish uchun to'plam",
-            price: "15,000",
-            image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=400&h=400&fit=crop",
-            rating: 4.2,
-        },
-    ];
+    const loadBrands = async () => {
+        try {
+            setLoadingBrands(true);
+            const data = await brandsAPI.getAll();
+            const activeBrands = data.filter((b) => b.isActive);
+            setBrands(activeBrands);
+        } catch (err) {
+            console.error("Failed to load brands:", err);
+        } finally {
+            setLoadingBrands(false);
+        }
+    };
 
-    const filteredProducts =
-        selectedCategory === "Barchasi"
-            ? allProducts.slice(0, 10)
-            : allProducts
-                  .filter(
-                      (p) =>
-                          p.category ===
-                          categories.find((c) => c.nameUz === selectedCategory)
-                              ?.id
-                  )
-                  .slice(0, 10);
+    const loadFeaturedProducts = useCallback(async () => {
+        try {
+            setLoadingProducts(true);
+            const params: any = {
+                isFeatured: true,
+                isActive: true,
+                limit: 10,
+            };
+            if (selectedCategory !== "all") {
+                params.categories = [selectedCategory];
+            }
+            const result = await productsAPI.getAll(params);
+            setProducts(result.data);
+        } catch (err) {
+            console.error("Failed to load products:", err);
+        } finally {
+            setLoadingProducts(false);
+        }
+    }, [selectedCategory]);
+
+    useEffect(() => {
+        loadCategories();
+        loadFeaturedProducts();
+        loadBrands();
+    }, [loadFeaturedProducts]);
+
+    useEffect(() => {
+        loadFeaturedProducts();
+    }, [selectedCategory, loadFeaturedProducts]);
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -185,7 +130,7 @@ export default function Home() {
                         
                         {/* View All Categories Button */}
                         <div className="mt-8 text-center">
-                            <Link href="/catalog">
+                            <Link href="/categories">
                                 <Button size="lg" className="bg-primary hover:bg-primary/90 text-white h-12 px-8">
                                     {t("Barchasini ko'rish", "Посмотреть все")}
                                 </Button>
@@ -205,13 +150,13 @@ export default function Home() {
                     <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
                         <Button
                             variant={
-                                selectedCategory === "Barchasi"
+                                selectedCategory === "all"
                                     ? "default"
                                     : "outline"
                             }
-                            onClick={() => setSelectedCategory("Barchasi")}
+                            onClick={() => setSelectedCategory("all")}
                             className={
-                                selectedCategory === "Barchasi"
+                                selectedCategory === "all"
                                     ? "bg-primary hover:bg-primary/90 text-white"
                                     : ""
                             }
@@ -222,15 +167,15 @@ export default function Home() {
                             <Button
                                 key={category.id}
                                 variant={
-                                    selectedCategory === category.nameUz
+                                    selectedCategory === category.id
                                         ? "default"
                                         : "outline"
                                 }
                                 onClick={() =>
-                                    setSelectedCategory(category.nameUz)
+                                    setSelectedCategory(category.id)
                                 }
                                 className={
-                                    selectedCategory === category.nameUz
+                                    selectedCategory === category.id
                                         ? "bg-primary hover:bg-primary/90 text-white"
                                         : ""
                                 }
@@ -241,22 +186,45 @@ export default function Home() {
                     </div>
 
                     {/* Products Grid - 5 per row on desktop */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
-                        {filteredProducts.map((product) => (
-                            <ProductCard
-                                key={product.id}
-                                id={product.id}
-                                name={product.name}
-                                price={product.price}
-                                oldPrice={product.oldPrice}
-                                image={product.image}
-                                description={product.description}
-                                rating={product.rating}
-                                isNew={product.isNew}
-                                discount={product.discount}
-                            />
-                        ))}
-                    </div>
+                    {loadingProducts ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                                <div key={i} className="space-y-3">
+                                    <Skeleton className="aspect-square w-full rounded-lg" />
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : products.length > 0 ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
+                            {products.map((product) => (
+                                <ProductCard
+                                    key={product.id}
+                                    id={product.id}
+                                    name={product.nameUz}
+                                    price={product.price.toString()}
+                                    oldPrice={product.oldPrice?.toString()}
+                                    image={product.coverImage || ""}
+                                    description={product.shortDescriptionUz || product.descriptionUz}
+                                    rating={product.rating}
+                                    isNew={product.isNew}
+                                    discount={product.discount ? `${product.discount}%` : undefined}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-16 px-4">
+                            <div className="text-center">
+                                <h3 className="text-2xl font-bold mb-2">
+                                    {t("Mahsulot topilmadi", "Товары не найдены")}
+                                </h3>
+                                <p className="text-muted-foreground">
+                                    {t("Bu kategoriyada hozircha mahsulot yo'q", "В этой категории пока нет товаров")}
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* View All Button */}
                     <div className="mt-8 text-center">
@@ -370,20 +338,19 @@ export default function Home() {
                     <SectionTitle highlight={t("Brendlarimiz", "бренды")}>
                         {t("Brendlarimiz", "Наши бренды")}
                     </SectionTitle>
-                    <BrandsSlider 
-                        brands={[
-                            { id: "1", nameUz: "Siemens", nameRu: "Siemens", isActive: true, order: 1, createdAt: "", updatedAt: "" },
-                            { id: "2", nameUz: "Schneider Electric", nameRu: "Schneider Electric", isActive: true, order: 2, createdAt: "", updatedAt: "" },
-                            { id: "3", nameUz: "ABB", nameRu: "ABB", isActive: true, order: 3, createdAt: "", updatedAt: "" },
-                            { id: "4", nameUz: "Legrand", nameRu: "Legrand", isActive: true, order: 4, createdAt: "", updatedAt: "" },
-                            { id: "5", nameUz: "Philips", nameRu: "Philips", isActive: true, order: 5, createdAt: "", updatedAt: "" },
-                            { id: "6", nameUz: "Osram", nameRu: "Osram", isActive: true, order: 6, createdAt: "", updatedAt: "" },
-                            { id: "7", nameUz: "Hager", nameRu: "Hager", isActive: true, order: 7, createdAt: "", updatedAt: "" },
-                            { id: "8", nameUz: "Eaton", nameRu: "Eaton", isActive: true, order: 8, createdAt: "", updatedAt: "" },
-                            { id: "9", nameUz: "GE", nameRu: "GE", isActive: true, order: 9, createdAt: "", updatedAt: "" },
-                            { id: "10", nameUz: "Honeywell", nameRu: "Honeywell", isActive: true, order: 10, createdAt: "", updatedAt: "" },
-                        ]}
-                    />
+                    {loadingBrands ? (
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className="border-2 rounded-lg">
+                                    <div className="p-6 flex items-center justify-center h-24">
+                                        <Skeleton className="w-16 h-8" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <BrandsSlider brands={brands} />
+                    )}
                     </div>
                 </section>
 

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Phone } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
 export function FloatingButtons() {
     const { t } = useLanguage();
+    const pathname = usePathname();
     const [showScrollTop, setShowScrollTop] = useState(false);
 
     useEffect(() => {
@@ -28,6 +30,11 @@ export function FloatingButtons() {
     const handleCall = () => {
         window.location.href = "tel:+998334704700";
     };
+
+    // Hide buttons in admin panel
+    if (pathname?.startsWith("/admin")) {
+        return null;
+    }
 
     return (
         <div className="fixed bottom-6 right-4 md:right-6 z-40 flex flex-col gap-3">

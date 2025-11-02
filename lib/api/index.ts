@@ -35,3 +35,8 @@ export { authAPI, getToken, setToken, removeToken } from "./auth";
 
 // Brands
 export { brandsAPI } from "./brands";
+
+// Home Sliders
+export { homeSlidersAPI } from "./home-sliders";
+export { catalogBannersAPI } from "./catalog-banners";
+export { statisticsAPI } from "./statistics";

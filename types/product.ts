@@ -32,7 +32,9 @@ export interface Product {
   // Main data
   nameUz: string;
   nameRu: string;
-  descriptionUz: string;
+  shortDescriptionUz?: string;  // 50-150 characters for cards
+  shortDescriptionRu?: string;
+  descriptionUz: string;        // 200-2000 characters for details
   descriptionRu: string;
 
   // Pricing
@@ -40,9 +42,9 @@ export interface Product {
   oldPrice?: number;
   discount?: number;
 
-  // Media
-  images: string[];
-  mainImage?: string;
+  // Media (URL strings)
+  coverImage?: string;          // Main cover image URL
+  galleryImages?: string[];     // Gallery images URLs (3-10)
 
   // Relations IDs
   categoryId: string;
@@ -51,6 +53,7 @@ export interface Product {
 
   // Status
   isActive: boolean;
+  isFeatured: boolean;          // Featured/recommended products
   isNew: boolean;
   inStock: boolean;
   stockQuantity: number;
@@ -80,20 +83,26 @@ export interface Product {
 }
 
 export interface CreateProductDto {
+  // Identifiers
+  sku: string;
+  productCode: string;
+
   // Main data
   nameUz: string;
   nameRu: string;
-  descriptionUz?: string;
-  descriptionRu?: string;
+  shortDescriptionUz?: string;  // 50-150 characters
+  shortDescriptionRu?: string;
+  descriptionUz: string;
+  descriptionRu: string;
 
   // Pricing
   price: number;
   oldPrice?: number;
   discount?: number;
 
-  // Media
-  mainImage?: File | string;
-  images?: (File | string)[];
+  // Media (URL strings only)
+  coverImage?: string;
+  galleryImages?: string[];
 
   // Relations IDs
   categoryId: string;
@@ -102,8 +111,8 @@ export interface CreateProductDto {
 
   // Status
   isActive?: boolean;
+  isFeatured?: boolean;
   isNew?: boolean;
-  inStock?: boolean;
   stockQuantity: number;
 
   // Order & SEO
@@ -146,10 +155,12 @@ export type SortByOption =
 export type SortOrder = "ASC" | "DESC";
 
 export interface QueryProductDto {
+  q?: string; // Search query parameter
   search?: string;
   categoryId?: string;
   subcategoryId?: string;
   categories?: string[];
+  subcategories?: string[];
   brandId?: string;
   brands?: string[];
   minPrice?: number;
@@ -158,6 +169,7 @@ export interface QueryProductDto {
   hasDiscount?: boolean;
   inStock?: boolean;
   isActive?: boolean;
+  isFeatured?: boolean;
   sortBy?: SortByOption;
   sortOrder?: SortOrder;
   page?: number;

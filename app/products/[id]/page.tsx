@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     ShoppingCart,
     CheckCircle,
@@ -21,13 +22,25 @@ import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { ProductCard } from "@/components/product-card";
 import useEmblaCarousel from "embla-carousel-react";
+import { useParams } from "next/navigation";
+import { productsAPI } from "@/lib/api";
+import { Product } from "@/types/product";
+import { toast } from "sonner";
+import { S3Image } from "@/components/s3-image";
 
 export default function ProductDetailPage() {
-    const { t } = useLanguage();
+    const params = useParams();
+    const productId = params.id as string;
+    const { t, language } = useLanguage();
     const { addToCart } = useCart();
     const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+    
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
+    const [product, setProduct] = useState<Product | null>(null);
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    
     const [emblaRef] = useEmblaCarousel({
         loop: false,
         align: "start",
@@ -38,134 +51,122 @@ export default function ProductDetailPage() {
         containScroll: "trimSnaps",
     });
 
-    const product = {
-        name: "RG6 Koaksial Kabel - 75 Ohm CATV, Sun'iy yo'ldosh va Keng polosali aloqa uchun",
-        sku: "RG6-100FT-BLK",
-        productCode: "KABEL-RG6-2024",
-        price: "45,000",
-        rating: 4.5,
-        reviews: 125,
-        inStock: true,
-        category: "Ma'lumot kabellari",
-        categoryRu: "Информационные кабели",
-        brand: "Philips",
-        description:
-            "Yuqori samarali RG6 koaksial kabel sun'iy yo'ldosh antenalari, kabel televideniyesi (CATV) va yuqori tezlikdagi internet uchun ideal. Chidamli PVC qobiq va optimal signal sifati uchun 75 Ohm impedansga ega.",
-        descriptionRu:
-            "Высокоэффективный коаксиальный кабель RG6 идеально подходит для спутниковых антенн, кабельного телевидения (CATV) и высокоскоростного интернета. Имеет прочную оболочку из ПВХ и импеданс 75 Ом для оптимального качества сигнала.",
-        images: [
-            "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=800&fit=crop",
-            "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&h=800&fit=crop",
-            "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=800&fit=crop",
-            "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=800&h=800&fit=crop",
-        ],
-        specifications: [
-            { label: "Impedans", labelRu: "Импеданс", value: "75 Ohm" },
-            {
-                label: "O'tkazgich",
-                labelRu: "Проводник",
-                value: "Mis bilan qoplangan po'lat",
-                valueRu: "Медь покрытая сталь",
-            },
-            {
-                label: "Himoya",
-                labelRu: "Экранирование",
-                value: "Ikki qavatli alyuminiy folga va to'qima",
-                valueRu: "Двухслойная алюминиевая фольга и оплетка",
-            },
-            {
-                label: "Qobiq",
-                labelRu: "Оболочка",
-                value: "PVX, ob-havoga chidamli",
-                valueRu: "PVC, устойчивый к погоде",
-            },
-        ],
+    useEffect(() => {
+        if (productId) {
+            loadProduct();
+        }
+    }, [productId]);
+
+    const loadProduct = async () => {
+        try {
+            setLoading(true);
+            const data = await productsAPI.getById(productId);
+            setProduct(data);
+            
+            // Load related products from same category
+            if (data.categoryId) {
+                const related = await productsAPI.getAll({
+                    categoryId: data.categoryId,
+                    limit: 8,
+                    isActive: true,
+                });
+                setRelatedProducts(related.data.filter(p => p.id !== productId).slice(0, 4));
+            }
+        } catch (err) {
+            console.error("Failed to load product:", err);
+            toast.error(t("Mahsulot yuklanmadi", "Не удалось загрузить товар"));
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const relatedProducts = [
-        {
-            id: 10,
-            name: "Kabel Qirqgich Professional",
-            price: "25,000",
-            image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&h=400&fit=crop",
-            category: "Asboblar",
-            brand: "Siemens",
-        },
-        {
-            id: 11,
-            name: "F-Ulagichlar (20 dona)",
-            price: "18,000",
-            image: "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=400&h=400&fit=crop",
-            category: "Ulagichlar",
-            brand: "Legrand",
-        },
-        {
-            id: 12,
-            name: "Crimping Asbob Professional",
-            price: "55,000",
-            image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&h=400&fit=crop",
-            category: "Asboblar",
-            brand: "Schneider",
-            isNew: true,
-        },
-        {
-            id: 13,
-            name: "Koaksial Devor Plitalari",
-            price: "12,000",
-            image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=400&h=400&fit=crop",
-            category: "Aksessuarlar",
-            brand: "ABB",
-        },
-        {
-            id: 14,
-            name: "RG59 Koaksial Kabel",
-            price: "38,000",
-            image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
-            category: "Ma'lumot kabellari",
-            brand: "Philips",
-        },
-        {
-            id: 15,
-            name: "Kabel Tester Digital",
-            price: "75,000",
-            image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?w=400&h=400&fit=crop",
-            category: "Asboblar",
-            brand: "Siemens",
-            isNew: true,
-        },
-        {
-            id: 16,
-            name: "BNC Ulagich Premium",
-            price: "15,000",
-            image: "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=400&h=400&fit=crop",
-            category: "Ulagichlar",
-            brand: "Legrand",
-        },
-        {
-            id: 17,
-            name: "Koaksial Splitter 4-Way",
-            price: "22,000",
-            image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=400&h=400&fit=crop",
-            category: "Aksessuarlar",
-            brand: "ABB",
-        },
-        {
-            id: 18,
-            name: "RG11 Koaksial Kabel",
-            price: "52,000",
-            image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
-            category: "Ma'lumot kabellari",
-            brand: "Osram",
-        },
-        {
-            id: 19,
-            name: "Kabel Organizer Set",
-            price: "18,000",
-            image: "https://images.unsplash.com/photo-1625948515291-69613efd103f?w=400&h=400&fit=crop",
-            category: "Aksessuarlar",
-            brand: "Schneider",
-        },
-    ];
+    // Get product images - only use coverImage since images array doesn't exist in Product type
+    const productImages = product?.coverImage ? [product.coverImage] : [];
+
+    const handleAddToCart = () => {
+        if (product) {
+            addToCart({
+                id: product.id,
+                name: product.nameUz,
+                price: product.price.toString(),
+                image: product.coverImage || "",
+            });
+            toast.success(t("Savatga qo'shildi", "Добавлено в корзину"));
+        }
+    };
+
+    const handleToggleFavorite = () => {
+        if (product) {
+            if (isFavorite(product.id)) {
+                removeFromFavorites(product.id);
+                toast.success(t("Sevimlilardan o'chirildi", "Удалено из избранного"));
+            } else {
+                addToFavorites({
+                    id: product.id,
+                    name: product.nameUz,
+                    price: product.price.toString(),
+                    image: product.coverImage || "",
+                });
+                toast.success(t("Sevimlilarga qo'shildi", "Добавлено в избранное"));
+            }
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1 container mx-auto px-4 py-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                        {/* Image Skeleton */}
+                        <div className="space-y-4">
+                            <Skeleton className="aspect-square w-full rounded-lg" />
+                            <div className="grid grid-cols-4 gap-2">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <Skeleton key={i} className="aspect-square rounded-lg" />
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Details Skeleton */}
+                        <div className="space-y-6">
+                            <Skeleton className="h-12 w-3/4" />
+                            <Skeleton className="h-6 w-1/2" />
+                            <Skeleton className="h-24 w-full" />
+                            <Skeleton className="h-16 w-full" />
+                            <Skeleton className="h-12 w-full" />
+                        </div>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+
+    if (!product) {
+        return (
+            <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1 container mx-auto px-4 py-8">
+                    <div className="text-center py-16">
+                        <h1 className="text-2xl font-bold mb-4">
+                            {t("Mahsulot topilmadi", "Товар не найден")}
+                        </h1>
+                        <Link href="/catalog">
+                            <Button>{t("Katalogga qaytish", "Вернуться в каталог")}</Button>
+                        </Link>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+
+    const productName = language === 'uz' ? product.nameUz : product.nameRu;
+    const shortDescription = language === 'uz' ? product.shortDescriptionUz : product.shortDescriptionRu;
+    const productDescription = language === 'uz' ? product.descriptionUz : product.descriptionRu;
+    const categoryName = product.category ? (language === 'uz' ? product.category.nameUz : product.category.nameRu) : '';
+    const brandName = product.brand ? (language === 'uz' ? product.brand.nameUz : product.brand.nameRu) : '';
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -173,339 +174,273 @@ export default function ProductDetailPage() {
 
             <main className="flex-1 container mx-auto px-4 py-8">
                 {/* Breadcrumb */}
-                <div className="flex items-center gap-2 text-sm mb-6">
-                    <Link href="/" className="text-primary hover:underline">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                    <Link href="/" className="hover:text-primary">
                         {t("Bosh sahifa", "Главная")}
                     </Link>
-                    <span className="text-muted-foreground">/</span>
-                    <Link
-                        href="/catalog"
-                        className="text-primary hover:underline"
-                    >
+                    <span>/</span>
+                    <Link href="/catalog" className="hover:text-primary">
                         {t("Katalog", "Каталог")}
                     </Link>
-                    <span className="text-muted-foreground">/</span>
-                    <Link
-                        href="/catalog?category=Kabellar"
-                        className="text-primary hover:underline"
-                    >
-                        {t("Kabellar", "Кабели")}
-                    </Link>
-                    <span className="text-muted-foreground">/</span>
-                    <span className="text-muted-foreground">
-                        {t("RG6 Koaksial Kabel", "RG6 Коаксиальный кабель")}
-                    </span>
+                    {categoryName && (
+                        <>
+                            <span>/</span>
+                            <span>{categoryName}</span>
+                        </>
+                    )}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-                    {/* Image Slider */}
+                {/* Product Details */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                    {/* Product Images */}
                     <div className="space-y-4">
-                        {/* Main Cover Image */}
-                        <div className="relative">
-                            <div
-                                className="aspect-square bg-cover bg-center rounded-xl border shadow-lg w-full cursor-pointer"
-                                style={{
-                                    backgroundImage: `url(${product.images[selectedImage]})`,
-                                }}
-                                onClick={() => setSelectedImage((selectedImage + 1) % product.images.length)}
-                            />
-                            
-                            {/* Indicator dots below cover image */}
-                            <div className="flex justify-center gap-2 mt-4">
-                                {product.images.map((_, index) => (
+                        {/* Main Image */}
+                        <div className="relative aspect-square bg-accent rounded-lg overflow-hidden">
+                            {productImages.length > 0 ? (
+                                <S3Image
+                                    src={productImages[selectedImage]}
+                                    alt={productName}
+                                    fill
+                                    className="object-contain"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <Tag className="h-24 w-24 text-muted-foreground" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Thumbnail Gallery */}
+                        {productImages.length > 1 && (
+                            <div className="grid grid-cols-4 gap-2">
+                                {productImages.map((image: string, index: number) => (
                                     <button
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
-                                        className={`h-2 rounded-full transition-all ${
-                                            index === selectedImage
-                                                ? "w-6 bg-primary"
-                                                : "w-2 bg-gray-300"
+                                        className={`relative aspect-square bg-accent rounded-lg overflow-hidden border-2 transition-colors ${
+                                            selectedImage === index
+                                                ? "border-primary"
+                                                : "border-transparent hover:border-primary/50"
                                         }`}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Gallery Slider - shows 4 full images with 5th half visible */}
-                        <div className="overflow-hidden" ref={galleryRef}>
-                            <div className="flex gap-2">
-                                {product.images.map((image, index) => (
-                                    <div
-                                        key={index}
-                                        className="flex-[0_0_calc(20%-6.4px)] min-w-0 cursor-pointer"
-                                        onClick={() => setSelectedImage(index)}
                                     >
-                                        <div
-                                            className={`aspect-square bg-cover bg-center rounded-lg border-2 transition-all ${
-                                                index === selectedImage
-                                                    ? "border-primary shadow-md"
-                                                    : "border-gray-200 hover:border-primary/50"
-                                            }`}
-                                            style={{
-                                                backgroundImage: `url(${image})`,
-                                            }}
+                                        <S3Image
+                                            src={image}
+                                            alt={`${productName} ${index + 1}`}
+                                            fill
+                                            className="object-contain"
                                         />
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* Product Info */}
                     <div className="space-y-6">
+                        {/* Title */}
                         <div>
-                            <h1 className="text-3xl lg:text-4xl font-black mb-2">
-                                {product.name}
-                            </h1>
-                        </div>
-
-                        {/* Category, Product Code, Brand */}
-                        <div className="space-y-3 bg-accent/50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2">
-                                <Tag className="h-4 w-4 text-primary" />
-                                <span className="text-sm font-medium">
-                                    {t("Kategoriya", "Категория")}:
-                                </span>
-                                <span className="text-sm">
-                                    {t(product.category, product.categoryRu)}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Tag className="h-4 w-4 text-primary" />
-                                <span className="text-sm font-medium">
-                                    {t("Mahsulot kodi", "Код товара")}:
-                                </span>
-                                <span className="text-sm font-mono">
-                                    {product.productCode}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Tag className="h-4 w-4 text-primary" />
-                                <span className="text-sm font-medium">
-                                    {t("Brend", "Бренд")}:
-                                </span>
-                                <span className="text-sm">{product.brand}</span>
+                            <h1 className="text-3xl font-black mb-2">{productName}</h1>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                {product.sku && (
+                                    <span>SKU: {product.sku}</span>
+                                )}
+                                {product.productCode && (
+                                    <span>Kod: {product.productCode}</span>
+                                )}
                             </div>
                         </div>
 
-                        <p className="text-3xl font-bold text-primary">
-                            {product.price} UZS
-                        </p>
+                        {/* Category & Brand */}
+                        <div className="flex items-center gap-4">
+                            {categoryName && (
+                                <div className="text-sm">
+                                    <span className="text-muted-foreground">{t("Kategoriya:", "Категория:")}</span>{" "}
+                                    <span className="font-medium">{categoryName}</span>
+                                </div>
+                            )}
+                            {brandName && (
+                                <div className="text-sm">
+                                    <span className="text-muted-foreground">{t("Brend:", "Бренд:")}</span>{" "}
+                                    <span className="font-medium">{brandName}</span>
+                                </div>
+                            )}
+                        </div>
 
-                        <p className="text-base leading-relaxed">
-                            {product.description}
-                        </p>
-
-                        {product.inStock && (
-                            <div className="flex items-center gap-2 text-sm font-medium text-green-600">
-                                <CheckCircle className="h-5 w-5" />
-                                <span>
-                                    {t(
-                                        "Omborda mavjud - 24 soat ichida yetkaziladi",
-                                        "В наличии - Доставка в течение 24 часов"
-                                    )}
+                        {/* Price */}
+                        <div className="space-y-2">
+                            <div className="flex items-baseline gap-3">
+                                <span className="text-4xl font-black text-primary">
+                                    {product.price.toLocaleString()} {t("so'm", "сум")}
                                 </span>
+                                {product.oldPrice && product.oldPrice > product.price && (
+                                    <span className="text-xl text-muted-foreground line-through">
+                                        {product.oldPrice.toLocaleString()} {t("so'm", "сум")}
+                                    </span>
+                                )}
+                            </div>
+                            {product.discount && product.discount > 0 && (
+                                <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 px-3 py-1 rounded-full text-sm font-medium">
+                                    <Tag className="h-4 w-4" />
+                                    -{product.discount}% {t("chegirma", "скидка")}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Stock Status */}
+                        <div className="flex items-center gap-2">
+                            {product.inStock ? (
+                                <>
+                                    <CheckCircle className="h-5 w-5 text-green-500" />
+                                    <span className="text-green-500 font-medium">
+                                        {t("Omborda bor", "В наличии")}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="text-red-500 font-medium">
+                                    {t("Omborda yo'q", "Нет в наличии")}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Short Description */}
+                        {shortDescription && (
+                            <div className="bg-accent/50 rounded-lg p-4">
+                                <p className="text-sm text-muted-foreground leading-relaxed">{shortDescription}</p>
                             </div>
                         )}
 
-                        {/* Quantity and Add to Cart */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center border rounded-lg">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() =>
-                                            setQuantity(
-                                                Math.max(1, quantity - 1)
-                                            )
-                                        }
-                                    >
-                                        <Minus className="h-4 w-4" />
-                                    </Button>
-                                    <Input
-                                        type="number"
-                                        value={quantity}
-                                        onChange={(e) =>
-                                            setQuantity(
-                                                Math.max(
-                                                    1,
-                                                    parseInt(e.target.value) ||
-                                                        1
-                                                )
-                                            )
-                                        }
-                                        className="w-16 text-center border-0 focus-visible:ring-0"
-                                    />
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() =>
-                                            setQuantity(quantity + 1)
-                                        }
-                                    >
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                <Button
-                                    className="flex-1 h-12 bg-primary hover:bg-primary/90 text-white gap-2"
-                                    onClick={() => {
-                                        for (let i = 0; i < quantity; i++) {
-                                            addToCart({
-                                                id: 1,
-                                                name: product.name,
-                                                price: product.price,
-                                                image: product.images[0],
-                                            });
-                                        }
-                                    }}
-                                >
-                                    <ShoppingCart className="h-5 w-5" />
-                                    {t(
-                                        "Savatga qo'shish",
-                                        "Добавить в корзину"
-                                    )}
-                                </Button>
-                            </div>
+                        {/* Quantity & Add to Cart */}
+                        {product.inStock && (
+                            <Card>
+                                <CardContent className="p-6 space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <span className="font-medium">{t("Miqdor:", "Количество:")}</span>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                disabled={quantity <= 1}
+                                            >
+                                                <Minus className="h-4 w-4" />
+                                            </Button>
+                                            <Input
+                                                type="number"
+                                                value={quantity}
+                                                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                                className="w-20 text-center"
+                                                min="1"
+                                                max="999"
+                                            />
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => setQuantity(quantity + 1)}
+                                                disabled={false}
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
 
-                            {/* Favorites and Share Buttons */}
-                            <div className="flex gap-3">
-                                <Button
-                                    variant="outline"
-                                    className="flex-1 h-12 gap-2"
-                                    onClick={() => {
-                                        const isInFavorites = isFavorite(1);
-                                        if (isInFavorites) {
-                                            removeFromFavorites(1);
-                                        } else {
-                                            addToFavorites({
-                                                id: 1,
-                                                name: product.name,
-                                                price: product.price,
-                                                image: product.images[0],
-                                                description:
-                                                    product.description,
-                                            });
-                                        }
-                                    }}
-                                >
-                                    <Heart
-                                        className={`h-5 w-5 ${
-                                            isFavorite(1)
-                                                ? "fill-current text-red-500"
-                                                : ""
-                                        }`}
-                                    />
-                                    {isFavorite(1)
-                                        ? t(
-                                              "Sevimlilardan olib tashlash",
-                                              "Удалить из избранного"
-                                          )
-                                        : t(
-                                              "Sevimlilarga qo'shish",
-                                              "Добавить в избранное"
-                                          )}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="flex-1 h-12 gap-2"
-                                    onClick={() => {
-                                        if (navigator.share) {
-                                            navigator.share({
-                                                title: product.name,
-                                                text: product.description,
-                                                url: window.location.href,
-                                            });
-                                        } else {
-                                            navigator.clipboard.writeText(
-                                                window.location.href
-                                            );
-                                            alert(
-                                                t(
-                                                    "Havola nusxalandi!",
-                                                    "Ссылка скопирована!"
-                                                )
-                                            );
-                                        }
-                                    }}
-                                >
-                                    <Share2 className="h-5 w-5" />
-                                    {t("Ulashish", "Поделиться")}
-                                </Button>
-                            </div>
-                        </div>
+                                    <div className="flex gap-3">
+                                        <Button
+                                            onClick={handleAddToCart}
+                                            className="flex-1 bg-primary hover:bg-primary/90 text-white h-12"
+                                        >
+                                            <ShoppingCart className="h-5 w-5 mr-2" />
+                                            {t("Savatga qo'shish", "Добавить в корзину")}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={handleToggleFavorite}
+                                            className="h-12 w-12"
+                                        >
+                                            <Heart
+                                                className={`h-5 w-5 ${
+                                                    isFavorite(product.id)
+                                                        ? "fill-red-500 text-red-500"
+                                                        : ""
+                                                }`}
+                                            />
+                                        </Button>
+                                        <Button variant="outline" size="icon" className="h-12 w-12">
+                                            <Share2 className="h-5 w-5" />
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
                 </div>
 
-                {/* Description and Specifications Side by Side */}
+                {/* Description and Specifications Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                     {/* Description */}
-                    <Card>
-                        <CardContent className="p-6">
-                            <h3 className="text-xl font-bold mb-4">
-                                {t("Mahsulot tavsifi", "Описание товара")}
-                            </h3>
-                            <p className="text-base leading-relaxed">
-                                {t(product.description, product.descriptionRu)}
-                            </p>
-                        </CardContent>
-                    </Card>
+                    {productDescription && (
+                        <Card>
+                            <CardContent className="p-6">
+                                <h2 className="text-2xl font-black mb-6">
+                                    {t("Tavsif", "Описание")}
+                                </h2>
+                                <div className="prose prose-sm max-w-none">
+                                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{productDescription}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Specifications */}
-                    <Card>
-                        <CardContent className="p-6">
-                            <h3 className="text-xl font-bold mb-4">
-                                {t(
-                                    "Texnik xususiyatlari",
-                                    "Технические характеристики"
-                                )}
-                            </h3>
-                            <div className="space-y-3">
-                                {product.specifications.map((spec, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="flex justify-between py-2 border-b last:border-0"
-                                    >
-                                        <span className="font-medium">
-                                            {t(spec.label, spec.labelRu)}:
-                                        </span>
-                                        <span className="text-right">
-                                            {t(
-                                                spec.value,
-                                                spec.valueRu || spec.value
-                                            )}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    {product.specifications && product.specifications.length > 0 && (
+                        <Card>
+                            <CardContent className="p-6">
+                                <h2 className="text-2xl font-black mb-6">
+                                    {t("Texnik xususiyatlar", "Технические характеристики")}
+                                </h2>
+                                <div className="space-y-3">
+                                    {product.specifications.map((spec, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex justify-between items-center p-4 bg-accent/50 rounded-lg"
+                                        >
+                                            <span className="font-medium">
+                                                {language === 'uz' ? spec.labelUz : spec.labelRu}
+                                            </span>
+                                            <span className="text-muted-foreground">
+                                                {language === 'uz' ? spec.valueUz : (spec.valueRu || spec.valueUz)}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
-                {/* Related Products Slider */}
-                <div>
-                    <h2 className="text-2xl font-bold mb-6">
-                        {t("O'xshash mahsulotlar", "Похожие товары")}
-                    </h2>
-                    <div className="overflow-hidden" ref={emblaRef}>
-                        <div className="flex gap-3 md:gap-4 py-5">
-                            {relatedProducts.map((product) => (
-                                <div
-                                    key={product.id}
-                                    className="flex-[0_0_calc(100%/1.5-8px)] min-w-0 md:flex-[0_0_calc(100%/4.5-14px)]"
-                                >
-                                    <ProductCard
-                                        id={product.id}
-                                        name={product.name}
-                                        price={product.price}
-                                        image={product.image}
-                                        isNew={product.isNew}
-                                    />
-                                </div>
+                {/* Related Products */}
+                {relatedProducts.length > 0 && (
+                    <div>
+                        <h2 className="text-2xl font-black mb-6">
+                            {t("O'xshash mahsulotlar", "Похожие товары")}
+                        </h2>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                            {relatedProducts.map((relatedProduct) => (
+                                <ProductCard
+                                    key={relatedProduct.id}
+                                    id={relatedProduct.id}
+                                    name={language === 'uz' ? relatedProduct.nameUz : relatedProduct.nameRu}
+                                    price={relatedProduct.price.toString()}
+                                    oldPrice={relatedProduct.oldPrice?.toString()}
+                                    image={relatedProduct.coverImage || ""}
+                                    rating={relatedProduct.rating}
+                                    isNew={relatedProduct.isNew}
+                                    discount={relatedProduct.discount ? `${relatedProduct.discount}%` : undefined}
+                                />
                             ))}
                         </div>
                     </div>
-                </div>
+                )}
             </main>
 
             <Footer />

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
@@ -10,6 +11,7 @@ interface PaginationProps {
     onPageChange: (page: number) => void;
     totalItems?: number;
     itemsPerPage?: number;
+    onItemsPerPageChange?: (items: number) => void;
 }
 
 export function Pagination({
@@ -18,16 +20,18 @@ export function Pagination({
     onPageChange,
     totalItems,
     itemsPerPage,
+    onItemsPerPageChange,
 }: PaginationProps) {
     const { t } = useLanguage();
 
     const getPageNumbers = () => {
         const pages: (number | string)[] = [];
         const maxVisible = 5;
+        const validTotalPages = totalPages > 0 ? totalPages : 1;
 
-        if (totalPages <= maxVisible) {
+        if (validTotalPages <= maxVisible) {
             // Show all pages if total is small
-            for (let i = 1; i <= totalPages; i++) {
+            for (let i = 1; i <= validTotalPages; i++) {
                 pages.push(i);
             }
         } else {
@@ -40,18 +44,18 @@ export function Pagination({
 
             // Show pages around current page
             const start = Math.max(2, currentPage - 1);
-            const end = Math.min(totalPages - 1, currentPage + 1);
+            const end = Math.min(validTotalPages - 1, currentPage + 1);
 
             for (let i = start; i <= end; i++) {
                 pages.push(i);
             }
 
-            if (currentPage < totalPages - 2) {
+            if (currentPage < validTotalPages - 2) {
                 pages.push("...");
             }
 
             // Always show last page
-            pages.push(totalPages);
+            pages.push(validTotalPages);
         }
 
         return pages;
@@ -73,7 +77,8 @@ export function Pagination({
             )}
 
             {/* Pagination Controls */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                 {/* First Page */}
                 <Button
                     variant="outline"
@@ -141,6 +146,29 @@ export function Pagination({
                 >
                     <ChevronsRight className="h-4 w-4" />
                 </Button>
+                </div>
+
+                {/* Items Per Page Selector */}
+                {onItemsPerPageChange && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">
+                            {t("Ko'rsatish:", "Показать:")}
+                        </span>
+                        <Select
+                            value={itemsPerPage?.toString() || "10"}
+                            onValueChange={(value) => onItemsPerPageChange(Number(value))}
+                        >
+                            <SelectTrigger className="w-20 h-9">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="10">10</SelectItem>
+                                <SelectItem value="25">25</SelectItem>
+                                <SelectItem value="50">50</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,85 +1,154 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-    Plus,
-    Edit,
-    Trash2,
-    Eye,
-    EyeOff,
-    MoveUp,
-    MoveDown,
-    Image as ImageIcon,
-} from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { homeSlidersAPI, catalogBannersAPI } from "@/lib/api";
+import type { HomeSlider, CatalogBanner } from "@/types/slider";
+import { HomeSliderForm } from "@/components/admin/home-sliders/home-slider-form";
+import { CatalogBannerForm } from "@/components/admin/catalog-banners/catalog-banner-form";
+import { S3Image } from "@/components/s3-image";
+import { toast } from "sonner";
 
 export default function AdminSlidersPage() {
     const { t } = useLanguage();
     const [activeTab, setActiveTab] = useState("sliders");
+    const [sliders, setSliders] = useState<HomeSlider[]>([]);
+    const [banners, setBanners] = useState<CatalogBanner[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [sliderDialogOpen, setSliderDialogOpen] = useState(false);
+    const [bannerDialogOpen, setBannerDialogOpen] = useState(false);
+    const [editingSlider, setEditingSlider] = useState<HomeSlider | null>(null);
+    const [editingBanner, setEditingBanner] = useState<CatalogBanner | null>(null);
+    const [formLoading, setFormLoading] = useState(false);
 
-    const sliders = [
-        {
-            id: 1,
-            title: "Yangi mahsulotlar",
-            titleRu: "Новые товары",
-            description: "50% gacha chegirma",
-            descriptionRu: "Скидка до 50%",
-            image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=400&fit=crop",
-            link: "/catalog",
-            order: 1,
-            active: true,
-        },
-        {
-            id: 2,
-            title: "Premium kabellar",
-            titleRu: "Премиум кабели",
-            description: "Yuqori sifat kafolati",
-            descriptionRu: "Гарантия высокого качества",
-            image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd65?w=800&h=400&fit=crop",
-            link: "/catalog?category=premium",
-            order: 2,
-            active: true,
-        },
-        {
-            id: 3,
-            title: "Aksiya",
-            titleRu: "Акция",
-            description: "Chegirmalar haftasi",
-            descriptionRu: "Неделя скидок",
-            image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd66?w=800&h=400&fit=crop",
-            link: "/catalog?sale=true",
-            order: 3,
-            active: false,
-        },
-    ];
+    useEffect(() => {
+        loadData();
+    }, []);
 
-    const banners = [
-        {
-            id: 1,
-            title: "Sidebar Banner",
-            titleRu: "Боковой баннер",
-            position: "sidebar",
-            image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd67?w=400&h=600&fit=crop",
-            link: "/products/featured",
-            active: true,
-        },
-        {
-            id: 2,
-            title: "Top Banner",
-            titleRu: "Верхний баннер",
-            position: "top",
-            image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd68?w=1200&h=200&fit=crop",
-            link: "/sale",
-            active: true,
-        },
-    ];
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const [slidersData, bannersData] = await Promise.all([
+                homeSlidersAPI.getAll(),
+                catalogBannersAPI.getAll()
+            ]);
+            setSliders(slidersData.sort((a, b) => a.order - b.order));
+            setBanners(bannersData.sort((a, b) => a.order - b.order));
+        } catch (error) {
+            console.error("Failed to load data:", error);
+            toast.error(t("Ma'lumotlarni yuklashda xatolik", "Ошибка при загрузке данных"));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateSlider = async (data: any) => {
+        try {
+            setFormLoading(true);
+            await homeSlidersAPI.create(data);
+            toast.success(t("Slider qo'shildi", "Слайдер добавлен"));
+            setSliderDialogOpen(false);
+            loadData();
+        } catch (error) {
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        } finally {
+            setFormLoading(false);
+        }
+    };
+
+    const handleUpdateSlider = async (data: any) => {
+        if (!editingSlider) return;
+        try {
+            setFormLoading(true);
+            await homeSlidersAPI.update(editingSlider.id, data);
+            toast.success(t("Slider yangilandi", "Слайдер обновлен"));
+            setSliderDialogOpen(false);
+            setEditingSlider(null);
+            loadData();
+        } catch (error) {
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        } finally {
+            setFormLoading(false);
+        }
+    };
+
+    const handleToggleSlider = async (slider: HomeSlider) => {
+        try {
+            await homeSlidersAPI.update(slider.id, { isActive: !slider.isActive });
+            toast.success(t("Status o'zgartirildi", "Статус изменен"));
+            loadData();
+        } catch (error) {
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        }
+    };
+
+    const handleDeleteSlider = async (id: string) => {
+        if (!confirm(t("Rostdan ham o'chirmoqchimisiz?", "Вы уверены, что хотите удалить?"))) return;
+        try {
+            await homeSlidersAPI.delete(id);
+            toast.success(t("Slider o'chirildi", "Слайдер удален"));
+            loadData();
+        } catch (error) {
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        }
+    };
+
+    const handleCreateBanner = async (data: any) => {
+        try {
+            setFormLoading(true);
+            await catalogBannersAPI.create(data);
+            toast.success(t("Banner qo'shildi", "Баннер добавлен"));
+            setBannerDialogOpen(false);
+            loadData();
+        } catch (error) {
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        } finally {
+            setFormLoading(false);
+        }
+    };
+
+    const handleUpdateBanner = async (data: any) => {
+        if (!editingBanner) return;
+        try {
+            setFormLoading(true);
+            await catalogBannersAPI.update(editingBanner.id, data);
+            toast.success(t("Banner yangilandi", "Баннер обновлен"));
+            setBannerDialogOpen(false);
+            setEditingBanner(null);
+            loadData();
+        } catch (error) {
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        } finally {
+            setFormLoading(false);
+        }
+    };
+
+    const handleToggleBanner = async (banner: CatalogBanner) => {
+        try {
+            await catalogBannersAPI.update(banner.id, { isActive: !banner.isActive });
+            toast.success(t("Status o'zgartirildi", "Статус изменен"));
+            loadData();
+        } catch (error) {
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        }
+    };
+
+    const handleDeleteBanner = async (id: string) => {
+        if (!confirm(t("Rostdan ham o'chirmoqchimisiz?", "Вы уверены, что хотите удалить?"))) return;
+        try {
+            await catalogBannersAPI.delete(id);
+            toast.success(t("Banner o'chirildi", "Баннер удален"));
+            loadData();
+        } catch (error) {
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        }
+    };
 
     return (
         <AdminLayout>
@@ -110,166 +179,131 @@ export default function AdminSlidersPage() {
                     {/* Sliders Tab */}
                     <TabsContent value="sliders" className="space-y-6">
                         <div className="flex justify-end">
-                            <Button className="gap-2 h-11">
+                            <Button className="gap-2 h-11" onClick={() => { setEditingSlider(null); setSliderDialogOpen(true); }}>
                                 <Plus className="h-5 w-5" />
                                 {t("Yangi slider", "Новый слайдер")}
                             </Button>
                         </div>
 
-                        <div className="space-y-4">
-                            {sliders.map((slider) => (
-                                <Card key={slider.id}>
-                                    <CardContent className="p-6">
-                                        <div className="flex flex-col lg:flex-row gap-6">
-                                            {/* Image Preview */}
-                                            <div className="w-full lg:w-64 h-32 rounded-lg overflow-hidden bg-accent flex-shrink-0">
-                                                <img
-                                                    src={slider.image}
-                                                    alt={slider.title}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="flex-1 space-y-3">
-                                                <div>
-                                                    <h3 className="text-xl font-bold">
-                                                        {slider.title}
-                                                    </h3>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {slider.titleRu}
-                                                    </p>
+                        {loading ? (
+                            <div className="text-center py-12">{t("Yuklanmoqda...", "Загрузка...")}</div>
+                        ) : (
+                            <div className="space-y-4">
+                                {sliders.map((slider) => (
+                                    <Card key={slider.id}>
+                                        <CardContent className="p-6">
+                                            <div className="flex flex-col lg:flex-row gap-6">
+                                                <div className="relative w-full lg:w-64 h-32 rounded-lg overflow-hidden bg-accent shrink-0">
+                                                    <S3Image src={slider.coverImage} alt={slider.titleUz} fill className="object-cover" />
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm">
-                                                        {slider.description}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {slider.descriptionRu}
-                                                    </p>
+                                                <div className="flex-1 space-y-3">
+                                                    <div>
+                                                        <h3 className="text-xl font-bold">{slider.titleUz}</h3>
+                                                        <p className="text-sm text-muted-foreground">{slider.titleRu}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm">{slider.subtitleUz}</p>
+                                                        <p className="text-sm text-muted-foreground">{slider.subtitleRu}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm">
+                                                        <span className="text-muted-foreground">{t("Havola:", "Ссылка:")}</span>
+                                                        <code className="px-2 py-1 bg-accent rounded text-xs">{slider.link}</code>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-sm">
-                                                    <span className="text-muted-foreground">
-                                                        {t("Havola:", "Ссылка:")}
-                                                    </span>
-                                                    <code className="px-2 py-1 bg-accent rounded text-xs">
-                                                        {slider.link}
-                                                    </code>
+                                                <div className="flex lg:flex-col gap-2">
+                                                    <Button variant="outline" size="icon" onClick={() => handleToggleSlider(slider)}>
+                                                        {slider.isActive ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                    </Button>
+                                                    <Button variant="outline" size="icon" onClick={() => { setEditingSlider(slider); setSliderDialogOpen(true); }}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="outline" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteSlider(slider.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </div>
-
-                                            {/* Actions */}
-                                            <div className="flex lg:flex-col gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                >
-                                                    <MoveUp className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                >
-                                                    <MoveDown className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                >
-                                                    {slider.active ? (
-                                                        <Eye className="h-4 w-4" />
-                                                    ) : (
-                                                        <EyeOff className="h-4 w-4" />
-                                                    )}
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="text-red-500 hover:text-red-600"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </TabsContent>
 
                     {/* Banners Tab */}
                     <TabsContent value="banners" className="space-y-6">
                         <div className="flex justify-end">
-                            <Button className="gap-2 h-11">
+                            <Button className="gap-2 h-11" onClick={() => { setEditingBanner(null); setBannerDialogOpen(true); }}>
                                 <Plus className="h-5 w-5" />
                                 {t("Yangi banner", "Новый баннер")}
                             </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {banners.map((banner) => (
-                                <Card key={banner.id}>
-                                    <CardContent className="p-6">
-                                        <div className="space-y-4">
-                                            {/* Image */}
-                                            <div className="w-full h-48 rounded-lg overflow-hidden bg-accent">
-                                                <img
-                                                    src={banner.image}
-                                                    alt={banner.title}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-
-                                            {/* Info */}
-                                            <div>
-                                                <h3 className="text-lg font-bold">
-                                                    {banner.title}
-                                                </h3>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {banner.titleRu}
-                                                </p>
-                                                <div className="flex items-center gap-2 mt-2">
-                                                    <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded">
-                                                        {banner.position}
-                                                    </span>
-                                                    {banner.active && (
-                                                        <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded">
-                                                            {t("Faol", "Активный")}
-                                                        </span>
-                                                    )}
+                        {loading ? (
+                            <div className="text-center py-12">{t("Yuklanmoqda...", "Загрузка...")}</div>
+                        ) : (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {banners.map((banner) => (
+                                    <Card key={banner.id}>
+                                        <CardContent className="p-6">
+                                            <div className="space-y-4">
+                                                <div className="relative w-full h-48 rounded-lg overflow-hidden bg-accent">
+                                                    <S3Image src={banner.coverImage} alt={banner.titleUz} fill className="object-cover" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-lg font-bold">{banner.titleUz}</h3>
+                                                    <p className="text-sm text-muted-foreground">{banner.titleRu}</p>
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        {banner.isActive && (
+                                                            <span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded">
+                                                                {t("Faol", "Активный")}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2 pt-4 border-t">
+                                                    <Button variant="outline" size="icon" onClick={() => handleToggleBanner(banner)}>
+                                                        {banner.isActive ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                                    </Button>
+                                                    <Button variant="outline" className="flex-1 gap-2" onClick={() => { setEditingBanner(banner); setBannerDialogOpen(true); }}>
+                                                        <Edit className="h-4 w-4" />
+                                                        {t("Tahrirlash", "Редактировать")}
+                                                    </Button>
+                                                    <Button variant="outline" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteBanner(banner.id)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </div>
-
-                                            {/* Actions */}
-                                            <div className="flex gap-2 pt-4 border-t">
-                                                <Button
-                                                    variant="outline"
-                                                    className="flex-1 gap-2"
-                                                >
-                                                    <Edit className="h-4 w-4" />
-                                                    {t("Tahrirlash", "Редактировать")}
-                                                </Button>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="text-red-500 hover:text-red-600"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
                     </TabsContent>
                 </Tabs>
+
+                {/* Slider Dialog */}
+                <Dialog open={sliderDialogOpen} onOpenChange={setSliderDialogOpen}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <HomeSliderForm
+                            slider={editingSlider || undefined}
+                            onSubmit={editingSlider ? handleUpdateSlider : handleCreateSlider}
+                            onCancel={() => { setSliderDialogOpen(false); setEditingSlider(null); }}
+                            loading={formLoading}
+                        />
+                    </DialogContent>
+                </Dialog>
+
+                {/* Banner Dialog */}
+                <Dialog open={bannerDialogOpen} onOpenChange={setBannerDialogOpen}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <CatalogBannerForm
+                            banner={editingBanner || undefined}
+                            onSubmit={editingBanner ? handleUpdateBanner : handleCreateBanner}
+                            onCancel={() => { setBannerDialogOpen(false); setEditingBanner(null); }}
+                            loading={formLoading}
+                        />
+                    </DialogContent>
+                </Dialog>
             </div>
         </AdminLayout>
     );

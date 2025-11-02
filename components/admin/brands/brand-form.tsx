@@ -1,17 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImageOff, Upload, X } from "lucide-react";
+import { Image as ImageIcon, X } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Brand, CreateBrandDto, UpdateBrandDto } from "@/types/brand";
-import { uploadImage } from "@/lib/api";
 import { toast } from "sonner";
 import Image from "next/image";
+import { MediaGalleryModal } from "@/components/admin/media-gallery-modal";
+import { getImageUrl } from "@/lib/s3/get-image-url";
 
 interface BrandFormProps {
   brand?: Brand;
@@ -29,54 +30,37 @@ export function BrandForm({ brand, onSubmit, onCancel, loading }: BrandFormProps
     isActive: brand?.isActive ?? true,
     order: brand?.order || 0,
   });
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(brand?.image || "");
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error(t("Rasm hajmi 2MB dan oshmasligi kerak", "Размер изображения не должен превышать 2MB"));
-        return;
-      }
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  // Load image URL when brand is loaded
+  useEffect(() => {
+    if (brand?.image) {
+      getImageUrl(brand.image).then(setImagePreview);
     }
-  };
+  }, [brand]);
 
   const handleRemoveImage = () => {
-    setImageFile(null);
     setImagePreview("");
     setFormData(prev => ({ ...prev, image: "" }));
+  };
+
+  const handleImageSelect = (keys: string[]) => {
+    if (keys.length > 0) {
+      setFormData(prev => ({ ...prev, image: keys[0] }));
+      // Generate URL for preview
+      getImageUrl(keys[0]).then(setImagePreview);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      let imageUrl = formData.image;
-      
-      // Upload image if new file selected
-      if (imageFile) {
-        setUploadingImage(true);
-        const uploadResult = await uploadImage(imageFile);
-        imageUrl = uploadResult.url;
-      }
-
-      await onSubmit({
-        ...formData,
-        image: imageUrl,
-      });
+      await onSubmit(formData);
     } catch (error) {
       console.error("Form submission error:", error);
       toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
-    } finally {
-      setUploadingImage(false);
     }
   };
 
@@ -123,8 +107,7 @@ export function BrandForm({ brand, onSubmit, onCancel, loading }: BrandFormProps
           {/* Image Upload */}
           <div className="space-y-2">
             <Label>{t("Rasm", "Изображение")}</Label>
-            <div className="space-y-4">
-              {/* Image Preview */}
+            <div className="flex items-center gap-4">
               {imagePreview ? (
                 <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
                   <Image
@@ -142,28 +125,27 @@ export function BrandForm({ brand, onSubmit, onCancel, loading }: BrandFormProps
                   </button>
                 </div>
               ) : (
-                <div className="w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
-                  <ImageOff className="w-8 h-8 text-muted-foreground" />
-                </div>
-              )}
-
-              {/* Upload Button */}
-              <div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <Label
-                  htmlFor="image-upload"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md cursor-pointer hover:bg-secondary/80"
+                <button
+                  type="button"
+                  onClick={() => setImageModalOpen(true)}
+                  className="w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
                 >
-                  <Upload className="w-4 h-4" />
-                  {t("Rasm tanlash", "Выбрать изображение")}
-                </Label>
-              </div>
+                  <ImageIcon className="w-8 h-8 text-muted-foreground mb-2" />
+                  <span className="text-xs text-muted-foreground">
+                    {t("Tanlash", "Выбрать")}
+                  </span>
+                </button>
+              )}
+              {imagePreview && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setImageModalOpen(true)}
+                >
+                  {t("O'zgartirish", "Изменить")}
+                </Button>
+              )}
             </div>
           </div>
 
@@ -197,10 +179,10 @@ export function BrandForm({ brand, onSubmit, onCancel, loading }: BrandFormProps
           <div className="flex gap-3">
             <Button
               type="submit"
-              disabled={loading || uploadingImage}
+              disabled={loading}
               className="flex-1"
             >
-              {loading || uploadingImage
+              {loading
                 ? t("Saqlanmoqda...", "Сохранение...")
                 : brand
                 ? t("Yangilash", "Обновить")
@@ -211,11 +193,20 @@ export function BrandForm({ brand, onSubmit, onCancel, loading }: BrandFormProps
               type="button"
               variant="outline"
               onClick={onCancel}
-              disabled={loading || uploadingImage}
+              disabled={loading}
             >
               {t("Bekor qilish", "Отмена")}
             </Button>
           </div>
+
+          {/* Media Gallery Modal */}
+          <MediaGalleryModal
+            open={imageModalOpen}
+            onOpenChange={setImageModalOpen}
+            onSelect={handleImageSelect}
+            mode="single"
+            selectedUrls={formData.image ? [formData.image] : []}
+          />
         </form>
       </CardContent>
     </Card>

@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Trash2, Minus, Plus, Info } from "lucide-react";
 import { useCart } from "@/contexts/cart-context";
 import { useLanguage } from "@/contexts/language-context";
+import { S3Image } from "@/components/s3-image";
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart } = useCart();
@@ -74,10 +75,14 @@ export default function CartPage() {
                     <CardContent className="p-4">
                       {/* Desktop Layout */}
                       <div className="hidden md:flex items-center gap-4">
-                        <div 
-                          className="w-24 h-24 bg-cover bg-center rounded-lg flex-shrink-0"
-                          style={{ backgroundImage: `url(${item.image})` }}
-                        />
+                        <div className="relative w-24 h-24 rounded-lg flex-shrink-0 overflow-hidden bg-accent">
+                          <S3Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                         
                         <div className="flex-grow">
                           <p className="font-medium line-clamp-1">{item.name}</p>
@@ -133,10 +138,14 @@ export default function CartPage() {
                       <div className="md:hidden space-y-3">
                         {/* Image and Title */}
                         <div className="flex gap-3">
-                          <div 
-                            className="w-20 h-20 bg-cover bg-center rounded-lg flex-shrink-0"
-                            style={{ backgroundImage: `url(${item.image})` }}
-                          />
+                          <div className="relative w-20 h-20 rounded-lg flex-shrink-0 overflow-hidden bg-accent">
+                            <S3Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
                           <div className="flex-1">
                             <p className="font-medium text-sm line-clamp-2">{item.name}</p>
                             {item.category && (

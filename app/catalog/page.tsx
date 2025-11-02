@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense, useMemo, useEffect } from "react";
+import { useState, Suspense, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/header";
@@ -20,6 +20,13 @@ import { ChevronLeft, ChevronRight, PackageSearch } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
+import { categoriesAPI, brandsAPI, productsAPI, catalogBannersAPI } from "@/lib/api";
+import { Category } from "@/types/category";
+import { Brand } from "@/types/brand";
+import { Product } from "@/types/product";
+import { CatalogBanner } from "@/types/slider";
+import { Skeleton } from "@/components/ui/skeleton";
+import { S3Image } from "@/components/s3-image";
 
 function CatalogContent() {
     const { t } = useLanguage();
@@ -30,10 +37,10 @@ function CatalogContent() {
     const searchQuery = searchParams.get("search") || "";
     const brandParam = searchParams.get("brand");
 
-    const [sortBy, setSortBy] = useState("best");
+    const [sortBy, setSortBy] = useState("createdAt");
     const [filters, setFilters] = useState<FilterState>({
         search: searchQuery,
-        categories: [],
+        categories: categoryParam ? [categoryParam] : [],
         subcategories: subcategoryParam ? [subcategoryParam] : [],
         brands: brandParam ? [brandParam] : [],
         priceRange: [0, 500000],
@@ -42,6 +49,18 @@ function CatalogContent() {
     });
     
     const [selectedSlide, setSelectedSlide] = useState(0);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [brands, setBrands] = useState<Brand[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [banners, setBanners] = useState<CatalogBanner[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [loadingBrands, setLoadingBrands] = useState(true);
+    const [loadingProducts, setLoadingProducts] = useState(true);
+    const [loadingBanners, setLoadingBanners] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 16;
     
     const [emblaRef, emblaApi] = useEmblaCarousel(
         { loop: true, align: "start" },
@@ -64,161 +83,158 @@ function CatalogContent() {
         };
     }, [emblaApi]);
 
-    // Mock categories with subcategories
-    const categories = [
-        {
-            id: 1,
-            name: "Kabellar",
-            nameRu: "Кабели",
-            slug: "kabellar",
-            subcategories: [
-                { id: 1, name: "Quvvat kabellari", nameRu: "Силовые кабели", slug: "quvvat-kabellari" },
-                { id: 2, name: "Ma'lumot kabellari", nameRu: "Информационные кабели", slug: "malumot-kabellari" },
-                { id: 3, name: "Koaksial kabellar", nameRu: "Коаксиальные кабели", slug: "koaksial-kabellar" },
-            ],
-        },
-        {
-            id: 2,
-            name: "Yoritish",
-            nameRu: "Освещение",
-            slug: "yoritish",
-            subcategories: [
-                { id: 4, name: "LED lampalar", nameRu: "LED лампы", slug: "led-lampalar" },
-                { id: 5, name: "Lyustralar", nameRu: "Люстры", slug: "lyustralar" },
-            ],
-        },
-    ];
+    useEffect(() => {
+        loadCategories();
+        loadBrands();
+        loadBanners();
+    }, []);
 
-    const availableBrands = useMemo(() => [
-        { id: "philips", name: "Philips" },
-        { id: "siemens", name: "Siemens" },
-        { id: "legrand", name: "Legrand" },
-        { id: "schneider", name: "Schneider" },
-        { id: "abb", name: "ABB" },
-    ], []);
+    const loadBanners = async () => {
+        try {
+            setLoadingBanners(true);
+            const data = await catalogBannersAPI.getActive();
+            setBanners(data.sort((a, b) => a.order - b.order));
+        } catch (err) {
+            console.error("Failed to load banners:", err);
+        } finally {
+            setLoadingBanners(false);
+        }
+    };
 
-    // Find current category and subcategories
+    useEffect(() => {
+        loadProducts();
+    }, [currentPage, sortBy, filters, categoryParam, searchQuery]);
+
+    const loadCategories = async () => {
+        try {
+            setLoadingCategories(true);
+            const data = await categoriesAPI.getAll();
+            const parentCategories = data.filter((c) => !c.parentId && c.isActive);
+            setCategories(parentCategories);
+        } catch (err) {
+            console.error("Failed to load categories:", err);
+        } finally {
+            setLoadingCategories(false);
+        }
+    };
+
+    const loadBrands = async () => {
+        try {
+            setLoadingBrands(true);
+            const data = await brandsAPI.getAll();
+            setBrands(data.filter((b) => b.isActive));
+        } catch (err) {
+            console.error("Failed to load brands:", err);
+        } finally {
+            setLoadingBrands(false);
+        }
+    };
+
+    const loadProducts = useCallback(async () => {
+        try {
+            setLoadingProducts(true);
+            const params: any = {
+                page: currentPage,
+                limit: itemsPerPage,
+                sortBy: sortBy,
+                sortOrder: "DESC",
+                isActive: true,
+            };
+
+            // Search - both 'search' and 'q' parameters
+            if (filters.search) params.q = filters.search;
+            if (searchQuery) params.q = searchQuery;
+            // Categories from URL and filter - birlashtirib yuborish
+            const allCategories = [...new Set([
+                ...(categoryParam ? [categoryParam] : []),
+                ...filters.categories
+            ])];
+            if (allCategories.length > 0) {
+                params.categories = allCategories;
+            }
+            if (filters.subcategories.length > 0) params.subcategories = filters.subcategories;
+            if (filters.brands.length > 0) params.brandId = filters.brands[0];
+            if (filters.priceRange) {
+                params.minPrice = filters.priceRange[0];
+                params.maxPrice = filters.priceRange[1];
+            }
+            if (filters.isNew) params.isNew = true;
+            if (filters.hasDiscount) params.hasDiscount = true;
+
+            const result = await productsAPI.getAll(params);
+            setProducts(result.data);
+            setTotalItems(result.total);
+            const pages = Math.ceil(result.total / result.limit);
+            setTotalPages(pages > 0 ? pages : 1);
+        } catch (err) {
+            console.error("Failed to load products:", err);
+        } finally {
+            setLoadingProducts(false);
+        }
+    }, [currentPage, itemsPerPage, sortBy, filters, categoryParam, searchQuery]);
+
+    useEffect(() => {
+        loadProducts();
+    }, [loadProducts]);
+
+    // Find current category and subcategories  
     const currentCategory = categoryParam
-        ? categories.find((c) => c.slug === categoryParam)
+        ? categories.find((c) => c.id === categoryParam)
         : null;
-    const subcategories = currentCategory?.subcategories || [];
+    
+    const subcategories = useMemo(() => {
+        if (!currentCategory) return [];
+        return categories.filter((c) => c.parentId === currentCategory.id && c.isActive);
+    }, [currentCategory, categories]);
 
-    const allProducts = Array.from({ length: 50 }, (_, i) => ({
-        id: i + 1,
-        name: `${
-            [
-                "RG6 Koaksial Kabel",
-                "Optik Tolali Kabel",
-                "Quvvat Kabeli",
-                "HDMI Kabel",
-                "USB-C Kabel",
-            ][i % 5]
-        } ${i + 1}`,
-        price: `${(i + 1) * 10},000`,
-        oldPrice: i % 3 === 0 ? `${(i + 1) * 12},000` : undefined,
-        categoryName: [
-            "Quvvat kabellari",
-            "Ma'lumot kabellari",
-            "LED lampalar",
-            "Lyustralar",
-        ][i % 4],
-        categorySlug: ["kabellar", "kabellar", "yoritish", "yoritish"][i % 4],
-        subcategorySlug: [
-            "quvvat-kabellari",
-            "malumot-kabellari",
-            "led-lampalar",
-            "lyustralar",
-        ][i % 4],
-        brand: ["Philips", "Siemens", "Legrand", "Schneider", "ABB"][i % 5],
-        image: `https://images.unsplash.com/photo-${
-            1558618666 + (i % 5)
-        }fcd25c85cd64?w=400&h=400&fit=crop`,
-        rating: 4 + (i % 10) / 10,
-        isNew: i % 5 === 0,
-        discount: i % 3 === 0 ? `${10 + (i % 3) * 5}%` : undefined,
-    }));
-
-    // Filter and sort products
-    const filteredAndSortedProducts = useMemo(() => {
-        let filtered = [...allProducts];
-
-        // Category filter from URL
-        if (categoryParam) {
-            filtered = filtered.filter((p) => p.categorySlug === categoryParam);
-        }
-
-        // Subcategory filter
-        if (filters.subcategories.length > 0) {
-            filtered = filtered.filter((p) =>
-                filters.subcategories.includes(p.subcategorySlug)
-            );
-        }
-
-        // Search filter
-        if (filters.search) {
-            filtered = filtered.filter((p) =>
-                p.name.toLowerCase().includes(filters.search.toLowerCase())
-            );
-        }
-
-        // Brand filter
-        if (filters.brands.length > 0) {
-            filtered = filtered.filter((p) =>
-                filters.brands.some((brandId) =>
-                    availableBrands.find((b) => b.id === brandId)?.name === p.brand
-                )
-            );
-        }
-
-        // Price filter
-        if (filters.priceRange) {
-            filtered = filtered.filter(
-                (p) => {
-                    const price = parseInt(p.price.replace(/,/g, ""));
-                    return price >= filters.priceRange[0] && price <= filters.priceRange[1];
-                }
-            );
-        }
-
-        // New products filter
-        if (filters.isNew) {
-            filtered = filtered.filter((p) => p.isNew);
-        }
-
-        // Discount filter
-        if (filters.hasDiscount) {
-            filtered = filtered.filter((p) => p.discount);
-        }
-
-        // Sort products
-        const sorted = [...filtered];
-        if (sortBy === "price-low") {
-            sorted.sort(
-                (a, b) =>
-                    parseInt(a.price.replace(/,/g, "")) -
-                    parseInt(b.price.replace(/,/g, ""))
-            );
-        } else if (sortBy === "price-high") {
-            sorted.sort(
-                (a, b) =>
-                    parseInt(b.price.replace(/,/g, "")) -
-                    parseInt(a.price.replace(/,/g, ""))
-            );
-        } else if (sortBy === "newest") {
-            sorted.sort((a, b) => b.id - a.id);
-        }
-
-        return sorted;
-    }, [allProducts, categoryParam, filters, sortBy, availableBrands]);
+    const availableBrands = useMemo(() => brands.map(b => ({ id: b.id, name: b.nameUz })), [brands]);
 
     // Update filters when URL params change
     useEffect(() => {
         setFilters((prev) => ({
             ...prev,
             search: searchQuery,
-            subcategory: subcategoryParam || "",
+            subcategories: subcategoryParam ? [subcategoryParam] : [],
         }));
+        setCurrentPage(1); // Reset to first page when filters change
     }, [searchQuery, subcategoryParam]);
+
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filters.categories, filters.subcategories, filters.brands, filters.isNew, filters.hasDiscount]);
+
+    // Pagination handlers
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const getPageNumbers = () => {
+        const pages: (number | string)[] = [];
+        const maxVisible = 5;
+
+        if (totalPages <= maxVisible) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            pages.push(1);
+            if (currentPage > 3) pages.push("...");
+            
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(totalPages - 1, currentPage + 1);
+            
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+            
+            if (currentPage < totalPages - 2) pages.push("...");
+            pages.push(totalPages);
+        }
+
+        return pages;
+    };
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -230,44 +246,74 @@ function CatalogContent() {
             />
             <Header />
             
-            {/* Catalog Slider - only show on main catalog page */}
-            {!categoryParam && !searchQuery && (
+            {/* Catalog Banners Slider */}
+            {!searchQuery && (
                 <div className="container mx-auto px-4 py-6">
-                    <div className="relative">
-                        <div className="overflow-hidden rounded-xl" ref={emblaRef}>
-                            <div className="flex">
-                                {categories.map((category) => (
-                                    <div
-                                        key={category.id}
-                                        className="flex-[0_0_100%] min-w-0"
-                                    >
-                                        <Link href={`/catalog?category=${category.slug}`}>
-                                            <div className="relative h-[200px] bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity">
-                                                <h2 className="text-3xl md:text-4xl font-black text-white">
-                                                    {t(category.name, category.nameRu)}
-                                                </h2>
-                                            </div>
-                                        </Link>
+                    {loadingBanners ? (
+                        <div className="relative">
+                            <div className="relative h-[200px] md:h-[250px] bg-gradient-to-r from-gray-200 to-gray-100 rounded-xl animate-pulse">
+                                <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent flex items-center">
+                                    <div className="container mx-auto px-6">
+                                        <Skeleton className="h-10 w-2/3" />
                                     </div>
-                                ))}
+                                </div>
+                            </div>
+                            <div className="flex justify-center gap-2 mt-4">
+                                <div className="w-6 h-2 rounded-full bg-gray-300"></div>
+                                <div className="w-2 h-2 rounded-full bg-gray-200"></div>
+                                <div className="w-2 h-2 rounded-full bg-gray-200"></div>
                             </div>
                         </div>
-                        
-                        {/* Indicator dots */}
-                        <div className="flex justify-center gap-2 mt-4">
-                            {categories.map((_, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => emblaApi?.scrollTo(index)}
-                                    className={`h-2 rounded-full transition-all ${
-                                        index === selectedSlide
-                                            ? "w-6 bg-primary"
-                                            : "w-2 bg-gray-300"
-                                    }`}
-                                />
-                            ))}
+                    ) : banners.length > 0 ? (
+                        <div className="relative">
+                            <div className="overflow-hidden rounded-xl" ref={emblaRef}>
+                                <div className="flex">
+                                    {banners.map((banner) => (
+                                        <div
+                                            key={banner.id}
+                                            className="flex-[0_0_100%] min-w-0"
+                                        >
+                                            <Link href={banner.link}>
+                                                <div className="relative h-[200px] md:h-[250px] bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl overflow-hidden group">
+                                                    <S3Image
+                                                        src={banner.coverImage}
+                                                        alt={t(banner.titleUz, banner.titleRu)}
+                                                        fill
+                                                        className="object-contain md:object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    />
+                                                    
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
+                                                        <div className="container mx-auto px-6">
+                                                            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">
+                                                                {t(banner.titleUz, banner.titleRu)}
+                                                            </h2>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            {/* Indicator dots */}
+                            {banners.length > 1 && (
+                                <div className="flex justify-center gap-2 mt-4">
+                                    {banners.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => emblaApi?.scrollTo(index)}
+                                            className={`h-2 rounded-full transition-all ${
+                                                index === selectedSlide
+                                                    ? "w-6 bg-primary"
+                                                    : "w-2 bg-gray-300"
+                                            }`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    ) : null}
                 </div>
             )}
 
@@ -276,9 +322,11 @@ function CatalogContent() {
                     {/* Sidebar Filters */}
                     <aside className="lg:col-span-1">
                         <ProductFilter
-                            subcategories={subcategories}
+                            subcategories={subcategories as any}
                             brands={availableBrands}
                             onFilterChange={setFilters}
+                            initialCategory={categoryParam || undefined}
+                            initialBrand={brandParam || undefined}
                         />
                     </aside>
 
@@ -288,14 +336,12 @@ function CatalogContent() {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-6">
                             <div className="flex-1">
                                 <h1 className="text-4xl font-black">
-                                    {currentCategory
-                                        ? t(currentCategory.name, currentCategory.nameRu)
-                                        : searchQuery
+                                    {searchQuery
                                         ? t("Qidiruv natijalari", "Результаты поиска")
                                         : t("Barcha mahsulotlar", "Все товары")}
                                 </h1>
                                 <p className="text-muted-foreground mt-1">
-                                    {filteredAndSortedProducts.length}{" "}
+                                    {totalItems}{" "}
                                     {t("ta mahsulot topildi", "товаров найдено")}
                                 </p>
                             </div>
@@ -342,19 +388,29 @@ function CatalogContent() {
                         </div>
 
                         {/* Products Grid or No Results */}
-                        {filteredAndSortedProducts.length > 0 ? (
+                        {loadingProducts ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                                {filteredAndSortedProducts.map((product) => (
+                                {Array.from({ length: 16 }).map((_, i) => (
+                                    <div key={i} className="space-y-3">
+                                        <Skeleton className="aspect-square w-full rounded-lg" />
+                                        <Skeleton className="h-4 w-3/4" />
+                                        <Skeleton className="h-4 w-1/2" />
+                                    </div>
+                                ))}
+                            </div>
+                        ) : products.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                                {products.map((product) => (
                                 <ProductCard
                                     key={product.id}
                                     id={product.id}
-                                    name={product.name}
-                                    price={product.price}
-                                    oldPrice={product.oldPrice}
-                                    image={product.image}
+                                    name={product.nameUz}
+                                    price={product.price.toString()}
+                                    oldPrice={product.oldPrice?.toString()}
+                                    image={product.coverImage || ""}
                                     rating={product.rating}
                                     isNew={product.isNew}
-                                        discount={product.discount}
+                                    discount={product.discount ? `${product.discount}%` : undefined}
                                     />
                                 ))}
                             </div>
@@ -374,21 +430,38 @@ function CatalogContent() {
                         )}
 
                         {/* Pagination */}
-                        {filteredAndSortedProducts.length > 0 && (
+                        {!loadingProducts && products.length > 0 && totalPages > 1 && (
                             <div className="flex items-center justify-center gap-2 mt-12">
-                                <Button variant="ghost" size="icon">
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                >
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
-                                <Button className="bg-primary text-white hover:bg-primary/90">
-                                    1
-                                </Button>
-                                <Button variant="ghost">2</Button>
-                                <Button variant="ghost">3</Button>
-                                <span className="text-muted-foreground">
-                                    ...
-                                </span>
-                                <Button variant="ghost">10</Button>
-                                <Button variant="ghost" size="icon">
+                                {getPageNumbers().map((page, index) => (
+                                    page === "..." ? (
+                                        <span key={`ellipsis-${index}`} className="text-muted-foreground px-2">
+                                            ...
+                                        </span>
+                                    ) : (
+                                        <Button 
+                                            key={page}
+                                            variant={currentPage === page ? "default" : "ghost"}
+                                            className={currentPage === page ? "bg-primary text-white hover:bg-primary/90" : ""}
+                                            onClick={() => handlePageChange(page as number)}
+                                        >
+                                            {page}
+                                        </Button>
+                                    )
+                                ))}
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon"
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                >
                                     <ChevronRight className="h-5 w-5" />
                                 </Button>
                             </div>

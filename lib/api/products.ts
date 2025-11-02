@@ -4,7 +4,6 @@
  */
 
 import { apiRequest } from "./client";
-import { uploadImage, uploadImages } from "./upload";
 import type {
   Product,
   CreateProductDto,
@@ -54,60 +53,16 @@ export const productsAPI = {
 
   // Admin endpoints
   create: async (data: CreateProductDto) => {
-    const payload: Record<string, unknown> = { ...data };
-
-    // Upload main image if File
-    if (data.mainImage instanceof File) {
-      const uploaded = await uploadImage(data.mainImage);
-      payload.mainImage = uploaded.url;
-    }
-
-    // Upload images if any Files present
-    if (Array.isArray(data.images)) {
-      const fileParts: File[] = data.images.filter(
-        (i): i is File => i instanceof File
-      );
-      const stringParts: string[] = data.images.filter(
-        (i): i is string => typeof i === "string"
-      );
-      if (fileParts.length > 0) {
-        const uploaded = await uploadImages(fileParts);
-        payload.images = [...stringParts, ...uploaded.map((u) => u.url)];
-      }
-    }
-
     return apiRequest<Product>("/products", {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(data),
     });
   },
 
   update: async (id: string, data: UpdateProductDto) => {
-    const payload: Record<string, unknown> = { ...data };
-
-    // Upload main image if File
-    if (data.mainImage instanceof File) {
-      const uploaded = await uploadImage(data.mainImage);
-      payload.mainImage = uploaded.url;
-    }
-
-    // Upload images if any Files present
-    if (Array.isArray(data.images)) {
-      const fileParts: File[] = data.images.filter(
-        (i): i is File => i instanceof File
-      );
-      const stringParts: string[] = data.images.filter(
-        (i): i is string => typeof i === "string"
-      );
-      if (fileParts.length > 0) {
-        const uploaded = await uploadImages(fileParts);
-        payload.images = [...stringParts, ...uploaded.map((u) => u.url)];
-      }
-    }
-
     return apiRequest<Product>(`/products/${id}`, {
       method: "PATCH",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(data),
     });
   },
 

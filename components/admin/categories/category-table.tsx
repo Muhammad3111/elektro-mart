@@ -10,8 +10,8 @@ import { CategoryListSkeleton } from "@/components/category-skeleton";
 import { CategoryEmptyState } from "@/components/category-empty-state";
 import { toast } from "sonner";
 import { Edit, Trash2, Plus, Eye as EyeIcon, ImageOff } from "lucide-react";
-import Image from "next/image";
 import { useLanguage } from "@/contexts/language-context";
+import { S3Image } from "@/components/s3-image";
 import { CategoryDetailModal } from "./category-detail-modal";
 import { DeleteCategoryModal } from "./delete-category-modal";
 import { Switch } from "@/components/ui/switch";
@@ -197,7 +197,7 @@ export function CategoryTable() {
                             <div className="flex items-center gap-4 p-4 bg-muted/50">
                                 <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-background">
                                     {parent.image ? (
-                                        <Image
+                                        <S3Image
                                             src={parent.image}
                                             alt={parent.nameUz}
                                             fill
@@ -304,7 +304,7 @@ export function CategoryTable() {
                                         >
                                             <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted">
                                                 {sub.image ? (
-                                                    <Image
+                                                    <S3Image
                                                         src={sub.image}
                                                         alt={sub.nameUz}
                                                         fill

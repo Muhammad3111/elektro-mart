@@ -29,6 +29,9 @@ interface ProductFilterProps {
     subcategories?: Subcategory[];
     brands?: Brand[];
     onFilterChange?: (filters: FilterState) => void;
+    initialCategory?: string;
+    initialSubcategory?: string;
+    initialBrand?: string;
 }
 
 export interface FilterState {
@@ -45,6 +48,9 @@ export function ProductFilter({
     subcategories = [],
     brands = [],
     onFilterChange,
+    initialCategory,
+    initialSubcategory,
+    initialBrand,
 }: ProductFilterProps) {
     const { t } = useLanguage();
     const [isExpanded, setIsExpanded] = useState(true);
@@ -66,12 +72,77 @@ export function ProductFilter({
         loadCategories();
     }, []);
 
+    // Set initial category from URL if provided
+    useEffect(() => {
+        if (initialCategory && categories.length > 0) {
+            const category = categories.find(c => c.id === initialCategory);
+            
+            if (category) {
+                // Check if this is a subcategory (has parentId)
+                if (category.parentId) {
+                    // This is a subcategory, set it in subcategories filter
+                    if (!filters.subcategories.includes(initialCategory)) {
+                        const updated = { ...filters, subcategories: [initialCategory] };
+                        setFilters(updated);
+                        onFilterChange?.(updated);
+                        // Expand parent category
+                        if (!expandedCategories.includes(category.parentId)) {
+                            setExpandedCategories(prev => [...prev, category.parentId!]);
+                        }
+                    }
+                } else {
+                    // This is a parent category
+                    if (!filters.categories.includes(initialCategory)) {
+                        const categorySubcategories = categories.filter(sub => sub.parentId === initialCategory);
+                        const subcategoryIds = categorySubcategories.map(sub => sub.id.toString());
+                        
+                        const updated = { 
+                            ...filters, 
+                            categories: [initialCategory],
+                            subcategories: subcategoryIds
+                        };
+                        setFilters(updated);
+                        onFilterChange?.(updated);
+                        
+                        // Dropdown ochish
+                        if (categorySubcategories.length > 0 && !expandedCategories.includes(initialCategory)) {
+                            setExpandedCategories(prev => [...prev, initialCategory]);
+                        }
+                    }
+                }
+            }
+        }
+    }, [initialCategory, categories]);
+
+    // Set initial subcategory from URL if provided
+    useEffect(() => {
+        if (initialSubcategory && !filters.subcategories.includes(initialSubcategory)) {
+            const subcategory = categories.find(c => c.id === initialSubcategory);
+            if (subcategory?.parentId) {
+                const updated = { ...filters, subcategories: [initialSubcategory] };
+                setFilters(updated);
+                onFilterChange?.(updated);
+                // Expand parent category
+                setExpandedCategories(prev => [...prev, subcategory.parentId!]);
+            }
+        }
+    }, [initialSubcategory, categories]);
+
+    // Set initial brand from URL if provided
+    useEffect(() => {
+        if (initialBrand && !filters.brands.includes(initialBrand)) {
+            const updated = { ...filters, brands: [initialBrand] };
+            setFilters(updated);
+            onFilterChange?.(updated);
+        }
+    }, [initialBrand]);
+
     const loadCategories = async () => {
         try {
             setLoadingCategories(true);
             const data = await categoriesAPI.getAll();
-            const parentCategories = data.filter((c) => !c.parentId && c.isActive);
-            setCategories(parentCategories);
+            // Get all active categories (both parent and children)
+            setCategories(data.filter((c) => c.isActive));
         } catch (err) {
             console.error("Failed to load categories:", err);
         } finally {
@@ -93,10 +164,33 @@ export function ProductFilter({
     };
 
     const handleCategoryToggle = (categoryId: string) => {
-        const newCategories = filters.categories.includes(categoryId)
-            ? filters.categories.filter((id) => id !== categoryId)
-            : [...filters.categories, categoryId];
-        updateFilters({ categories: newCategories });
+        const isCurrentlySelected = filters.categories.includes(categoryId);
+        const categorySubcategories = categories.filter(sub => sub.parentId === categoryId);
+        
+        if (isCurrentlySelected) {
+            // Agar kategoriya o'chirilsa, uning barcha subcategoriyalarini ham o'chirish
+            const subcategoryIds = categorySubcategories.map(sub => sub.id.toString());
+            const newCategories = filters.categories.filter((id) => id !== categoryId);
+            const newSubcategories = filters.subcategories.filter(id => !subcategoryIds.includes(id));
+            updateFilters({ categories: newCategories, subcategories: newSubcategories });
+        } else {
+            // Agar kategoriya tanlanayotgan bo'lsa
+            const newCategories = [...filters.categories, categoryId];
+            
+            // Agar subcategoriyalar bo'lsa, ularni ham tanlash va dropdown ochish
+            if (categorySubcategories.length > 0) {
+                const subcategoryIds = categorySubcategories.map(sub => sub.id.toString());
+                const newSubcategories = [...new Set([...filters.subcategories, ...subcategoryIds])];
+                updateFilters({ categories: newCategories, subcategories: newSubcategories });
+                
+                // Dropdown ochish
+                if (!expandedCategories.includes(categoryId)) {
+                    setExpandedCategories(prev => [...prev, categoryId]);
+                }
+            } else {
+                updateFilters({ categories: newCategories });
+            }
+        }
     };
 
     const handleSubcategoryToggle = (subcategoryId: string) => {
@@ -163,9 +257,9 @@ export function ProductFilter({
                             </div>
                         ) : (
                             <div className="space-y-3 max-h-64 overflow-y-auto">
-                                {categories.map((category) => {
-                                    const hasSubcategories = subcategories.some(sub => sub.parentId === category.id);
-                                    const categorySubcategories = subcategories.filter(sub => sub.parentId === category.id);
+                                {categories.filter(c => !c.parentId).map((category) => {
+                                    const categorySubcategories = categories.filter(sub => sub.parentId === category.id);
+                                    const hasSubcategories = categorySubcategories.length > 0;
                                     const isExpanded = expandedCategories.includes(category.id);
                                     
                                     return (
@@ -226,7 +320,7 @@ export function ProductFilter({
                                                                 htmlFor={`subcategory-${subcategory.id}`}
                                                                 className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                                                             >
-                                                                {t(subcategory.name, subcategory.nameRu)}
+                                                                {t(subcategory.nameUz, subcategory.nameRu)}
                                                             </label>
                                                         </div>
                                                     ))}

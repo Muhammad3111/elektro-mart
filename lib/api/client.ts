@@ -29,9 +29,12 @@ export async function apiRequest<T>(
     const searchParams = new URLSearchParams();
     Object.entries(params).forEach(([key, value]) => {
       if (Array.isArray(value)) {
-        // Comma-separated arrays to match backend spec: key=a,b,c
-        const joined = value.map((v) => String(v)).join(",");
-        searchParams.append(key, joined);
+        // Array elementlarni categories[] formatida yuborish
+        value.forEach((item) => {
+          if (item !== undefined && item !== null) {
+            searchParams.append(`${key}[]`, String(item));
+          }
+        });
       } else if (value !== undefined && value !== null) {
         searchParams.append(key, String(value));
       }

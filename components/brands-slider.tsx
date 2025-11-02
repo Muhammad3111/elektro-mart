@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/language-context";
 import { Brand } from "@/types/brand";
 import { brandsAPI } from "@/lib/api";
 import { ImageOff } from "lucide-react";
+import { S3Image } from "@/components/s3-image";
 
 interface BrandsSliderProps {
     brands?: Brand[];
@@ -84,28 +84,28 @@ export function BrandsSlider({ brands: propBrands }: BrandsSliderProps) {
         return (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                 {brands.map((brand) => (
-                    <Link key={brand.id} href={`/brands/${brand.id}`}>
-                        <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2">
-                            <CardContent className="p-6 flex items-center justify-center h-24">
-                                {brand.image ? (
-                                    <div className="relative w-16 h-8">
-                                        <Image
+                    <Link key={brand.id} href={`/catalog?brand=${brand.id}`}>
+                        <div className="flex flex-col group">
+                            <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2 overflow-hidden py-0">
+                                <CardContent className="p-0 aspect-[4/3] relative">
+                                    {brand.image ? (
+                                        <S3Image
                                             src={brand.image}
                                             alt={t(brand.nameUz, brand.nameRu)}
                                             fill
-                                            className="object-contain"
+                                            className="object-cover group-hover:scale-110 transition-transform duration-300"
                                         />
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center gap-1">
-                                        <ImageOff className="w-6 h-6 text-muted-foreground" />
-                                        <p className="font-bold text-sm text-muted-foreground hover:text-primary transition-colors">
-                                            {t(brand.nameUz, brand.nameRu)}
-                                        </p>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                                            <ImageOff className="w-16 h-16 text-muted-foreground" />
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                            <h3 className="font-bold text-sm md:text-base text-center mt-3 group-hover:text-primary transition-colors">
+                                {t(brand.nameUz, brand.nameRu)}
+                            </h3>
+                        </div>
                     </Link>
                 ))}
             </div>
@@ -123,28 +123,28 @@ export function BrandsSlider({ brands: propBrands }: BrandsSliderProps) {
                             key={brand.id}
                             className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(16.666%-20px)]"
                         >
-                            <Link href={`/brands/${brand.id}`}>
-                                <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2">
-                                    <CardContent className="p-6 flex items-center justify-center h-24">
-                                        {brand.image ? (
-                                            <div className="relative w-16 h-8">
-                                                <Image
+                            <Link href={`/catalog?brand=${brand.id}`}>
+                                <div className="flex flex-col group">
+                                    <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2 overflow-hidden py-0">
+                                        <CardContent className="p-0 aspect-[4/3] relative">
+                                            {brand.image ? (
+                                                <S3Image
                                                     src={brand.image}
                                                     alt={t(brand.nameUz, brand.nameRu)}
                                                     fill
-                                                    className="object-contain"
+                                                    className="object-cover group-hover:scale-110 transition-transform duration-300"
                                                 />
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center gap-1">
-                                                <ImageOff className="w-6 h-6 text-muted-foreground" />
-                                                <p className="font-bold text-sm text-muted-foreground hover:text-primary transition-colors">
-                                                    {t(brand.nameUz, brand.nameRu)}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                                                    <ImageOff className="w-16 h-16 text-muted-foreground" />
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                    <h3 className="font-bold text-sm md:text-base text-center mt-3 group-hover:text-primary transition-colors">
+                                        {t(brand.nameUz, brand.nameRu)}
+                                    </h3>
+                                </div>
                             </Link>
                         </div>
                     ))}

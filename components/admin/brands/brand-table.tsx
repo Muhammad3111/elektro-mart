@@ -18,7 +18,7 @@ import { Brand, CreateBrandDto, UpdateBrandDto } from "@/types/brand";
 import { brandsAPI } from "@/lib/api";
 import { toast } from "sonner";
 import { BrandForm } from "./brand-form";
-import Image from "next/image";
+import { S3Image } from "@/components/s3-image";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
@@ -172,14 +172,13 @@ export function BrandTable() {
               <div key={brand.id} className="p-4 border rounded-lg bg-card">
                 <div className="flex items-center gap-4">
                   {/* Image */}
-                  <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
+                  <div className="relative w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center flex-shrink-0">
                     {brand.image ? (
-                      <Image
+                      <S3Image
                         src={brand.image}
                         alt={brand.nameUz}
-                        width={48}
-                        height={48}
-                        className="object-cover w-full h-full"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <ImageOff className="w-6 h-6 text-muted-foreground" />

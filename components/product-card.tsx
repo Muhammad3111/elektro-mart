@@ -8,10 +8,10 @@ import { ShoppingCart, Heart, ImageIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
-import { useState } from "react";
+import { S3Image } from "@/components/s3-image";
 
 interface ProductCardProps {
-    id: number;
+    id: number | string;
     name: string;
     price: string;
     oldPrice?: string;
@@ -36,7 +36,6 @@ export function ProductCard({
     const { t } = useLanguage();
     const { addToCart } = useCart();
     const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
-    const [imageError, setImageError] = useState(false);
 
     const isInFavorites = isFavorite(id);
 
@@ -109,16 +108,17 @@ export function ProductCard({
                     </div>
 
                     {/* Product Image */}
-                    {!image || imageError ? (
+                    {!image ? (
                         <div className="w-full h-full flex items-center justify-center bg-muted">
                             <ImageIcon className="w-16 h-16 text-muted-foreground/50" />
                         </div>
                     ) : (
-                        <img
+                        <S3Image
                             src={image}
                             alt={name}
-                            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                            onError={() => setImageError(true)}
+                            fill
+                            className="object-cover transform group-hover:scale-110 transition-transform duration-500"
+                            fallback="/placeholder.png"
                         />
                     )}
                 </div>

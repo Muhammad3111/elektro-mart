@@ -9,6 +9,7 @@ import { Heart, ShoppingBag, Trash2 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { useCart } from "@/contexts/cart-context";
+import { S3Image } from "@/components/s3-image";
 
 export default function FavoritesPage() {
     const { t } = useLanguage();
@@ -96,10 +97,11 @@ export default function FavoritesPage() {
                                     >
                                         <div className="relative aspect-square overflow-hidden">
                                             <Link href={`/products/${item.id}`}>
-                                                <img
+                                                <S3Image
                                                     src={item.image}
                                                     alt={item.name}
-                                                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                                                    fill
+                                                    className="object-cover transform group-hover:scale-110 transition-transform duration-500"
                                                 />
                                             </Link>
                                             {/* Remove Button */}

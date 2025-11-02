@@ -1,36 +1,141 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛒 Elektro Mart - Elektr Mahsulotlari Do'koni
 
-## Getting Started
+Modern va professional elektr mahsulotlari onlayn do'koni. Next.js 16, React 19, TypeScript va Tailwind CSS asosida qurilgan.
 
-First, run the development server:
+## 🚀 Texnologiyalar
+
+- **Frontend**: Next.js 16, React 19, TypeScript
+- **Styling**: Tailwind CSS 4, shadcn/ui
+- **State Management**: React Context API
+- **Image Storage**: AWS S3
+- **Carousel**: Embla Carousel
+- **Icons**: Lucide React
+- **Forms**: React Hook Form
+
+## 📦 Asosiy Funksiyalar
+
+### Foydalanuvchilar uchun
+- 🏠 **Bosh sahifa**: Hero slider, kategoriyalar, tanlangan mahsulotlar, brendlar
+- 📱 **Responsive dizayn**: Barcha qurilmalarda mukammal ishlaydi
+- 🔍 **Qidiruv va filtr**: Kategoriya, brend, narx, yangi/chegirmali mahsulotlar
+- 🛍️ **Mahsulot katalogi**: To'liq ma'lumot, rasmlar galereyasi, spetsifikatsiyalar
+- 🌐 **Ikki til**: O'zbek va Rus tillari
+- ⭐ **SEO optimizatsiya**: Meta teglar, sitemap, robots.txt, structured data
+
+### Admin Panel
+- 👤 **Autentifikatsiya**: Login/logout tizimi
+- 📂 **Kategoriyalar**: CRUD operatsiyalar, ota-bola kategoriyalar
+- 🏷️ **Brendlar**: Brend boshqaruvi
+- 📦 **Mahsulotlar**: To'liq CRUD, media gallery, spetsifikatsiyalar
+- 🖼️ **Media Gallery**: AWS S3 bilan integratsiya
+- 🎨 **Home Sliders**: Bosh sahifa uchun sliderlar
+- 🎯 **Catalog Banners**: Katalog sahifasi uchun bannerlar
+
+## 🛠️ O'rnatish
 
 ```bash
+# Loyihani klonlash
+git clone <repository-url>
+cd elektro-mart
+
+# Paketlarni o'rnatish
+npm install
+
+# Environment o'zgaruvchilarni sozlash
+# .env.local faylini yarating va quyidagilarni qo'shing:
+NEXT_PUBLIC_API_URL=your_api_url
+NEXT_PUBLIC_AWS_REGION=your_aws_region
+NEXT_PUBLIC_AWS_BUCKET_NAME=your_bucket_name
+NEXT_PUBLIC_AWS_ACCESS_KEY_ID=your_access_key
+NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY=your_secret_key
+
+# Development serverni ishga tushirish
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Brauzerda `http://localhost:3000` ochiladi.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Loyiha Strukturasi
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+elektro-mart/
+├── app/                    # Next.js App Router
+│   ├── admin/             # Admin panel sahifalari
+│   ├── catalog/           # Katalog sahifasi
+│   ├── products/          # Mahsulot sahifalari
+│   └── ...
+├── components/            # React komponentlar
+│   ├── admin/            # Admin komponentlar
+│   ├── ui/               # shadcn/ui komponentlar
+│   └── ...
+├── contexts/             # React Context
+├── lib/                  # Utility funksiyalar va API
+│   └── api/             # API client funksiyalar
+├── types/               # TypeScript type definitions
+└── public/              # Static fayllar
+```
 
-## Learn More
+## 🎯 Asosiy Komponentlar
 
-To learn more about Next.js, take a look at the following resources:
+- **HeroSlider**: Bosh sahifa hero slider (API integratsiya)
+- **CategorySlider**: Kategoriyalar slider
+- **BrandsSlider**: Brendlar slider
+- **ProductCard**: Mahsulot kartochkasi
+- **ProductFilter**: Mahsulotlarni filtrlash
+- **S3Image**: AWS S3 rasmlar uchun optimizatsiya
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔐 Admin Panel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Admin panelga kirish: `/admin/login`
 
-## Deploy on Vercel
+Admin panel funksiyalari:
+- Kategoriyalar boshqaruvi
+- Brendlar boshqaruvi
+- Mahsulotlar CRUD
+- Media gallery
+- Home sliders
+- Catalog banners
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🌐 API Integratsiya
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Barcha ma'lumotlar backend API dan olinadi:
+- Kategoriyalar
+- Brendlar
+- Mahsulotlar
+- Home sliders
+- Catalog banners
+
+## 📱 Responsive Dizayn
+
+- Mobile: < 768px
+- Tablet: 768px - 1024px
+- Desktop: > 1024px
+
+## 🎨 Dizayn Tizimi
+
+- **Primary color**: Elektr ko'k rang
+- **Typography**: System fonts
+- **Spacing**: Tailwind spacing scale
+- **Components**: shadcn/ui asosida
+
+## 🚀 Production Build
+
+```bash
+# Build yaratish
+npm run build
+
+# Production serverni ishga tushirish
+npm start
+```
+
+## 📄 Litsenziya
+
+Private project
+
+## 👨‍💻 Muallif
+
+Elektro Mart jamoasi
+
+---
+
+**Eslatma**: Bu loyiha Next.js 16 va React 19 dan foydalanadi. Barcha zamonaviy funksiyalar va optimizatsiyalar qo'llanilgan.

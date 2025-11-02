@@ -38,6 +38,8 @@ export function Header() {
         selectedCategory,
         setSelectedCategory,
         searchResults,
+        totalResults,
+        isSearching,
     } = useSearch();
     const pathname = usePathname();
     const router = useRouter();
@@ -83,7 +85,7 @@ export function Header() {
         setShowResults(value.length > 0);
     };
 
-    const handleProductClick = (productId: number) => {
+    const handleProductClick = (productId: string) => {
         setShowResults(false);
         setSearchQuery("");
         router.push(`/products/${productId}`);
@@ -205,18 +207,18 @@ export function Header() {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-medium text-sm truncate">
-                                                            {product.name}
+                                                            {language === 'uz' ? product.nameUz : product.nameRu}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {product.category}
+                                                            {product.category ? t(product.category.nameUz, product.category.nameRu) : ''}
                                                         </p>
                                                     </div>
                                                     <div className="text-sm font-bold text-primary">
-                                                        {product.price} UZS
+                                                        {product.price.toLocaleString()} UZS
                                                     </div>
                                                 </button>
                                             ))}
-                                        {searchResults.length > 5 && (
+                                        {totalResults > 5 && (
                                             <button
                                                 onClick={handleViewAll}
                                                 className="w-full mt-2 p-3 text-center text-sm font-medium text-primary hover:bg-accent rounded-lg transition-colors"
@@ -225,7 +227,7 @@ export function Header() {
                                                     "Barcha natijalarni ko'rish",
                                                     "Посмотреть все результаты"
                                                 )}{" "}
-                                                ({searchResults.length})
+                                                ({totalResults})
                                             </button>
                                         )}
                                     </div>
@@ -433,14 +435,14 @@ export function Header() {
                                         <div className="w-12 h-12 bg-accent rounded flex-shrink-0" />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium text-sm truncate">
-                                                {product.name}
+                                                {language === 'uz' ? product.nameUz : product.nameRu}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {product.category}
+                                                {product.category ? t(product.category.nameUz, product.category.nameRu) : ''}
                                             </p>
                                         </div>
                                         <p className="font-bold text-primary text-sm">
-                                            {product.price} UZS
+                                            {product.price.toLocaleString()} UZS
                                         </p>
                                     </div>
                                 ))}

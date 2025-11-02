@@ -11,10 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Image as ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 import { useLanguage } from "@/contexts/language-context";
 import { CategorySearchSelect } from "./category-search-select";
+import { MediaGalleryModal } from "@/components/admin/media-gallery-modal";
+import { getImageUrl } from "@/lib/s3/get-image-url";
 
 interface CategoryFormProps {
     category?: Category;
@@ -33,6 +35,7 @@ export function CategoryForm({
     const [imagePreview, setImagePreview] = useState<string | null>(
         category?.image || null
     );
+    const [imageModalOpen, setImageModalOpen] = useState(false);
 
     const [formData, setFormData] = useState<
         CreateCategoryDto | UpdateCategoryDto
@@ -82,32 +85,24 @@ export function CategoryForm({
         }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            // Max 2MB check
-            if (file.size > 2 * 1024 * 1024) {
-                toast.error(
-                    t(
-                        "Rasm hajmi 2MB dan oshmasligi kerak",
-                        "Размер изображения не должен превышать 2MB"
-                    )
-                );
-                return;
-            }
-
-            setFormData({ ...formData, image: file });
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+    // Load image URL when category is loaded
+    useEffect(() => {
+        if (category?.image) {
+            getImageUrl(category.image).then(setImagePreview);
         }
-    };
+    }, [category]);
 
     const removeImage = () => {
         setFormData({ ...formData, image: undefined });
         setImagePreview(null);
+    };
+
+    const handleImageSelect = (keys: string[]) => {
+        if (keys.length > 0) {
+            setFormData({ ...formData, image: keys[0] });
+            // Generate URL for preview
+            getImageUrl(keys[0]).then(setImagePreview);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -173,7 +168,7 @@ export function CategoryForm({
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Image Upload */}
             <div className="space-y-2">
-                <Label>{t("Rasm", "Изображение")} (max 2MB)</Label>
+                <Label>{t("Rasm", "Изображение")}</Label>
                 <div className="flex items-center gap-4">
                     {imagePreview ? (
                         <div className="relative w-32 h-32 rounded-lg overflow-hidden border">
@@ -192,18 +187,26 @@ export function CategoryForm({
                             </button>
                         </div>
                     ) : (
-                        <label className="w-32 h-32 flex flex-col items-center justify-center border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors">
-                            <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                        <button
+                            type="button"
+                            onClick={() => setImageModalOpen(true)}
+                            className="w-32 h-32 flex flex-col items-center justify-center border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors"
+                        >
+                            <ImageIcon className="w-8 h-8 text-muted-foreground mb-2" />
                             <span className="text-xs text-muted-foreground">
-                                {t("Yuklash", "Загрузить")}
+                                {t("Tanlash", "Выбрать")}
                             </span>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                className="hidden"
-                            />
-                        </label>
+                        </button>
+                    )}
+                    {imagePreview && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setImageModalOpen(true)}
+                        >
+                            {t("O'zgartirish", "Изменить")}
+                        </Button>
                     )}
                 </div>
             </div>
@@ -292,6 +295,15 @@ export function CategoryForm({
                         : t("Yaratish", "Создать")}
                 </Button>
             </div>
+
+            {/* Media Gallery Modal */}
+            <MediaGalleryModal
+                open={imageModalOpen}
+                onOpenChange={setImageModalOpen}
+                onSelect={handleImageSelect}
+                mode="single"
+                selectedUrls={formData.image ? [formData.image as string] : []}
+            />
         </form>
     );
 }

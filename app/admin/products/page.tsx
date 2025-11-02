@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { CrudModal } from "@/components/admin/shared";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
     Select,
     SelectContent,
@@ -14,63 +15,32 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ImageUpload } from "@/components/admin/image-upload";
 import { Pagination } from "@/components/admin/pagination";
-import { Plus, Search, Edit, Trash2, Package } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Package, Eye, ShoppingCart, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { productsAPI, categoriesAPI } from "@/lib/api";
-import { validateForm, productValidationRules, ValidationErrors } from "@/lib/validation";
 import { toast } from "sonner";
 import type { Category } from "@/types/category";
-import type { QueryProductDto, Product as ApiProduct } from "@/types/product";
+import type { QueryProductDto, Product } from "@/types/product";
+import { S3Image } from "@/components/s3-image";
 
-interface AdminProductRow {
-    id: string;
-    name: string;
-    nameRu: string;
-    category: string;
-    categoryId?: string;
-    price: number;
-    stock: number;
-    status: string;
-    image: string;
-    description?: string;
-    descriptionRu?: string;
-}
-
-export default function AdminProductsPageFull() {
+export default function AdminProductsPage() {
     const { t } = useLanguage();
+    const router = useRouter();
     
     // State
-    const [products, setProducts] = useState<AdminProductRow[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
-    const [sortBy, setSortBy] = useState("name");
+    const [sortBy, setSortBy] = useState("createdAt");
     
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
-    const itemsPerPage = 10;
-    
-    // Modal
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<AdminProductRow | null>(null);
-    const [formData, setFormData] = useState({
-        name: "",
-        nameRu: "",
-        category: "",
-        price: "",
-        stock: 0,
-        image: "",
-        description: "",
-        descriptionRu: "",
-    });
-    const [errors, setErrors] = useState<ValidationErrors>({});
-    const [submitting, setSubmitting] = useState(false);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
     const loadProducts = useCallback(async () => {
         setLoading(true);
@@ -80,29 +50,15 @@ export default function AdminProductsPageFull() {
                 limit: itemsPerPage,
                 search: searchQuery || undefined,
                 categoryId: selectedCategory !== "all" ? selectedCategory : undefined,
-                sortBy: sortBy === "price" ? "price" : "name",
-                sortOrder: "ASC",
+                sortBy: sortBy as any,
+                sortOrder: "DESC",
             };
 
             const result = await productsAPI.getAll(params);
-
-            const mapped: AdminProductRow[] = result.data.map((p: ApiProduct) => ({
-                id: p.id,
-                name: p.nameUz,
-                nameRu: p.nameRu,
-                category: p.category?.nameUz || "",
-                categoryId: p.categoryId,
-                price: p.price,
-                stock: p.stockQuantity,
-                status: p.isActive ? "active" : "out_of_stock",
-                image: p.mainImage || (p.images && p.images[0]) || "",
-                description: p.descriptionUz || "",
-                descriptionRu: p.descriptionRu || "",
-            }));
-
-            setProducts(mapped);
+            setProducts(result.data);
             setTotalItems(result.total);
-            setTotalPages(Math.ceil(result.total / result.limit));
+            const pages = Math.ceil(result.total / result.limit);
+            setTotalPages(pages > 0 ? pages : 1);
         } catch (error) {
             console.error("Error loading products:", error);
             toast.error(t("Mahsulotlarni yuklashda xatolik", "Ошибка при загрузке товаров"));
@@ -111,12 +67,10 @@ export default function AdminProductsPageFull() {
         }
     }, [currentPage, itemsPerPage, searchQuery, selectedCategory, sortBy, t]);
 
-    // Load products when filters/pagination change
     useEffect(() => {
         loadProducts();
     }, [loadProducts]);
 
-    // Load categories once
     useEffect(() => {
         loadCategories();
     }, []);
@@ -127,95 +81,6 @@ export default function AdminProductsPageFull() {
             setCategories(result);
         } catch (error) {
             console.error("Error loading categories:", error);
-        }
-    };
-
-    const handleOpenModal = (product?: AdminProductRow) => {
-        if (product) {
-            setEditingProduct(product);
-            setFormData({
-                name: product.name,
-                nameRu: product.nameRu,
-                category: product.categoryId || "",
-                price: String(product.price),
-                stock: product.stock,
-                image: product.image,
-                description: product.description || "",
-                descriptionRu: product.descriptionRu || "",
-            });
-        } else {
-            setEditingProduct(null);
-            setFormData({
-                name: "",
-                nameRu: "",
-                category: "",
-                price: "",
-                stock: 0,
-                image: "",
-                description: "",
-                descriptionRu: "",
-            });
-        }
-        setErrors({});
-        setIsModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setEditingProduct(null);
-        setFormData({
-            name: "",
-            nameRu: "",
-            category: "",
-            price: "",
-            stock: 0,
-            image: "",
-            description: "",
-            descriptionRu: "",
-        });
-        setErrors({});
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Validate
-        const validationErrors = validateForm(formData, productValidationRules);
-        if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors);
-            return;
-        }
-
-        setSubmitting(true);
-
-        try {
-            const payload = {
-                nameUz: formData.name,
-                nameRu: formData.nameRu,
-                descriptionUz: formData.description,
-                descriptionRu: formData.descriptionRu,
-                price: Number(formData.price),
-                stockQuantity: Number(formData.stock),
-                categoryId: formData.category,
-                mainImage: formData.image || undefined,
-                inStock: Number(formData.stock) > 0,
-            } as const;
-
-            if (editingProduct) {
-                await productsAPI.update(editingProduct.id, payload);
-                toast.success(t("Mahsulot yangilandi", "Товар обновлен"));
-            } else {
-                await productsAPI.create(payload);
-                toast.success(t("Mahsulot qo'shildi", "Товар добавлен"));
-            }
-
-            handleCloseModal();
-            loadProducts();
-        } catch (error) {
-            console.error("Error saving product:", error);
-            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
-        } finally {
-            setSubmitting(false);
         }
     };
 
@@ -234,19 +99,35 @@ export default function AdminProductsPageFull() {
         }
     };
 
-    const getStatusBadge = (status: string) => {
-        if (status === "active") {
-            return (
-                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/10 text-green-500">
-                    {t("Faol", "Активный")}
-                </span>
-            );
+    const toggleFeatured = async (id: string, currentValue: boolean) => {
+        try {
+            await productsAPI.update(id, { isFeatured: !currentValue });
+            toast.success(t("Holat o'zgartirildi", "Статус изменен"));
+            loadProducts();
+        } catch (error) {
+            console.error("Error toggling featured:", error);
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
         }
-        return (
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-red-500/10 text-red-500">
-                {t("Tugagan", "Нет в наличии")}
-            </span>
-        );
+    };
+
+    const toggleActive = async (id: string, currentValue: boolean) => {
+        try {
+            await productsAPI.update(id, { isActive: !currentValue });
+            toast.success(t("Holat o'zgartirildi", "Статус изменен"));
+            loadProducts();
+        } catch (error) {
+            console.error("Error toggling active:", error);
+            toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        }
+    };
+
+    const formatNumber = (num: number) => {
+        return new Intl.NumberFormat('uz-UZ').format(num);
+    };
+
+    const handleItemsPerPageChange = (items: number) => {
+        setItemsPerPage(items);
+        setCurrentPage(1); // Reset to first page when changing items per page
     };
 
     return (
@@ -265,7 +146,10 @@ export default function AdminProductsPageFull() {
                             )}
                         </p>
                     </div>
-                    <Button className="gap-2 h-11" onClick={() => handleOpenModal()}>
+                    <Button 
+                        className="gap-2 h-11" 
+                        onClick={() => router.push("/admin/products/new")}
+                    >
                         <Plus className="h-5 w-5" />
                         {t("Yangi mahsulot", "Новый товар")}
                     </Button>
@@ -274,9 +158,9 @@ export default function AdminProductsPageFull() {
                 {/* Filters */}
                 <Card>
                     <CardContent className="p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="flex flex-col md:flex-row gap-4">
                             {/* Search */}
-                            <div className="md:col-span-2 relative">
+                            <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                 <Input
                                     placeholder={t(
@@ -307,7 +191,7 @@ export default function AdminProductsPageFull() {
                                     <SelectItem value="all">
                                         {t("Barchasi", "Все")}
                                     </SelectItem>
-                                    {categories.map((cat: Category) => (
+                                    {categories.map((cat) => (
                                         <SelectItem key={cat.id} value={cat.id}>
                                             {cat.nameUz}
                                         </SelectItem>
@@ -321,14 +205,20 @@ export default function AdminProductsPageFull() {
                                     <SelectValue placeholder={t("Saralash", "Сортировка")} />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="createdAt">
+                                        {t("Yangi qo'shilgan", "Недавно добавленные")}
+                                    </SelectItem>
                                     <SelectItem value="name">
                                         {t("Nom bo'yicha", "По названию")}
                                     </SelectItem>
                                     <SelectItem value="price">
                                         {t("Narx bo'yicha", "По цене")}
                                     </SelectItem>
-                                    <SelectItem value="stock">
-                                        {t("Ombor bo'yicha", "По складу")}
+                                    <SelectItem value="viewsCount">
+                                        {t("Ko'rishlar soni", "По просмотрам")}
+                                    </SelectItem>
+                                    <SelectItem value="salesCount">
+                                        {t("Sotilgan miqdor", "По продажам")}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -371,7 +261,16 @@ export default function AdminProductsPageFull() {
                                                     {t("Ombor", "Склад")}
                                                 </th>
                                                 <th className="text-left p-4 font-semibold">
-                                                    {t("Holat", "Статус")}
+                                                    {t("Ko'rishlar", "Просмотры")}
+                                                </th>
+                                                <th className="text-left p-4 font-semibold">
+                                                    {t("Sotildi", "Продано")}
+                                                </th>
+                                                <th className="text-center p-4 font-semibold w-24">
+                                                    {t("Tanlangan", "Избранное")}
+                                                </th>
+                                                <th className="text-center p-4 font-semibold w-24">
+                                                    {t("Faol", "Активный")}
                                                 </th>
                                                 <th className="text-right p-4 font-semibold">
                                                     {t("Amallar", "Действия")}
@@ -382,54 +281,120 @@ export default function AdminProductsPageFull() {
                                             {products.map((product) => (
                                                 <tr
                                                     key={product.id}
-                                                    className="border-b hover:bg-accent/50 transition-colors"
+                                                    className={`border-b hover:bg-accent/50 transition-colors ${
+                                                        !product.isActive ? 'opacity-50' : ''
+                                                    }`}
                                                 >
                                                     <td className="p-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-accent shrink-0">
-                                                                <img
-                                                                    src={product.image}
-                                                                    alt={product.name}
-                                                                    className="w-full h-full object-cover"
-                                                                />
+                                                            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-accent shrink-0">
+                                                                {product.coverImage ? (
+                                                                    <S3Image
+                                                                        src={product.coverImage}
+                                                                        alt={product.nameUz}
+                                                                        fill
+                                                                        className="object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center">
+                                                                        <Package className="h-6 w-6 text-muted-foreground" />
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                            <div>
-                                                                <p className="font-semibold">
-                                                                    {product.name}
+                                                            <div className="min-w-0">
+                                                                <p className="font-semibold truncate">
+                                                                    {product.nameUz}
                                                                 </p>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    ID: {product.id}
-                                                                </p>
+                                                                <div className="flex items-center gap-2 mt-1">
+                                                                    {product.isNew && (
+                                                                        <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-500">
+                                                                            {t("Yangi", "Новинка")}
+                                                                        </Badge>
+                                                                    )}
+                                                                    {product.discount && product.discount > 0 && (
+                                                                        <Badge variant="secondary" className="text-xs bg-red-500/10 text-red-500">
+                                                                            -{product.discount}%
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="p-4">
-                                                        {product.category}
+                                                        {product.category?.nameUz || "-"}
                                                     </td>
-                                                    <td className="p-4 font-semibold">
-                                                        {product.price} UZS
+                                                    <td className="p-4">
+                                                        <div>
+                                                            <p className="font-semibold">
+                                                                {formatNumber(product.price)} UZS
+                                                            </p>
+                                                            {product.oldPrice && (
+                                                                <p className="text-xs text-muted-foreground line-through">
+                                                                    {formatNumber(product.oldPrice)} UZS
+                                                                </p>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                     <td className="p-4">
                                                         <span
                                                             className={
-                                                                product.stock > 0
+                                                                product.inStock
                                                                     ? "text-green-500 font-medium"
                                                                     : "text-red-500 font-medium"
                                                             }
                                                         >
-                                                            {product.stock}{" "}
-                                                            {t("ta", "шт")}
+                                                            {product.stockQuantity} {t("ta", "шт")}
                                                         </span>
                                                     </td>
                                                     <td className="p-4">
-                                                        {getStatusBadge(product.status)}
+                                                        <div className="flex items-center gap-2">
+                                                            <Eye className="h-4 w-4 text-muted-foreground" />
+                                                            <span className="font-medium">
+                                                                {formatNumber(product.viewsCount)}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                                                            <span className="font-medium">
+                                                                {formatNumber(product.salesCount)}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex justify-center">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8"
+                                                                onClick={() => toggleFeatured(product.id, product.isFeatured)}
+                                                            >
+                                                                <Star 
+                                                                    className={`h-5 w-5 ${
+                                                                        product.isFeatured 
+                                                                            ? 'fill-yellow-500 text-yellow-500' 
+                                                                            : 'text-muted-foreground'
+                                                                    }`}
+                                                                />
+                                                            </Button>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex justify-center">
+                                                            <Switch
+                                                                checked={product.isActive}
+                                                                onCheckedChange={() => toggleActive(product.id, product.isActive)}
+                                                            />
+                                                        </div>
                                                     </td>
                                                     <td className="p-4">
                                                         <div className="flex items-center justify-end gap-2">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                onClick={() => handleOpenModal(product)}
+                                                                onClick={() => router.push(`/admin/products/${product.id}/edit`)}
+                                                                disabled={!product.isActive}
                                                             >
                                                                 <Edit className="h-4 w-4" />
                                                             </Button>
@@ -438,6 +403,7 @@ export default function AdminProductsPageFull() {
                                                                 size="icon"
                                                                 className="text-red-500 hover:text-red-600"
                                                                 onClick={() => handleDelete(product.id)}
+                                                                disabled={!product.isActive}
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>
@@ -457,6 +423,7 @@ export default function AdminProductsPageFull() {
                                         totalItems={totalItems}
                                         itemsPerPage={itemsPerPage}
                                         onPageChange={setCurrentPage}
+                                        onItemsPerPageChange={handleItemsPerPageChange}
                                     />
                                 </div>
                             </>
@@ -464,214 +431,6 @@ export default function AdminProductsPageFull() {
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Add/Edit Modal */}
-            <CrudModal
-                open={isModalOpen}
-                onOpenChange={setIsModalOpen}
-                titleUz={
-                    editingProduct
-                        ? "Mahsulotni tahrirlash"
-                        : "Yangi mahsulot qo'shish"
-                }
-                titleRu={
-                    editingProduct
-                        ? "Редактировать товар"
-                        : "Добавить новый товар"
-                }
-                descriptionUz="Mahsulot ma'lumotlarini kiriting"
-                descriptionRu="Введите информацию о товаре"
-            >
-                <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Image Upload */}
-                        <div>
-                            <Label>{t("Rasm", "Изображение")}</Label>
-                            <ImageUpload
-                                value={formData.image}
-                                onChange={(url) =>
-                                    setFormData({ ...formData, image: url })
-                                }
-                                disabled={submitting}
-                            />
-                            {errors.image && (
-                                <p className="text-sm text-red-500 mt-1">
-                                    {errors.image}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* Name UZ */}
-                            <div>
-                                <Label htmlFor="name">
-                                    {t("Nomi (O'zbek)", "Название (Узбек)")}
-                                </Label>
-                                <Input
-                                    id="name"
-                                    value={formData.name}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, name: e.target.value })
-                                    }
-                                    disabled={submitting}
-                                />
-                                {errors.name && (
-                                    <p className="text-sm text-red-500 mt-1">
-                                        {errors.name}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Name RU */}
-                            <div>
-                                <Label htmlFor="nameRu">
-                                    {t("Nomi (Rus)", "Название (Русский)")}
-                                </Label>
-                                <Input
-                                    id="nameRu"
-                                    value={formData.nameRu}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, nameRu: e.target.value })
-                                    }
-                                    disabled={submitting}
-                                />
-                                {errors.nameRu && (
-                                    <p className="text-sm text-red-500 mt-1">
-                                        {errors.nameRu}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                            {/* Category */}
-                            <div>
-                                <Label htmlFor="category">
-                                    {t("Kategoriya", "Категория")}
-                                </Label>
-                                <Select
-                                    value={formData.category}
-                                    onValueChange={(value) =>
-                                        setFormData({ ...formData, category: value })
-                                    }
-                                    disabled={submitting}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t("Tanlang", "Выберите")} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {categories.map((cat: Category) => (
-                                            <SelectItem key={cat.id} value={cat.id}>
-                                                {cat.nameUz}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.category && (
-                                    <p className="text-sm text-red-500 mt-1">
-                                        {errors.category}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Price */}
-                            <div>
-                                <Label htmlFor="price">{t("Narx", "Цена")}</Label>
-                                <Input
-                                    id="price"
-                                    type="number"
-                                    value={formData.price}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, price: e.target.value })
-                                    }
-                                    disabled={submitting}
-                                />
-                                {errors.price && (
-                                    <p className="text-sm text-red-500 mt-1">
-                                        {errors.price}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Stock */}
-                            <div>
-                                <Label htmlFor="stock">{t("Ombor", "Склад")}</Label>
-                                <Input
-                                    id="stock"
-                                    type="number"
-                                    value={formData.stock}
-                                    onChange={(e) =>
-                                        setFormData({
-                                            ...formData,
-                                            stock: parseInt(e.target.value) || 0,
-                                        })
-                                    }
-                                    disabled={submitting}
-                                />
-                                {errors.stock && (
-                                    <p className="text-sm text-red-500 mt-1">
-                                        {errors.stock}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Description UZ */}
-                        <div>
-                            <Label htmlFor="description">
-                                {t("Tavsif (O'zbek)", "Описание (Узбек)")}
-                            </Label>
-                            <Textarea
-                                id="description"
-                                value={formData.description}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        description: e.target.value,
-                                    })
-                                }
-                                rows={3}
-                                disabled={submitting}
-                            />
-                        </div>
-
-                        {/* Description RU */}
-                        <div>
-                            <Label htmlFor="descriptionRu">
-                                {t("Tavsif (Rus)", "Описание (Русский)")}
-                            </Label>
-                            <Textarea
-                                id="descriptionRu"
-                                value={formData.descriptionRu}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        descriptionRu: e.target.value,
-                                    })
-                                }
-                                rows={3}
-                                disabled={submitting}
-                            />
-                        </div>
-
-                    <div className="flex gap-4 justify-end pt-4">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleCloseModal}
-                            disabled={submitting}
-                        >
-                            {t("Bekor qilish", "Отмена")}
-                        </Button>
-                        <Button type="submit" disabled={submitting}>
-                            {submitting
-                                ? t("Saqlanmoqda...", "Сохранение...")
-                                : editingProduct
-                                ? t("Yangilash", "Обновить")
-                                : t("Qo'shish", "Добавить")}
-                        </Button>
-                    </div>
-                </form>
-            </CrudModal>
         </AdminLayout>
     );
 }

@@ -1,55 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    ShoppingBag,
-    Users,
-    Package,
-    TrendingUp,
-    DollarSign,
-    Eye,
-} from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
+import { DashboardStatsComponent } from "@/components/admin/dashboard-stats";
 
 export default function AdminDashboard() {
     const { t } = useLanguage();
-
-    const stats = [
-        {
-            title: t("Jami buyurtmalar", "Всего заказов"),
-            value: "1,234",
-            change: "+12.5%",
-            icon: ShoppingBag,
-            color: "text-blue-500",
-            bgColor: "bg-blue-500/10",
-        },
-        {
-            title: t("Foydalanuvchilar", "Пользователи"),
-            value: "856",
-            change: "+8.2%",
-            icon: Users,
-            color: "text-green-500",
-            bgColor: "bg-green-500/10",
-        },
-        {
-            title: t("Mahsulotlar", "Товары"),
-            value: "342",
-            change: "+3.1%",
-            icon: Package,
-            color: "text-purple-500",
-            bgColor: "bg-purple-500/10",
-        },
-        {
-            title: t("Daromad", "Доход"),
-            value: "45.2M",
-            change: "+18.7%",
-            icon: DollarSign,
-            color: "text-yellow-500",
-            bgColor: "bg-yellow-500/10",
-        },
-    ];
 
     const recentOrders = [
         {
@@ -127,39 +84,8 @@ export default function AdminDashboard() {
                     </p>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {stats.map((stat) => {
-                        const Icon = stat.icon;
-                        return (
-                            <Card key={stat.title}>
-                                <CardContent className="p-6">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-sm text-muted-foreground mb-1">
-                                                {stat.title}
-                                            </p>
-                                            <p className="text-3xl font-bold">
-                                                {stat.value}
-                                            </p>
-                                            <p className="text-sm text-green-500 mt-1 flex items-center gap-1">
-                                                <TrendingUp className="h-3 w-3" />
-                                                {stat.change}
-                                            </p>
-                                        </div>
-                                        <div
-                                            className={`p-4 rounded-full ${stat.bgColor}`}
-                                        >
-                                            <Icon
-                                                className={`h-6 w-6 ${stat.color}`}
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
+                {/* Stats Grid - Real API Data */}
+                <DashboardStatsComponent />
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Recent Orders */}

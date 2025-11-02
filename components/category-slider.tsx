@@ -4,11 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/language-context";
 import { Category } from "@/types/category";
 import { ImageOff } from "lucide-react";
+import { S3Image } from "@/components/s3-image";
 
 interface CategorySliderProps {
     categories: Category[];
@@ -46,27 +46,28 @@ export function CategorySlider({ categories }: CategorySliderProps) {
             {/* Slider */}
             <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex gap-4">
-                    {categories.map((category) => (
+                    {categories.map((category) => {
+                        return (
                         <div
                             key={category.id}
                             className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-8px)] md:flex-[0_0_calc(33.333%-11px)] lg:flex-[0_0_calc(15.38%-13px)]"
                         >
-                            <Link href={`/categories/${category.id}`} className="cursor-pointer">
-                                <div className="flex flex-col items-center group">
-                                    {/* Square Card with Image */}
-                                    <Card className="w-full hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden border-2 hover:border-primary/50 bg-primary/10 py-10">
-                                        <CardContent className="p-0 h-full flex items-center justify-center">
+                            <Link href={`/catalog?category=${category.id}`} className="cursor-pointer">
+                                <div className="flex flex-col group">
+                                    {/* Card with Full Image */}
+                                    <Card className="w-full hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden border-2 hover:border-primary/50 py-0">
+                                        <CardContent className="p-0 aspect-[4/3] relative">
                                             {category.image ? (
-                                                <div className="relative w-12 h-12 md:w-14 md:h-14">
-                                                    <Image
-                                                        src={category.image}
-                                                        alt={category.nameUz}
-                                                        fill
-                                                        className="object-contain group-hover:scale-110 transition-transform duration-300"
-                                                    />
-                                                </div>
+                                                <S3Image
+                                                    src={category.image}
+                                                    alt={category.nameUz}
+                                                    fill
+                                                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                                />
                                             ) : (
-                                                <ImageOff className="w-12 h-12 md:w-14 md:h-14 text-muted-foreground" />
+                                                <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                                                    <ImageOff className="w-16 h-16 text-muted-foreground" />
+                                                </div>
                                             )}
                                         </CardContent>
                                     </Card>
@@ -78,7 +79,8 @@ export function CategorySlider({ categories }: CategorySliderProps) {
                                 </div>
                             </Link>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
