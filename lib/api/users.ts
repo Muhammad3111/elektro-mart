@@ -27,11 +27,19 @@ export interface CreateUserDto {
 }
 
 export interface UpdateUserDto {
+  firstName?: string;
+  lastName?: string;
   name?: string;
   email?: string;
   phone?: string;
   role?: "admin" | "user";
   isActive?: boolean;
+}
+
+export interface UpdateProfileDto {
+  firstName: string;
+  lastName: string;
+  phone?: string;
 }
 
 export const usersAPI = {
@@ -74,5 +82,14 @@ export const usersAPI = {
   delete: (id: string) =>
     apiRequest<{ message: string }>(`/users/${id}`, {
       method: "DELETE",
+    }),
+
+  /**
+   * O'z profilini yangilash (PATCH /users/me)
+   */
+  updateProfile: (data: UpdateProfileDto) =>
+    apiRequest<User>("/users/me", {
+      method: "PATCH",
+      body: JSON.stringify(data),
     }),
 };

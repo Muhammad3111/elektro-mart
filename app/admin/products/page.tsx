@@ -23,6 +23,14 @@ import { toast } from "sonner";
 import type { Category } from "@/types/category";
 import type { QueryProductDto, Product } from "@/types/product";
 import { S3Image } from "@/components/s3-image";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function AdminProductsPage() {
     const { t } = useLanguage();
@@ -41,6 +49,11 @@ export default function AdminProductsPage() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    
+    // Delete modal
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     const loadProducts = useCallback(async () => {
         setLoading(true);
@@ -84,18 +97,26 @@ export default function AdminProductsPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm(t("Rostdan ham o'chirmoqchimisiz?", "Вы уверены, что хотите удалить?"))) {
-            return;
-        }
+    const handleDeleteClick = (product: Product) => {
+        setDeletingProduct(product);
+        setDeleteDialogOpen(true);
+    };
 
+    const handleDeleteConfirm = async () => {
+        if (!deletingProduct) return;
+        
+        setDeleteLoading(true);
         try {
-            await productsAPI.delete(id);
+            await productsAPI.delete(deletingProduct.id);
             toast.success(t("Mahsulot o'chirildi", "Товар удален"));
+            setDeleteDialogOpen(false);
+            setDeletingProduct(null);
             loadProducts();
         } catch (error) {
             console.error("Error deleting product:", error);
             toast.error(t("O'chirishda xatolik", "Ошибка при удалении"));
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -402,7 +423,7 @@ export default function AdminProductsPage() {
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="text-red-500 hover:text-red-600"
-                                                                onClick={() => handleDelete(product.id)}
+                                                                onClick={() => handleDeleteClick(product)}
                                                                 disabled={!product.isActive}
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
@@ -431,6 +452,42 @@ export default function AdminProductsPage() {
                     </CardContent>
                 </Card>
             </div>
+            
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{t("Mahsulotni o'chirish", "Удалить товар")}</DialogTitle>
+                        <DialogDescription>
+                            {t(
+                                "Haqiqatan ham bu mahsulotni o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi.",
+                                "Вы действительно хотите удалить этот товар? Это действие нельзя отменить."
+                            )}
+                            {deletingProduct && (
+                                <div className="mt-2 font-semibold">
+                                    {t(deletingProduct.nameUz, deletingProduct.nameRu)}
+                                </div>
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setDeleteDialogOpen(false)}
+                            disabled={deleteLoading}
+                        >
+                            {t("Bekor qilish", "Отмена")}
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleDeleteConfirm}
+                            disabled={deleteLoading}
+                        >
+                            {deleteLoading ? t("O'chirilmoqda...", "Удаление...") : t("O'chirish", "Удалить")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AdminLayout>
     );
 }

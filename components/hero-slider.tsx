@@ -42,9 +42,9 @@ export function HeroSlider() {
     if (loading) {
         return (
             <div className="relative w-full overflow-hidden">
-                <div className="relative h-[500px] md:h-[600px] bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse">
-                    <div className="container mx-auto px-4 h-full">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-full">
+                <div className="relative h-[450px] sm:h-[500px] md:h-[600px] bg-gradient-to-r from-gray-200 to-gray-100 animate-pulse">
+                    <div className="container mx-auto px-4 sm:px-6 h-full">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center h-full py-4 sm:py-0">
                             <div className="space-y-6">
                                 <Skeleton className="h-16 w-3/4" />
                                 <Skeleton className="h-8 w-1/2" />
@@ -66,7 +66,7 @@ export function HeroSlider() {
 
     return (
         <div className="relative w-full overflow-hidden">
-            <div className="relative h-[500px] md:h-[600px]">
+            <div className="relative h-[450px] sm:h-[500px] md:h-[600px]">
                 {sliders.map((slider, index) => (
                     <div
                         key={slider.id}
@@ -79,14 +79,14 @@ export function HeroSlider() {
                         }`}
                     >
                         <div className="h-full bg-gradient-to-r from-primary/50 to-primary/10">
-                            <div className="container mx-auto px-4 h-full">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-full">
+                            <div className="container mx-auto px-4 sm:px-6 h-full">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center h-full py-4 sm:py-8">
                                     {/* Left side - Text content */}
-                                    <div className="space-y-6 text-center md:text-left">
-                                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight">
+                                    <div className="space-y-3 sm:space-y-4 md:space-y-6 text-center md:text-left">
+                                        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-foreground">
                                             {language === 'uz' ? slider.titleUz : slider.titleRu}
                                         </h1>
-                                        <p className="text-lg md:text-xl text-muted-foreground max-w-lg">
+                                        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground/80 max-w-lg mx-auto md:mx-0">
                                             {language === 'uz' ? slider.subtitleUz : slider.subtitleRu}
                                         </p>
                                         <Link
@@ -95,7 +95,7 @@ export function HeroSlider() {
                                         >
                                             <Button
                                                 size="lg"
-                                                className="bg-primary hover:bg-primary/90 text-white h-14 px-8 text-lg"
+                                                className="bg-primary hover:bg-primary/90 text-white h-10 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base md:text-lg"
                                             >
                                                 {language === 'uz' ? "Ko'rish" : "Смотреть"}
                                             </Button>
@@ -103,8 +103,8 @@ export function HeroSlider() {
                                     </div>
 
                                     {/* Right side - Product image */}
-                                    <div className="flex items-center justify-center">
-                                        <div className="relative w-full max-w-md aspect-square">
+                                    <div className="flex items-center justify-center mt-4 md:mt-0">
+                                        <div className="relative w-full max-w-[250px] sm:max-w-[300px] md:max-w-md aspect-square">
                                             <S3Image
                                                 src={slider.coverImage}
                                                 alt={language === 'uz' ? slider.titleUz : slider.titleRu}
@@ -122,15 +122,15 @@ export function HeroSlider() {
             </div>
 
             {/* Dots indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                 {sliders.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => setCurrentSlide(index)}
-                        className={`h-3 rounded-full transition-all ${
+                        className={`h-2 sm:h-3 rounded-full transition-all ${
                             index === currentSlide
-                                ? "w-8 bg-primary"
-                                : "w-3 bg-white/50"
+                                ? "w-6 sm:w-8 bg-primary"
+                                : "w-2 sm:w-3 bg-white/50"
                         }`}
                     />
                 ))}

@@ -51,8 +51,8 @@ export default function AboutPage() {
               <h1 className="text-4xl md:text-5xl font-black">{t("Biz haqimizda", "О нас")}</h1>
               <p className="text-lg text-muted-foreground">
                 {t(
-                  "ElectraWire - elektr kabel va aksessuarlar bo'yicha yetakchi ta'minotchi",
-                  "ElectraWire - ведущий поставщик электрических кабелей и аксессуаров"
+                  "SobirovMarket - elektr mahsulotlari va aksessuarlar bo'yicha yetakchi ta'minotchi",
+                  "SobirovMarket - ведущий поставщик электрических товаров и аксессуаров"
                 )}
               </p>
             </div>
@@ -67,8 +67,8 @@ export default function AboutPage() {
               <div className="space-y-4 text-muted-foreground">
                 <p>
                   {t(
-                    "ElectraWire 2010-yilda tashkil etilgan bo'lib, O'zbekiston bozorida elektr kabel va aksessuarlar sohasida yetakchi o'rinni egallaydi.",
-                    "ElectraWire была основана в 2010 году и занимает ведущее положение на рынке Узбекистана в области электрических кабелей и аксессуаров."
+                    "SobirovMarket 2010-yilda tashkil etilgan bo'lib, O'zbekiston bozorida elektr mahsulotlari va aksessuarlar sohasida yetakchi o'rinni egallaydi.",
+                    "SobirovMarket была основана в 2010 году и занимает ведущее положение на рынке Узбекистана в области электрических товаров и аксессуаров."
                   )}
                 </p>
                 <p>
@@ -93,14 +93,14 @@ export default function AboutPage() {
             {features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <Card key={feature.title} className="text-center">
-                  <CardContent className="p-6 space-y-4">
+                <Card key={feature.title} className="text-center border-none shadow-none bg-transparent hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+                  <CardContent className="p-6 space-y-3">
                     <div className="flex justify-center">
-                      <div className="p-4 bg-primary/10 rounded-full">
-                        <Icon className="h-8 w-8 text-primary" />
+                      <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
+                        <Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-bold">{feature.title}</h3>
+                    <h3 className="text-xl font-bold group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
                     <p className="text-muted-foreground">{feature.description}</p>
                   </CardContent>
                 </Card>

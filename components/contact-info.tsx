@@ -39,14 +39,14 @@ export function ContactInfo() {
             {contactItems.map((item, index) => {
                 const Icon = item.icon;
                 const content = (
-                    <Card className="h-full hover:shadow-lg transition-all duration-300 border-2 hover:border-primary/50">
-                        <CardContent className="p-6 text-center space-y-4">
+                    <Card className="h-full text-center border-none shadow-none bg-transparent hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
+                        <CardContent className="p-6 space-y-4">
                             <div className="flex justify-center">
-                                <div className="p-4 bg-primary/10 rounded-full">
-                                    <Icon className="h-8 w-8 text-primary" />
+                                <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
+                                    <Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
                                 </div>
                             </div>
-                            <h3 className="font-bold text-lg">{item.title}</h3>
+                            <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">{item.title}</h3>
                             <p className="text-sm text-muted-foreground wrap-break-word">
                                 {item.value}
                             </p>
@@ -58,7 +58,7 @@ export function ContactInfo() {
                     <a
                         key={index}
                         href={item.href}
-                        className="block hover:scale-105 transition-transform"
+                        className="block"
                     >
                         {content}
                     </a>

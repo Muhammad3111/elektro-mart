@@ -215,7 +215,7 @@ export function CategoryForm({
             <div className="space-y-2">
                 <Label htmlFor="nameUz">
                     {t("Nomi (O'zbek)", "Название (Узбек)")}{" "}
-                    <span className="text-destructive">*</span>
+                    <span className="text-red-500">*</span>
                 </Label>
                 <Input
                     id="nameUz"
@@ -232,7 +232,7 @@ export function CategoryForm({
             <div className="space-y-2">
                 <Label htmlFor="nameRu">
                     {t("Nomi (Rus)", "Название (Русский)")}{" "}
-                    <span className="text-destructive">*</span>
+                    <span className="text-red-500">*</span>
                 </Label>
                 <Input
                     id="nameRu"

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Image as ImageIcon, X } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Brand, CreateBrandDto, UpdateBrandDto } from "@/types/brand";
@@ -65,22 +64,12 @@ export function BrandForm({ brand, onSubmit, onCancel, loading }: BrandFormProps
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {brand 
-            ? t("Brendni tahrirlash", "Редактировать бренд")
-            : t("Yangi brend qo'shish", "Добавить новый бренд")
-          }
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
           {/* Brand Names */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="nameUz">
-                {t("Nomi (O'zbekcha)", "Название (Узбекский)")} *
+                {t("Nomi (O'zbekcha)", "Название (Узбекский)")} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="nameUz"
@@ -92,7 +81,7 @@ export function BrandForm({ brand, onSubmit, onCancel, loading }: BrandFormProps
             </div>
             <div className="space-y-2">
               <Label htmlFor="nameRu">
-                {t("Nomi (Ruscha)", "Название (Русский)")} *
+                {t("Nomi (Ruscha)", "Название (Русский)")} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="nameRu"
@@ -208,7 +197,5 @@ export function BrandForm({ brand, onSubmit, onCancel, loading }: BrandFormProps
             selectedUrls={formData.image ? [formData.image] : []}
           />
         </form>
-      </CardContent>
-    </Card>
   );
 }

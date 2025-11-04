@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ import {
 } from "lucide-react";
 
 export default function AdminOrdersPage() {
+    const router = useRouter();
     const { t } = useLanguage();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -353,7 +355,7 @@ export default function AdminOrdersPage() {
                             )}
                         </p>
                     </div>
-<Button className="gap-2 h-11" onClick={() => window.location.href = '/admin/orders/create'}>
+<Button className="gap-2 h-11" onClick={() => router.push('/admin/orders/create')}>
                         <Plus className="h-5 w-5" />
                         {t("Yangi buyurtma", "Новый заказ")}
                     </Button>

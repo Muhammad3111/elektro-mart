@@ -244,14 +244,14 @@ export default function Home() {
                             {t("Nega aynan biz", "Почему именно мы")}
                         </SectionTitle>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <Card className="text-center border-none shadow-none bg-transparent">
+                            <Card className="text-center border-none shadow-none bg-transparent hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
                                 <CardContent className="p-6 space-y-3">
                                     <div className="flex justify-center">
-                                        <div className="p-4 bg-primary/10 rounded-full">
-                                            <Truck className="h-8 w-8 text-primary" />
+                                        <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
+                                            <Truck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
                                         </div>
                                     </div>
-                                    <h3 className="font-bold text-lg">
+                                    <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
                                         {t(
                                             "Tez yetkazib berish",
                                             "Быстрая доставка"
@@ -266,14 +266,14 @@ export default function Home() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="text-center border-none shadow-none bg-transparent">
+                            <Card className="text-center border-none shadow-none bg-transparent hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
                                 <CardContent className="p-6 space-y-3">
                                     <div className="flex justify-center">
-                                        <div className="p-4 bg-primary/10 rounded-full">
-                                            <Shield className="h-8 w-8 text-primary" />
+                                        <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
+                                            <Shield className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
                                         </div>
                                     </div>
-                                    <h3 className="font-bold text-lg">
+                                    <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
                                         {t("Kafolat", "Гарантия")}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
@@ -285,14 +285,14 @@ export default function Home() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="text-center border-none shadow-none bg-transparent">
+                            <Card className="text-center border-none shadow-none bg-transparent hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
                                 <CardContent className="p-6 space-y-3">
                                     <div className="flex justify-center">
-                                        <div className="p-4 bg-primary/10 rounded-full">
-                                            <Headphones className="h-8 w-8 text-primary" />
+                                        <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
+                                            <Headphones className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
                                         </div>
                                     </div>
-                                    <h3 className="font-bold text-lg">
+                                    <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
                                         {t(
                                             "24/7 Qo'llab-quvvatlash",
                                             "Поддержка 24/7"
@@ -307,14 +307,14 @@ export default function Home() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="text-center border-none shadow-none bg-transparent">
+                            <Card className="text-center border-none shadow-none bg-transparent hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group">
                                 <CardContent className="p-6 space-y-3">
                                     <div className="flex justify-center">
-                                        <div className="p-4 bg-primary/10 rounded-full">
-                                            <Award className="h-8 w-8 text-primary" />
+                                        <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
+                                            <Award className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
                                         </div>
                                     </div>
-                                    <h3 className="font-bold text-lg">
+                                    <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
                                         {t(
                                             "Sifat kafolati",
                                             "Гарантия качества"

@@ -16,13 +16,14 @@ import {
     Share2,
     Tag,
     Heart,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { formatPrice } from "@/lib/utils/format-price";
 import { ProductCard } from "@/components/product-card";
-import useEmblaCarousel from "embla-carousel-react";
 import { useParams } from "next/navigation";
 import { productsAPI } from "@/lib/api";
 import { Product } from "@/types/product";
@@ -41,22 +42,6 @@ export default function ProductDetailPage() {
     const [product, setProduct] = useState<Product | null>(null);
     const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
-    
-    const [emblaRef] = useEmblaCarousel({
-        loop: false,
-        align: "start",
-    });
-    const [galleryRef] = useEmblaCarousel({
-        loop: true,
-        align: "center",
-        containScroll: "trimSnaps",
-    });
-
-    useEffect(() => {
-        if (productId) {
-            loadProduct();
-        }
-    }, [productId]);
 
     const loadProduct = async () => {
         try {
@@ -81,8 +66,18 @@ export default function ProductDetailPage() {
         }
     };
 
-    // Get product images - only use coverImage since images array doesn't exist in Product type
-    const productImages = product?.coverImage ? [product.coverImage] : [];
+    useEffect(() => {
+        if (productId) {
+            loadProduct();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [productId]);
+
+    // Get product images - combine coverImage and galleryImages
+    const productImages = product ? [
+        ...(product.coverImage ? [product.coverImage] : []),
+        ...(product.galleryImages || [])
+    ] : [];
 
     const handleAddToCart = () => {
         if (product) {
@@ -195,15 +190,40 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                     {/* Product Images */}
                     <div className="space-y-4">
-                        {/* Main Image */}
-                        <div className="relative aspect-square bg-accent rounded-lg overflow-hidden">
+                        {/* Main Image with Navigation */}
+                        <div className="relative aspect-square bg-accent rounded-lg overflow-hidden group">
                             {productImages.length > 0 ? (
-                                <S3Image
-                                    src={productImages[selectedImage]}
-                                    alt={productName}
-                                    fill
-                                    className="object-contain"
-                                />
+                                <>
+                                    <S3Image
+                                        src={productImages[selectedImage]}
+                                        alt={productName}
+                                        fill
+                                        className="object-contain"
+                                    />
+                                    {/* Navigation Arrows - only show if multiple images */}
+                                    {productImages.length > 1 && (
+                                        <>
+                                            <button
+                                                onClick={() => setSelectedImage((selectedImage - 1 + productImages.length) % productImages.length)}
+                                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                                aria-label="Previous image"
+                                            >
+                                                <ChevronLeft className="h-6 w-6" />
+                                            </button>
+                                            <button
+                                                onClick={() => setSelectedImage((selectedImage + 1) % productImages.length)}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                                aria-label="Next image"
+                                            >
+                                                <ChevronRight className="h-6 w-6" />
+                                            </button>
+                                            {/* Image Counter */}
+                                            <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
+                                                {selectedImage + 1} / {productImages.length}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center">
                                     <Tag className="h-24 w-24 text-muted-foreground" />
@@ -213,14 +233,14 @@ export default function ProductDetailPage() {
 
                         {/* Thumbnail Gallery */}
                         {productImages.length > 1 && (
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-5 gap-2">
                                 {productImages.map((image: string, index: number) => (
                                     <button
                                         key={index}
                                         onClick={() => setSelectedImage(index)}
-                                        className={`relative aspect-square bg-accent rounded-lg overflow-hidden border-2 transition-colors ${
+                                        className={`relative aspect-square bg-accent rounded-lg overflow-hidden border-2 transition-all ${
                                             selectedImage === index
-                                                ? "border-primary"
+                                                ? "border-primary ring-2 ring-primary/20"
                                                 : "border-transparent hover:border-primary/50"
                                         }`}
                                     >

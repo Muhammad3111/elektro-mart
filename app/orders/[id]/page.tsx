@@ -27,6 +27,7 @@ import {
     FileText,
     Loader2,
 } from "lucide-react";
+import { S3Image } from "@/components/s3-image";
 
 export default function OrderDetailsPage() {
     const { t } = useLanguage();
@@ -232,7 +233,9 @@ export default function OrderDetailsPage() {
                                             <p className="text-sm text-muted-foreground mb-1">
                                                 {t("Telefon", "Телефон")}
                                             </p>
-                                            <p className="font-medium">{order.phone}</p>
+                                            <p className="font-medium">
+                                                🇺🇿 {order.phone.startsWith('+998') ? order.phone : `+998${order.phone.replace(/^998/, '')}`}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-2">
@@ -271,12 +274,13 @@ export default function OrderDetailsPage() {
                                 <div className="space-y-4">
                                     {order.items.map((item) => (
                                         <div key={item.id} className="flex gap-4 p-4 border rounded-lg">
-                                            <div className="w-20 h-20 bg-accent rounded flex items-center justify-center shrink-0">
+                                            <div className="relative w-20 h-20 bg-accent rounded flex items-center justify-center shrink-0 overflow-hidden">
                                                 {item.product?.coverImage ? (
-                                                    <img
-                                                        src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/${item.product.coverImage}`}
+                                                    <S3Image
+                                                        src={item.product.coverImage}
                                                         alt={item.product.nameUz}
-                                                        className="w-full h-full object-cover rounded"
+                                                        fill
+                                                        className="object-cover"
                                                     />
                                                 ) : (
                                                     <Package className="h-10 w-10 text-primary" />

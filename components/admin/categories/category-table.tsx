@@ -152,13 +152,18 @@ export function CategoryTable() {
     if (categories.length === 0) {
         return (
             <div>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold">
-                        {t("Kategoriyalar", "Категории")}
-                    </h2>
-                    <Button onClick={() => handleCreate()}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        {t("Qo'shish", "Добавить")}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h1 className="text-4xl font-black">
+                            {t("Kategoriyalar", "Категории")}
+                        </h1>
+                        <p className="text-muted-foreground mt-2">
+                            {t("Barcha kategoriyalarni boshqarish", "Управление всеми категориями")}
+                        </p>
+                    </div>
+                    <Button onClick={() => handleCreate()} className="gap-2 h-11">
+                        <Plus className="h-5 w-5" />
+                        {t("Yangi kategoriya", "Новая категория")}
                     </Button>
                 </div>
                 <CategoryEmptyState />
@@ -171,13 +176,18 @@ export function CategoryTable() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">
-                    {t("Kategoriyalar", "Категории")}
-                </h2>
-                <Button onClick={() => handleCreate()} className="cursor-pointer">
-                    <Plus className="w-4 h-4 mr-2" />
-                    {t("Qo'shish", "Добавить")}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-4xl font-black">
+                        {t("Kategoriyalar", "Категории")}
+                    </h1>
+                    <p className="text-muted-foreground mt-2">
+                        {t("Barcha kategoriyalarni boshqarish", "Управление всеми категориями")}
+                    </p>
+                </div>
+                <Button onClick={() => handleCreate()} className="gap-2 h-11">
+                    <Plus className="h-5 w-5" />
+                    {t("Yangi kategoriya", "Новая категория")}
                 </Button>
             </div>
             <div className="space-y-4">

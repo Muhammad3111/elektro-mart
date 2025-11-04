@@ -68,14 +68,15 @@ export function ProductCard({
                         )}
                     </div>
 
-                    {/* Favorite Icon - Only visible on hover */}
-                    <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {/* Favorite Icon - Always visible on mobile, visible on hover on desktop */}
+                    <div className="absolute top-2 right-2 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
                         <Button
                             size="icon"
                             variant="secondary"
                             className="h-9 w-9 rounded-full bg-white/90 hover:bg-primary hover:text-white shadow-md"
                             onClick={(e) => {
                                 e.preventDefault();
+                                e.stopPropagation();
                                 if (isInFavorites) {
                                     removeFromFavorites(id);
                                 } else {
@@ -99,8 +100,8 @@ export function ProductCard({
                         </Button>
                     </div>
 
-                    {/* Quick View Text - Center on hover */}
-                    <div className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {/* Quick View Text - Center on hover (desktop only) */}
+                    <div className="absolute inset-0 flex items-center justify-center z-10 opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                         <div className="bg-white/95 px-6 py-3 rounded-lg shadow-lg">
                             <span className="text-sm font-semibold text-gray-800">
                                 {t("Tez ko'rish", "Быстрый просмотр")}
@@ -132,33 +133,40 @@ export function ProductCard({
                             {name}
                         </h3>
 
-                        {/* Description - 3 lines with ellipsis */}
-                        {description && (
-                            <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-3">
-                                {description}
-                            </p>
-                        )}
+                        {/* Description - 2 lines with ellipsis */}
+                        <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-2 min-h-10 md:min-h-12">
+                            {description || t("Mahsulot tavsifi mavjud emas", "Описание товара недоступно")}
+                        </p>
                     </div>
 
                     {/* Bottom section - always at bottom */}
                     <div className="flex items-end justify-between gap-2 pt-2 mt-auto">
                         {/* Left side: Prices */}
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                             {oldPrice && (
-                                <span className="text-[10px] md:text-xs text-muted-foreground line-through">
+                                <span className="text-[10px] md:text-xs text-muted-foreground line-through whitespace-nowrap">
                                     {formatPrice(oldPrice)} UZS
                                 </span>
                             )}
-                            <span className="text-base md:text-lg font-bold text-primary break-words">
-                                {formatPrice(price)} UZS
-                            </span>
+                            <div className="flex items-baseline gap-1 flex-wrap">
+                                <span className="text-base md:text-lg font-bold text-primary">
+                                    {formatPrice(price)}
+                                </span>
+                                <span className="text-xs md:text-sm font-bold text-primary whitespace-nowrap">
+                                    UZS
+                                </span>
+                            </div>
                         </div>
 
                         {/* Right side: Cart Icon Button */}
                         <Button
                             size="icon"
                             className="bg-primary hover:bg-primary/90 text-white shadow-md group-hover:shadow-lg transition-shadow h-9 w-9 md:h-10 md:w-10 flex-shrink-0"
-                            onClick={handleAddToCart}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleAddToCart(e);
+                            }}
                         >
                             <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
                         </Button>

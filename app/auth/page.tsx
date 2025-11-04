@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -84,27 +85,24 @@ function AuthPageContent() {
             <CardContent className="space-y-4">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-phone">{t("Telefon raqam", "Номер телефона")}</Label>
-                  <Input
+                  <Label htmlFor="login-phone">{t("Telefon raqam", "Номер телефона")} <span className="text-red-500">*</span></Label>
+                  <PhoneInput
                     id="login-phone"
-                    type="tel"
-                    placeholder="+998901234567"
-                    className="h-12"
                     value={loginData.phone}
-                    onChange={(e) => setLoginData({ ...loginData, phone: e.target.value })}
+                    onChange={(value) => setLoginData({ ...loginData, phone: value })}
                     required
                     disabled={loading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">{t("Parol", "Пароль")}</Label>
+                  <Label htmlFor="login-password">{t("Parol", "Пароль")} <span className="text-red-500">*</span></Label>
                   <div className="relative">
                     <Input
                       id="login-password"
                       type={showPassword ? "text" : "password"}
                       placeholder={t("Parolingizni kiriting", "Введите пароль")}
-                      className="h-12 pr-10"
+                      className="pr-10"
                       value={loginData.password}
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                       required
@@ -160,12 +158,11 @@ function AuthPageContent() {
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="reg-firstName">{t("Ism", "Имя")}</Label>
+                    <Label htmlFor="reg-firstName">{t("Ism", "Имя")} <span className="text-red-500">*</span></Label>
                     <Input
                       id="reg-firstName"
                       type="text"
                       placeholder={t("Ismingiz", "Ваше имя")}
-                      className="h-12"
                       value={registerData.firstName}
                       onChange={(e) => setRegisterData({ ...registerData, firstName: e.target.value })}
                       required
@@ -173,12 +170,11 @@ function AuthPageContent() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="reg-lastName">{t("Familiya", "Фамилия")}</Label>
+                    <Label htmlFor="reg-lastName">{t("Familiya", "Фамилия")} <span className="text-red-500">*</span></Label>
                     <Input
                       id="reg-lastName"
                       type="text"
                       placeholder={t("Familiyangiz", "Ваша фамилия")}
-                      className="h-12"
                       value={registerData.lastName}
                       onChange={(e) => setRegisterData({ ...registerData, lastName: e.target.value })}
                       required
@@ -188,12 +184,11 @@ function AuthPageContent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="reg-email">{t("Email", "Email")}</Label>
+                  <Label htmlFor="reg-email">{t("Email", "Email")} <span className="text-red-500">*</span></Label>
                   <Input
                     id="reg-email"
                     type="email"
                     placeholder="email@example.com"
-                    className="h-12"
                     value={registerData.email}
                     onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
                     required
@@ -203,25 +198,22 @@ function AuthPageContent() {
 
                 <div className="space-y-2">
                   <Label htmlFor="reg-phone">{t("Telefon raqam", "Номер телефона")}</Label>
-                  <Input
+                  <PhoneInput
                     id="reg-phone"
-                    type="tel"
-                    placeholder="+998901234567"
-                    className="h-12"
                     value={registerData.phone}
-                    onChange={(e) => setRegisterData({ ...registerData, phone: e.target.value })}
+                    onChange={(value) => setRegisterData({ ...registerData, phone: value })}
                     disabled={loading}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="reg-password">{t("Parol yaratish", "Создать пароль")}</Label>
+                  <Label htmlFor="reg-password">{t("Parol yaratish", "Создать пароль")} <span className="text-red-500">*</span></Label>
                   <div className="relative">
                     <Input
                       id="reg-password"
                       type={showRegPassword ? "text" : "password"}
                       placeholder={t("Kuchli parol yarating", "Создайте надежный пароль")}
-                      className="h-12 pr-10"
+                      className="pr-10"
                       value={registerData.password}
                       onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
                       required

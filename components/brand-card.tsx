@@ -17,9 +17,9 @@ export function BrandCard({ brand }: BrandCardProps) {
   return (
     <Link
       href={`/brands/${brand.id}`}
-      className="group flex flex-col items-center gap-3 p-4 rounded-lg border bg-card hover:shadow-lg transition-all duration-300"
+      className="group flex flex-col items-center gap-3 p-4 rounded-lg border bg-card hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/50"
     >
-      <div className="relative w-20 h-20 rounded-full overflow-hidden bg-muted">
+      <div className="relative w-20 h-20 rounded-full overflow-hidden bg-muted group-hover:bg-primary/10 transition-colors duration-300">
         {brand.image ? (
           <Image
             src={brand.image}
@@ -29,11 +29,11 @@ export function BrandCard({ brand }: BrandCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-muted">
-            <ImageOff className="w-8 h-8" />
+            <ImageOff className="w-8 h-8 group-hover:text-primary transition-colors duration-300" />
           </div>
         )}
       </div>
-      <h3 className="text-sm font-medium text-center line-clamp-2 group-hover:text-primary transition-colors">
+      <h3 className="text-sm font-medium text-center line-clamp-2 group-hover:text-primary transition-colors duration-300">
         {name}
       </h3>
       {brand.productCount && brand.productCount > 0 && (

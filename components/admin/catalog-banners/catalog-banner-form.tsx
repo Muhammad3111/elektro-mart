@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Image as ImageIcon, X } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import type { CatalogBanner, CreateCatalogBannerDto, UpdateCatalogBannerDto } from "@/types/slider";
@@ -69,20 +68,10 @@ export function CatalogBannerForm({ banner, onSubmit, onCancel, loading }: Catal
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {banner 
-            ? t("Bannerni tahrirlash", "Редактировать баннер")
-            : t("Yangi banner qo'shish", "Добавить новый баннер")
-          }
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="titleUz">{t("Sarlavha (O'zbekcha)", "Заголовок (Узбекский)")} *</Label>
+              <Label htmlFor="titleUz">{t("Sarlavha (O'zbekcha)", "Заголовок (Узбекский)")} <span className="text-red-500">*</span></Label>
               <Input
                 id="titleUz"
                 value={formData.titleUz}
@@ -91,7 +80,7 @@ export function CatalogBannerForm({ banner, onSubmit, onCancel, loading }: Catal
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="titleRu">{t("Sarlavha (Ruscha)", "Заголовок (Русский)")} *</Label>
+              <Label htmlFor="titleRu">{t("Sarlavha (Ruscha)", "Заголовок (Русский)")} <span className="text-red-500">*</span></Label>
               <Input
                 id="titleRu"
                 value={formData.titleRu}
@@ -102,7 +91,7 @@ export function CatalogBannerForm({ banner, onSubmit, onCancel, loading }: Catal
           </div>
 
           <div className="space-y-2">
-            <Label>{t("Rasm", "Изображение")} *</Label>
+            <Label>{t("Rasm", "Изображение")} <span className="text-red-500">*</span></Label>
             <div className="flex items-center gap-4">
               {imagePreview ? (
                 <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
@@ -126,7 +115,7 @@ export function CatalogBannerForm({ banner, onSubmit, onCancel, loading }: Catal
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="link">{t("Havola", "Ссылка")} *</Label>
+            <Label htmlFor="link">{t("Havola", "Ссылка")} <span className="text-red-500">*</span></Label>
             <Input id="link" value={formData.link} onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))} required />
           </div>
 
@@ -149,7 +138,5 @@ export function CatalogBannerForm({ banner, onSubmit, onCancel, loading }: Catal
 
           <MediaGalleryModal open={imageModalOpen} onOpenChange={setImageModalOpen} onSelect={handleImageSelect} mode="single" selectedUrls={formData.coverImage ? [formData.coverImage] : []} />
         </form>
-      </CardContent>
-    </Card>
   );
 }

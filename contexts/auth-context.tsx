@@ -12,6 +12,7 @@ interface AuthContextType {
   login: (data: LoginDto) => Promise<void>;
   register: (data: RegisterDto) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isAdmin: boolean;
   isAuthenticated: boolean;
 }
@@ -83,7 +84,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     removeToken();
     setUser(null);
     toast.success("Tizimdan chiqdingiz");
+    // Always redirect to /auth page for both admin and regular users
     router.push("/auth");
+    // Force reload to clear any cached state
+    setTimeout(() => {
+      window.location.href = "/auth";
+    }, 100);
+  };
+
+  const refreshUser = async () => {
+    try {
+      const userData = await authAPI.getProfile();
+      setUser(userData);
+    } catch (error) {
+      console.error("Failed to refresh user:", error);
+    }
   };
 
   const value: AuthContextType = {
@@ -92,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout,
+    refreshUser,
     isAdmin: user?.role === "admin",
     isAuthenticated: !!user,
   };

@@ -303,7 +303,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="sku">
-                                    {t("SKU", "SKU")} *
+                                    {t("SKU", "SKU")} <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="sku"
@@ -315,7 +315,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="productCode">
-                                    {t("Mahsulot kodi", "Код товара")} *
+                                    {t("Mahsulot kodi", "Код товара")} <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="productCode"
@@ -331,7 +331,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="nameUz">
-                                    {t("Nomi (O'zbek)", "Название (Узбек)")} *
+                                    {t("Nomi (O'zbek)", "Название (Узбек)")} <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="nameUz"
@@ -343,7 +343,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="nameRu">
-                                    {t("Nomi (Rus)", "Название (Русский)")} *
+                                    {t("Nomi (Rus)", "Название (Русский)")} <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="nameRu"
@@ -359,7 +359,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="descriptionUz">
-                                    {t("Tavsif (O'zbek)", "Описание (Узбек)")} *
+                                    {t("Tavsif (O'zbek)", "Описание (Узбек)")} <span className="text-red-500">*</span>
                                 </Label>
                                 <Textarea
                                     id="descriptionUz"
@@ -372,7 +372,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="descriptionRu">
-                                    {t("Tavsif (Rus)", "Описание (Русский)")} *
+                                    {t("Tavsif (Rus)", "Описание (Русский)")} <span className="text-red-500">*</span>
                                 </Label>
                                 <Textarea
                                     id="descriptionRu"
@@ -423,7 +423,7 @@ export function ProductForm({ productId }: ProductFormProps) {
 
                         {/* Category */}
                         <div className="space-y-2">
-                            <Label>{t("Kategoriya", "Категория")} *</Label>
+                            <Label>{t("Kategoriya", "Категория")} <span className="text-red-500">*</span></Label>
                             <Select
                                 value={formData.categoryId}
                                 onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
@@ -540,7 +540,7 @@ export function ProductForm({ productId }: ProductFormProps) {
 
                         <div className="grid grid-cols-4 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="price">{t("Narx (UZS)", "Цена (UZS)")} *</Label>
+                                <Label htmlFor="price">{t("Narx (UZS)", "Цена (UZS)")} <span className="text-red-500">*</span></Label>
                                 <Input
                                     id="price"
                                     type="number"
@@ -578,7 +578,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="stockQuantity">{t("Ombor", "Склад")} *</Label>
+                                <Label htmlFor="stockQuantity">{t("Ombor", "Склад")} <span className="text-red-500">*</span></Label>
                                 <Input
                                     id="stockQuantity"
                                     type="number"

@@ -8,22 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Heart, ShoppingBag, Trash2 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useFavorites } from "@/contexts/favorites-context";
-import { useCart } from "@/contexts/cart-context";
-import { S3Image } from "@/components/s3-image";
+import { ProductCard } from "@/components/product-card";
 
 export default function FavoritesPage() {
     const { t } = useLanguage();
-    const { favorites, removeFromFavorites, clearFavorites } = useFavorites();
-    const { addToCart } = useCart();
-
-    const handleAddToCart = (item: any) => {
-        addToCart({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            image: item.image,
-        });
-    };
+    const { favorites, clearFavorites } = useFavorites();
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -91,65 +80,14 @@ export default function FavoritesPage() {
                             {/* Products Grid */}
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                                 {favorites.map((item) => (
-                                    <Card
+                                    <ProductCard
                                         key={item.id}
-                                        className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/50 py-0"
-                                    >
-                                        <div className="relative aspect-square overflow-hidden">
-                                            <Link href={`/products/${item.id}`}>
-                                                <S3Image
-                                                    src={item.image}
-                                                    alt={item.name}
-                                                    fill
-                                                    className="object-cover transform group-hover:scale-110 transition-transform duration-500"
-                                                />
-                                            </Link>
-                                            {/* Remove Button */}
-                                            <Button
-                                                size="icon"
-                                                variant="secondary"
-                                                className="absolute top-2 right-2 h-9 w-9 rounded-full bg-white hover:bg-red-500 hover:text-white"
-                                                onClick={() =>
-                                                    removeFromFavorites(item.id)
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-
-                                        <CardContent className="p-4 space-y-3">
-                                            <Link href={`/products/${item.id}`}>
-                                                <h3 className="font-bold text-sm line-clamp-2 hover:text-primary transition-colors min-h-[40px]">
-                                                    {item.name}
-                                                </h3>
-                                            </Link>
-
-                                            {item.description && (
-                                                <p className="text-xs text-muted-foreground line-clamp-2">
-                                                    {item.description}
-                                                </p>
-                                            )}
-
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xl font-bold text-primary">
-                                                    {item.price} UZS
-                                                </span>
-                                            </div>
-
-                                            <Button
-                                                className="w-full bg-primary hover:bg-primary/90 text-white gap-2"
-                                                onClick={() =>
-                                                    handleAddToCart(item)
-                                                }
-                                            >
-                                                <ShoppingBag className="h-4 w-4" />
-                                                {t(
-                                                    "Savatga qo'shish",
-                                                    "Добавить в корзину"
-                                                )}
-                                            </Button>
-                                        </CardContent>
-                                    </Card>
+                                        id={item.id}
+                                        name={item.name}
+                                        price={item.price}
+                                        image={item.image}
+                                        description={item.description}
+                                    />
                                 ))}
                             </div>
 

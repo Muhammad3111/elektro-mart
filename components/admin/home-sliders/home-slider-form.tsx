@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Image as ImageIcon, X } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import type { HomeSlider, CreateHomeSliderDto, UpdateHomeSliderDto } from "@/types/slider";
@@ -71,20 +70,10 @@ export function HomeSliderForm({ slider, onSubmit, onCancel, loading }: HomeSlid
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {slider 
-            ? t("Home sliderni tahrirlash", "Редактировать слайдер")
-            : t("Yangi home slider qo'shish", "Добавить новый слайдер")
-          }
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="titleUz">{t("Sarlavha (O'zbekcha)", "Заголовок (Узбекский)")} *</Label>
+              <Label htmlFor="titleUz">{t("Sarlavha (O'zbekcha)", "Заголовок (Узбекский)")} <span className="text-red-500">*</span></Label>
               <Input
                 id="titleUz"
                 value={formData.titleUz}
@@ -93,7 +82,7 @@ export function HomeSliderForm({ slider, onSubmit, onCancel, loading }: HomeSlid
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="titleRu">{t("Sarlavha (Ruscha)", "Заголовок (Русский)")} *</Label>
+              <Label htmlFor="titleRu">{t("Sarlavha (Ruscha)", "Заголовок (Русский)")} <span className="text-red-500">*</span></Label>
               <Input
                 id="titleRu"
                 value={formData.titleRu}
@@ -105,7 +94,7 @@ export function HomeSliderForm({ slider, onSubmit, onCancel, loading }: HomeSlid
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="subtitleUz">{t("Qo'shimcha matn (O'zbekcha)", "Подзаголовок (Узбекский)")} *</Label>
+              <Label htmlFor="subtitleUz">{t("Qo'shimcha matn (O'zbekcha)", "Подзаголовок (Узбекский)")} <span className="text-red-500">*</span></Label>
               <Input
                 id="subtitleUz"
                 value={formData.subtitleUz}
@@ -114,7 +103,7 @@ export function HomeSliderForm({ slider, onSubmit, onCancel, loading }: HomeSlid
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="subtitleRu">{t("Qo'shimcha matn (Ruscha)", "Подзаголовок (Русский)")} *</Label>
+              <Label htmlFor="subtitleRu">{t("Qo'shimcha matn (Ruscha)", "Подзаголовок (Русский)")} <span className="text-red-500">*</span></Label>
               <Input
                 id="subtitleRu"
                 value={formData.subtitleRu}
@@ -125,7 +114,7 @@ export function HomeSliderForm({ slider, onSubmit, onCancel, loading }: HomeSlid
           </div>
 
           <div className="space-y-2">
-            <Label>{t("Rasm", "Изображение")} *</Label>
+            <Label>{t("Rasm", "Изображение")} <span className="text-red-500">*</span></Label>
             <div className="flex items-center gap-4">
               {imagePreview ? (
                 <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
@@ -149,7 +138,7 @@ export function HomeSliderForm({ slider, onSubmit, onCancel, loading }: HomeSlid
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="link">{t("Havola", "Ссылка")} *</Label>
+            <Label htmlFor="link">{t("Havola", "Ссылка")} <span className="text-red-500">*</span></Label>
             <Input id="link" value={formData.link} onChange={(e) => setFormData(prev => ({ ...prev, link: e.target.value }))} required />
           </div>
 
@@ -172,7 +161,5 @@ export function HomeSliderForm({ slider, onSubmit, onCancel, loading }: HomeSlid
 
           <MediaGalleryModal open={imageModalOpen} onOpenChange={setImageModalOpen} onSelect={handleImageSelect} mode="single" selectedUrls={formData.coverImage ? [formData.coverImage] : []} />
         </form>
-      </CardContent>
-    </Card>
   );
 }

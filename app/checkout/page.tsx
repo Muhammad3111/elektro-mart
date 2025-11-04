@@ -20,9 +20,6 @@ import { ordersAPI } from "@/lib/api";
 import { toast } from "sonner";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-const TELEGRAM_BOT_TOKEN = "8238996096:AAHpUxRmtbXBQonihgcTuZ-l2g8cQwPhAD4";
-const TELEGRAM_CHAT_ID = "266226148"; // Admin chat ID
-
 export default function CheckoutPage() {
     const { t } = useLanguage();
     const { cartItems, clearCart } = useCart();
@@ -139,20 +136,25 @@ export default function CheckoutPage() {
 
             // Send to Telegram (don't fail if this fails)
             try {
-                await fetch(
-                    `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            chat_id: TELEGRAM_CHAT_ID,
-                            text: message,
-                            parse_mode: "Markdown",
-                        }),
-                    }
-                );
+                const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
+                const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
+                
+                if (botToken && chatId) {
+                    await fetch(
+                        `https://api.telegram.org/bot${botToken}/sendMessage`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                chat_id: chatId,
+                                text: message,
+                                parse_mode: "Markdown",
+                            }),
+                        }
+                    );
+                }
             } catch (telegramError) {
                 console.error("Failed to send Telegram notification:", telegramError);
             }
@@ -232,27 +234,27 @@ export default function CheckoutPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <Label htmlFor="firstName" className="text-base">
-                                                {t("Ism", "Имя")} *
+                                                {t("Ism", "Имя")} <span className="text-red-500">*</span>
                                             </Label>
                                             <Input
                                                 id="firstName"
                                                 value={firstName}
                                                 onChange={(e) => setFirstName(e.target.value)}
                                                 placeholder={t("Ismingiz", "Ваше имя")}
-                                                className="h-12 mt-2"
+                                                className="mt-2"
                                                 disabled={isAuthenticated}
                                             />
                                         </div>
                                         <div>
                                             <Label htmlFor="lastName" className="text-base">
-                                                {t("Familiya", "Фамилия")} *
+                                                {t("Familiya", "Фамилия")} <span className="text-red-500">*</span>
                                             </Label>
                                             <Input
                                                 id="lastName"
                                                 value={lastName}
                                                 onChange={(e) => setLastName(e.target.value)}
                                                 placeholder={t("Familiyangiz", "Ваша фамилия")}
-                                                className="h-12 mt-2"
+                                                className="mt-2"
                                                 disabled={isAuthenticated}
                                             />
                                         </div>
@@ -270,19 +272,19 @@ export default function CheckoutPage() {
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
                                                 placeholder="email@example.com"
-                                                className="h-12 mt-2"
+                                                className="mt-2"
                                                 disabled={isAuthenticated}
                                             />
                                         </div>
                                         <div>
                                             <Label htmlFor="phone" className="text-base">
-                                                {t("Telefon raqam", "Номер телефона")} *
+                                                {t("Telefon raqam", "Номер телефона")} <span className="text-red-500">*</span>
                                             </Label>
                                             <PhoneInput
                                                 id="phone"
                                                 value={phone}
                                                 onChange={setPhone}
-                                                className="h-12 mt-2"
+                                                className="mt-2"
                                                 disabled={isAuthenticated && !!user?.phone}
                                             />
                                         </div>
@@ -291,7 +293,7 @@ export default function CheckoutPage() {
                                     {/* Address Fields */}
                                     <div>
                                         <Label htmlFor="address" className="text-base">
-                                            {t("Manzil", "Адрес")} *
+                                            {t("Manzil", "Адрес")} <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
                                             id="address"
@@ -305,26 +307,26 @@ export default function CheckoutPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <Label htmlFor="city" className="text-base">
-                                                {t("Shahar", "Город")} *
+                                                {t("Shahar", "Город")} <span className="text-red-500">*</span>
                                             </Label>
                                             <Input
                                                 id="city"
                                                 value={city}
                                                 onChange={(e) => setCity(e.target.value)}
                                                 placeholder={t("Shahar", "Город")}
-                                                className="h-12 mt-2"
+                                                className="mt-2"
                                             />
                                         </div>
                                         <div>
                                             <Label htmlFor="region" className="text-base">
-                                                {t("Viloyat", "Регион")} *
+                                                {t("Viloyat", "Регион")} <span className="text-red-500">*</span>
                                             </Label>
                                             <Input
                                                 id="region"
                                                 value={region}
                                                 onChange={(e) => setRegion(e.target.value)}
                                                 placeholder={t("Viloyat", "Регион")}
-                                                className="h-12 mt-2"
+                                                className="mt-2"
                                             />
                                         </div>
                                     </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { CrudModal } from "@/components/admin/shared/crud-modal";
 import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +14,14 @@ import { HomeSliderForm } from "@/components/admin/home-sliders/home-slider-form
 import { CatalogBannerForm } from "@/components/admin/catalog-banners/catalog-banner-form";
 import { S3Image } from "@/components/s3-image";
 import { toast } from "sonner";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function AdminSlidersPage() {
     const { t } = useLanguage();
@@ -26,6 +34,13 @@ export default function AdminSlidersPage() {
     const [editingSlider, setEditingSlider] = useState<HomeSlider | null>(null);
     const [editingBanner, setEditingBanner] = useState<CatalogBanner | null>(null);
     const [formLoading, setFormLoading] = useState(false);
+    
+    // Delete modals
+    const [deleteSliderDialogOpen, setDeleteSliderDialogOpen] = useState(false);
+    const [deleteBannerDialogOpen, setDeleteBannerDialogOpen] = useState(false);
+    const [deletingSlider, setDeletingSlider] = useState<HomeSlider | null>(null);
+    const [deletingBanner, setDeletingBanner] = useState<CatalogBanner | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -88,14 +103,25 @@ export default function AdminSlidersPage() {
         }
     };
 
-    const handleDeleteSlider = async (id: string) => {
-        if (!confirm(t("Rostdan ham o'chirmoqchimisiz?", "Вы уверены, что хотите удалить?"))) return;
+    const handleDeleteSliderClick = (slider: HomeSlider) => {
+        setDeletingSlider(slider);
+        setDeleteSliderDialogOpen(true);
+    };
+
+    const handleDeleteSliderConfirm = async () => {
+        if (!deletingSlider) return;
+        
+        setDeleteLoading(true);
         try {
-            await homeSlidersAPI.delete(id);
+            await homeSlidersAPI.delete(deletingSlider.id);
             toast.success(t("Slider o'chirildi", "Слайдер удален"));
+            setDeleteSliderDialogOpen(false);
+            setDeletingSlider(null);
             loadData();
         } catch (error) {
             toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -139,14 +165,25 @@ export default function AdminSlidersPage() {
         }
     };
 
-    const handleDeleteBanner = async (id: string) => {
-        if (!confirm(t("Rostdan ham o'chirmoqchimisiz?", "Вы уверены, что хотите удалить?"))) return;
+    const handleDeleteBannerClick = (banner: CatalogBanner) => {
+        setDeletingBanner(banner);
+        setDeleteBannerDialogOpen(true);
+    };
+
+    const handleDeleteBannerConfirm = async () => {
+        if (!deletingBanner) return;
+        
+        setDeleteLoading(true);
         try {
-            await catalogBannersAPI.delete(id);
+            await catalogBannersAPI.delete(deletingBanner.id);
             toast.success(t("Banner o'chirildi", "Баннер удален"));
+            setDeleteBannerDialogOpen(false);
+            setDeletingBanner(null);
             loadData();
         } catch (error) {
             toast.error(t("Xatolik yuz berdi", "Произошла ошибка"));
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -217,7 +254,7 @@ export default function AdminSlidersPage() {
                                                     <Button variant="outline" size="icon" onClick={() => { setEditingSlider(slider); setSliderDialogOpen(true); }}>
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="outline" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteSlider(slider.id)}>
+                                                    <Button variant="outline" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteSliderClick(slider)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
@@ -268,7 +305,7 @@ export default function AdminSlidersPage() {
                                                         <Edit className="h-4 w-4" />
                                                         {t("Tahrirlash", "Редактировать")}
                                                     </Button>
-                                                    <Button variant="outline" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteBanner(banner.id)}>
+                                                    <Button variant="outline" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteBannerClick(banner)}>
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
@@ -282,26 +319,80 @@ export default function AdminSlidersPage() {
                 </Tabs>
 
                 {/* Slider Dialog */}
-                <Dialog open={sliderDialogOpen} onOpenChange={setSliderDialogOpen}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                        <HomeSliderForm
-                            slider={editingSlider || undefined}
-                            onSubmit={editingSlider ? handleUpdateSlider : handleCreateSlider}
-                            onCancel={() => { setSliderDialogOpen(false); setEditingSlider(null); }}
-                            loading={formLoading}
-                        />
-                    </DialogContent>
-                </Dialog>
+                <CrudModal
+                    open={sliderDialogOpen}
+                    onOpenChange={setSliderDialogOpen}
+                    titleUz={editingSlider ? "Sliderni tahrirlash" : "Yangi slider qo'shish"}
+                    titleRu={editingSlider ? "Редактировать слайдер" : "Добавить новый слайдер"}
+                    maxWidth="2xl"
+                >
+                    <HomeSliderForm
+                        slider={editingSlider || undefined}
+                        onSubmit={editingSlider ? handleUpdateSlider : handleCreateSlider}
+                        onCancel={() => { setSliderDialogOpen(false); setEditingSlider(null); }}
+                        loading={formLoading}
+                    />
+                </CrudModal>
 
                 {/* Banner Dialog */}
-                <Dialog open={bannerDialogOpen} onOpenChange={setBannerDialogOpen}>
-                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                        <CatalogBannerForm
-                            banner={editingBanner || undefined}
-                            onSubmit={editingBanner ? handleUpdateBanner : handleCreateBanner}
-                            onCancel={() => { setBannerDialogOpen(false); setEditingBanner(null); }}
-                            loading={formLoading}
-                        />
+                <CrudModal
+                    open={bannerDialogOpen}
+                    onOpenChange={setBannerDialogOpen}
+                    titleUz={editingBanner ? "Bannerni tahrirlash" : "Yangi banner qo'shish"}
+                    titleRu={editingBanner ? "Редактировать баннер" : "Добавить новый баннер"}
+                    maxWidth="2xl"
+                >
+                    <CatalogBannerForm
+                        banner={editingBanner || undefined}
+                        onSubmit={editingBanner ? handleUpdateBanner : handleCreateBanner}
+                        onCancel={() => { setBannerDialogOpen(false); setEditingBanner(null); }}
+                        loading={formLoading}
+                    />
+                </CrudModal>
+                
+                {/* Delete Slider Confirmation Dialog */}
+                <Dialog open={deleteSliderDialogOpen} onOpenChange={setDeleteSliderDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{t("Sliderni o'chirish", "Удалить слайдер")}</DialogTitle>
+                            <DialogDescription>
+                                {t(
+                                    "Haqiqatan ham bu sliderni o'chirmoqchimisiz?",
+                                    "Вы действительно хотите удалить этот слайдер?"
+                                )}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setDeleteSliderDialogOpen(false)} disabled={deleteLoading}>
+                                {t("Bekor qilish", "Отмена")}
+                            </Button>
+                            <Button variant="destructive" onClick={handleDeleteSliderConfirm} disabled={deleteLoading}>
+                                {deleteLoading ? t("O'chirilmoqda...", "Удаление...") : t("O'chirish", "Удалить")}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+                
+                {/* Delete Banner Confirmation Dialog */}
+                <Dialog open={deleteBannerDialogOpen} onOpenChange={setDeleteBannerDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{t("Bannerni o'chirish", "Удалить баннер")}</DialogTitle>
+                            <DialogDescription>
+                                {t(
+                                    "Haqiqatan ham bu bannerni o'chirmoqchimisiz?",
+                                    "Вы действительно хотите удалить этот баннер?"
+                                )}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setDeleteBannerDialogOpen(false)} disabled={deleteLoading}>
+                                {t("Bekor qilish", "Отмена")}
+                            </Button>
+                            <Button variant="destructive" onClick={handleDeleteBannerConfirm} disabled={deleteLoading}>
+                                {deleteLoading ? t("O'chirilmoqda...", "Удаление...") : t("O'chirish", "Удалить")}
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>

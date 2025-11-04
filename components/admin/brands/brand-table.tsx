@@ -21,6 +21,7 @@ import { BrandForm } from "./brand-form";
 import { S3Image } from "@/components/s3-image";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { CrudModal } from "@/components/admin/shared/crud-modal";
 
 export function BrandTable() {
   const { t } = useLanguage();
@@ -138,18 +139,24 @@ export function BrandTable() {
   return (
     <>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">
-            {t("Brendlar", "Бренды")}
-          </h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-4xl font-black">
+              {t("Brendlar", "Бренды")}
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              {t("Barcha brendlarni boshqarish", "Управление всеми брендами")}
+            </p>
+          </div>
           <Button
+            className="gap-2 h-11"
             onClick={() => {
               setEditingBrand(null);
               setDialogOpen(true);
             }}
           >
-            <Plus className="w-4 h-4 mr-2" />
-            {t("Qo'shish", "Добавить")}
+            <Plus className="h-5 w-5" />
+            {t("Yangi brend", "Новый бренд")}
           </Button>
         </div>
         <div>
@@ -269,19 +276,22 @@ export function BrandTable() {
       </div>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <BrandForm
-            brand={editingBrand || undefined}
-            onSubmit={editingBrand ? handleUpdate : handleCreate as any}
-            onCancel={() => {
-              setDialogOpen(false);
-              setEditingBrand(null);
-            }}
-            loading={formLoading}
-          />
-        </DialogContent>
-      </Dialog>
+      <CrudModal
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        titleUz={editingBrand ? "Brendni tahrirlash" : "Yangi brend qo'shish"}
+        titleRu={editingBrand ? "Редактировать бренд" : "Добавить новый бренд"}
+      >
+        <BrandForm
+          brand={editingBrand || undefined}
+          onSubmit={editingBrand ? handleUpdate : handleCreate as any}
+          onCancel={() => {
+            setDialogOpen(false);
+            setEditingBrand(null);
+          }}
+          loading={formLoading}
+        />
+      </CrudModal>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!deletingBrand} onOpenChange={() => setDeletingBrand(null)}>

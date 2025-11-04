@@ -27,6 +27,7 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
@@ -63,6 +64,11 @@ export default function AdminGalleryPage() {
     const [itemsPerPage, setItemsPerPage] = useState(20);
     const [currentPage, setCurrentPage] = useState(1);
     const [viewImageModal, setViewImageModal] = useState<ImageWithUrl | null>(null);
+    
+    // Delete modal
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deletingKeys, setDeletingKeys] = useState<string[]>([]);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     const loadImages = useCallback(async () => {
         try {
@@ -144,32 +150,34 @@ export default function AdminGalleryPage() {
         }
     };
 
-    const handleDelete = async (keys: string[]) => {
+    const handleDeleteClick = (keys: string[]) => {
         if (keys.length === 0) return;
+        setDeletingKeys(keys);
+        setDeleteDialogOpen(true);
+    };
 
-        const confirmed = confirm(
-            t(
-                `${keys.length} ta rasmni o'chirmoqchimisiz?`,
-                `Удалить ${keys.length} изображений?`
-            )
-        );
-
-        if (!confirmed) return;
-
+    const handleDeleteConfirm = async () => {
+        if (deletingKeys.length === 0) return;
+        
+        setDeleteLoading(true);
         try {
-            for (const key of keys) {
+            for (const key of deletingKeys) {
                 await deleteFromObjectStorage(BUCKET_NAME, key);
             }
 
             toast.success(t(
-                `${keys.length} ta rasm o'chirildi`,
-                `Удалено ${keys.length} изображений`
+                `${deletingKeys.length} ta rasm o'chirildi`,
+                `Удалено ${deletingKeys.length} изображений`
             ));
             setSelectedImages([]);
+            setDeleteDialogOpen(false);
+            setDeletingKeys([]);
             loadImages();
         } catch (error) {
             console.error("Delete failed:", error);
             toast.error(t("O'chirishda xatolik", "Ошибка при удалении"));
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -246,7 +254,7 @@ export default function AdminGalleryPage() {
                             <Button
                                 variant="destructive"
                                 className="gap-2 h-11"
-                                onClick={() => handleDelete(selectedImages)}
+                                onClick={() => handleDeleteClick(selectedImages)}
                             >
                                 <Trash2 className="h-5 w-5" />
                                 {t(
@@ -381,7 +389,7 @@ export default function AdminGalleryPage() {
                                                     className="h-9 w-9"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDelete([image.key]);
+                                                        handleDeleteClick([image.key]);
                                                     }}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -630,7 +638,7 @@ export default function AdminGalleryPage() {
                                 variant="destructive"
                                 onClick={() => {
                                     if (viewImageModal) {
-                                        handleDelete([viewImageModal.key]);
+                                        handleDeleteClick([viewImageModal.key]);
                                         setViewImageModal(null);
                                     }
                                 }}
@@ -639,6 +647,37 @@ export default function AdminGalleryPage() {
                                 {t("O'chirish", "Удалить")}
                             </Button>
                         </div>
+                    </DialogContent>
+                </Dialog>
+                
+                {/* Delete Confirmation Dialog */}
+                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>{t("Rasmlarni o'chirish", "Удалить изображения")}</DialogTitle>
+                            <DialogDescription>
+                                {t(
+                                    `Haqiqatan ham ${deletingKeys.length} ta rasmni o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi.`,
+                                    `Вы действительно хотите удалить ${deletingKeys.length} изображений? Это действие нельзя отменить.`
+                                )}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => setDeleteDialogOpen(false)}
+                                disabled={deleteLoading}
+                            >
+                                {t("Bekor qilish", "Отмена")}
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDeleteConfirm}
+                                disabled={deleteLoading}
+                            >
+                                {deleteLoading ? t("O'chirilmoqda...", "Удаление...") : t("O'chirish", "Удалить")}
+                            </Button>
+                        </DialogFooter>
                     </DialogContent>
                 </Dialog>
             </div>

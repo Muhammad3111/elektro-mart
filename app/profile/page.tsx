@@ -25,18 +25,36 @@ import {
 import { useLanguage } from "@/contexts/language-context";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { ordersAPI } from "@/lib/api";
+import { ordersAPI, usersAPI } from "@/lib/api";
 import type { Order } from "@/types/order";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 function ProfileContent() {
     const { t } = useLanguage();
     const router = useRouter();
     const searchParams = useSearchParams();
-    const { user, logout, isAuthenticated, loading } = useAuth();
+    const { user, logout, isAuthenticated, loading, refreshUser } = useAuth();
     const [activeTab, setActiveTab] = useState("profile");
     const [orders, setOrders] = useState<Order[]>([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
+    const [updateLoading, setUpdateLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        firstName: user?.firstName || "",
+        lastName: user?.lastName || "",
+        phone: user?.phone || ""
+    });
+
+    // Update form data when user changes
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                firstName: user.firstName,
+                lastName: user.lastName,
+                phone: user.phone || ""
+            });
+        }
+    }, [user]);
     
     // Set active tab from URL parameter
     useEffect(() => {
@@ -76,6 +94,32 @@ function ProfileContent() {
     
     const handleLogout = () => {
         logout();
+    };
+
+    const handleUpdateProfile = async () => {
+        if (!user) return;
+        
+        if (!formData.firstName.trim() || !formData.lastName.trim()) {
+            toast.error(t("Ism va familiyani to'ldiring", "Заполните имя и фамилию"));
+            return;
+        }
+
+        setUpdateLoading(true);
+        try {
+            await usersAPI.update(user.id, {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phone: formData.phone
+            });
+            // Refresh user data from server
+            await refreshUser();
+            toast.success(t("Profil yangilandi", "Профиль обновлен"));
+        } catch (error) {
+            console.error("Failed to update profile:", error);
+            toast.error(t("Profilni yangilashda xatolik", "Ошибка обновления профиля"));
+        } finally {
+            setUpdateLoading(false);
+        }
     };
 
     // Show loading state
@@ -254,7 +298,8 @@ function ProfileContent() {
                                                 <Input
                                                     id="firstName"
                                                     placeholder={t("Ism", "Имя")}
-                                                    defaultValue={user.firstName}
+                                                    value={formData.firstName}
+                                                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                                                     className="pl-10 h-12"
                                                 />
                                             </div>
@@ -263,7 +308,8 @@ function ProfileContent() {
                                                 <Input
                                                     id="lastName"
                                                     placeholder={t("Familiya", "Фамилия")}
-                                                    defaultValue={user.lastName}
+                                                    value={formData.lastName}
+                                                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                                                     className="pl-10 h-12"
                                                 />
                                             </div>
@@ -278,7 +324,8 @@ function ProfileContent() {
                                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                             <Input
                                                 id="phone"
-                                                defaultValue={user.phone || ""}
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({...formData, phone: e.target.value})}
                                                 className="pl-10 h-12"
                                             />
                                         </div>
@@ -301,11 +348,24 @@ function ProfileContent() {
                                     </div>
 
 
-                                    <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-white gap-2">
-                                        <Edit className="h-5 w-5" />
-                                        {t(
-                                            "O'zgarishlarni saqlash",
-                                            "Сохранить изменения"
+                                    <Button 
+                                        onClick={handleUpdateProfile}
+                                        disabled={updateLoading}
+                                        className="w-full h-12 bg-primary hover:bg-primary/90 text-white gap-2"
+                                    >
+                                        {updateLoading ? (
+                                            <>
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                {t("Saqlanmoqda...", "Сохранение...")}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Edit className="h-5 w-5" />
+                                                {t(
+                                                    "O'zgarishlarni saqlash",
+                                                    "Сохранить изменения"
+                                                )}
+                                            </>
                                         )}
                                     </Button>
                                 </CardContent>
