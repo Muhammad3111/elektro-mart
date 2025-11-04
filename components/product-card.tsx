@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Heart, ImageIcon } from "lucide-react";
+import { ShoppingCart, Heart, ImageIcon, CheckCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
@@ -21,6 +21,8 @@ interface ProductCardProps {
     rating?: number;
     isNew?: boolean;
     discount?: string;
+    productCode?: string;
+    inStock?: boolean;
 }
 
 export function ProductCard({
@@ -33,6 +35,8 @@ export function ProductCard({
     rating,
     isNew = false,
     discount,
+    productCode,
+    inStock = true,
 }: ProductCardProps) {
     const { t } = useLanguage();
     const { addToCart } = useCart();
@@ -52,7 +56,7 @@ export function ProductCard({
 
     return (
         <Link href={`/products/${id}`} className="cursor-pointer block">
-            <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:shadow-primary/50 py-0 flex flex-col h-full border-0">
+            <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:shadow-primary/50 py-0 flex flex-col h-full border-0 gap-0">
                 <div className="relative aspect-square overflow-hidden shrink-0">
                     {/* Badges - Always Visible */}
                     <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
@@ -128,6 +132,27 @@ export function ProductCard({
                 <CardContent className="p-3 flex flex-col flex-1">
                     {/* Top section - grows to fill space */}
                     <div className="space-y-2 flex-1">
+                        {/* Product Code and Stock Status */}
+                        <div className="flex items-center justify-between gap-2 text-[10px] md:text-xs">
+                            {productCode && (
+                                <span className="text-muted-foreground font-medium">
+                                    {t("Kod", "Код")}: {productCode}
+                                </span>
+                            )}
+                            {inStock ? (
+                                <div className="flex items-center gap-1 text-green-600">
+                                    <CheckCircle className="h-3 w-3" />
+                                    <span className="font-medium">
+                                        {t("Bor", "В наличии")}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-red-500 font-medium">
+                                    {t("Yo'q", "Нет")}
+                                </span>
+                            )}
+                        </div>
+
                         {/* Product Name - 1 line */}
                         <h3 className="font-bold text-xs md:text-sm line-clamp-1 group-hover:text-primary transition-colors">
                             {name}
@@ -135,7 +160,11 @@ export function ProductCard({
 
                         {/* Description - 2 lines with ellipsis */}
                         <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-2 min-h-10 md:min-h-12">
-                            {description || t("Mahsulot tavsifi mavjud emas", "Описание товара недоступно")}
+                            {description ||
+                                t(
+                                    "Mahsulot tavsifi mavjud emas",
+                                    "Описание товара недоступно"
+                                )}
                         </p>
                     </div>
 
@@ -161,7 +190,7 @@ export function ProductCard({
                         {/* Right side: Cart Icon Button */}
                         <Button
                             size="icon"
-                            className="bg-primary hover:bg-primary/90 text-white shadow-md group-hover:shadow-lg transition-shadow h-9 w-9 md:h-10 md:w-10 flex-shrink-0"
+                            className="bg-primary hover:bg-primary/90 text-white shadow-md group-hover:shadow-lg transition-shadow h-9 w-9 md:h-10 md:w-10 shrink-0"
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();

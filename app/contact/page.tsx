@@ -84,17 +84,22 @@ export default function ContactPage() {
     {
       icon: MapPin,
       title: t("Manzil", "Адрес"),
-      content: t("Toshkent sh., Chilonzor tumani, Bunyodkor ko'chasi 1-uy", "г. Ташкент, Чиланзарский район, ул. Бунёдкор 1")
+      content: t("O'zbekiston, Toshkent, Shayxontoxir tumani, Taxtapul, To'raqurgon ko'chasi 12b, Mo'ljal: Malika bozori", "Узбекистан, Ташкент, Шайхантахурский район, Тахтапуль, улица Туракурган 12б, Ориентир: рынок Малика")
     },
     {
       icon: Phone,
       title: t("Telefon", "Телефон"),
-      content: "+998 71 123 45 67"
+      content: "+998 33 470 47 00"
+    },
+    {
+      icon: Mail,
+      title: t("Email", "Email"),
+      content: "sobirovsardor138@gmail.com"
     },
     {
       icon: Clock,
       title: t("Ish vaqti", "Время работы"),
-      content: t("Dushanba-Shanba: 9:00 - 18:00", "Понедельник-Суббота: 9:00 - 18:00")
+      content: t("07:00 dan 00:00 gacha, dam olishsiz", "07:00 до 00:00, без выходных")
     }
   ];
 

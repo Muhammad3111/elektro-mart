@@ -210,6 +210,8 @@ export default function Home() {
                                     rating={product.rating}
                                     isNew={product.isNew}
                                     discount={product.discount ? `${product.discount}%` : undefined}
+                                    productCode={product.productCode}
+                                    inStock={product.inStock}
                                 />
                             ))}
                         </div>

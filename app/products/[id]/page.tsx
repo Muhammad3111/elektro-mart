@@ -16,8 +16,6 @@ import {
     Share2,
     Tag,
     Heart,
-    ChevronLeft,
-    ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { useCart } from "@/contexts/cart-context";
@@ -72,6 +70,11 @@ export default function ProductDetailPage() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productId]);
+
+    // Reset selected image when product changes
+    useEffect(() => {
+        setSelectedImage(0);
+    }, [product?.id]);
 
     // Get product images - combine coverImage and galleryImages
     const productImages = product ? [
@@ -195,33 +198,32 @@ export default function ProductDetailPage() {
                             {productImages.length > 0 ? (
                                 <>
                                     <S3Image
+                                        key={`main-${selectedImage}-${productImages[selectedImage]}`}
                                         src={productImages[selectedImage]}
                                         alt={productName}
                                         fill
                                         className="object-contain"
                                     />
-                                    {/* Navigation Arrows - only show if multiple images */}
+                                    {/* Indicator Dots - only show if multiple images */}
                                     {productImages.length > 1 && (
-                                        <>
-                                            <button
-                                                onClick={() => setSelectedImage((selectedImage - 1 + productImages.length) % productImages.length)}
-                                                className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                                aria-label="Previous image"
-                                            >
-                                                <ChevronLeft className="h-6 w-6" />
-                                            </button>
-                                            <button
-                                                onClick={() => setSelectedImage((selectedImage + 1) % productImages.length)}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-black rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                                                aria-label="Next image"
-                                            >
-                                                <ChevronRight className="h-6 w-6" />
-                                            </button>
-                                            {/* Image Counter */}
-                                            <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
-                                                {selectedImage + 1} / {productImages.length}
-                                            </div>
-                                        </>
+                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                                            {productImages.map((_, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setSelectedImage(index);
+                                                    }}
+                                                    className={`h-2 rounded-full transition-all ${
+                                                        index === selectedImage
+                                                            ? "w-8 bg-primary"
+                                                            : "w-2 bg-white/60 hover:bg-white/80"
+                                                    }`}
+                                                    aria-label={`Go to image ${index + 1}`}
+                                                />
+                                            ))}
+                                        </div>
                                     )}
                                 </>
                             ) : (
@@ -237,7 +239,11 @@ export default function ProductDetailPage() {
                                 {productImages.map((image: string, index: number) => (
                                     <button
                                         key={index}
-                                        onClick={() => setSelectedImage(index)}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setSelectedImage(index);
+                                        }}
                                         className={`relative aspect-square bg-accent rounded-lg overflow-hidden border-2 transition-all ${
                                             selectedImage === index
                                                 ? "border-primary ring-2 ring-primary/20"
@@ -457,6 +463,8 @@ export default function ProductDetailPage() {
                                     rating={relatedProduct.rating}
                                     isNew={relatedProduct.isNew}
                                     discount={relatedProduct.discount ? `${relatedProduct.discount}%` : undefined}
+                                    productCode={relatedProduct.productCode}
+                                    inStock={relatedProduct.inStock}
                                 />
                             ))}
                         </div>

@@ -11,25 +11,25 @@ export function ContactInfo() {
         {
             icon: Phone,
             title: t("Telefon raqam", "Телефон"),
-            value: "+998 90 123 45 67",
-            href: "tel:+998901234567",
+            value: "+998 33 470 47 00",
+            href: "tel:+998334704700",
         },
         {
             icon: Mail,
             title: t("Elektron pochta", "Электронная почта"),
-            value: "info@elektromart.uz",
-            href: "mailto:info@elektromart.uz",
+            value: "sobirovsardor138@gmail.com",
+            href: "mailto:sobirovsardor138@gmail.com",
         },
         {
             icon: Clock,
             title: t("Ish vaqti", "Рабочее время"),
-            value: t("9:00 dan 19:00 gacha, dam olishsiz", "9:00 до 19:00, без выходных"),
+            value: t("07:00 dan 00:00 gacha, dam olishsiz", "07:00 до 00:00, без выходных"),
             href: null,
         },
         {
             icon: MapPin,
             title: t("Manzil", "Адрес"),
-            value: t("Toshkent sh., Chilonzor tumani", "г. Ташкент, Чиланзарский район"),
+            value: t("O'zbekiston, Toshkent, Shayxontoxir tumani, Taxtapul, To'raqurgon ko'chasi 12b, Mo'ljal: Malika bozori", "Узбекистан, Ташкент, Шайхантахурский район, Тахтапуль, улица Туракурган 12б, Ориентир: рынок Малика"),
             href: null,
         },
     ];

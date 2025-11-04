@@ -44,7 +44,7 @@ export function Footer() {
                             </h5>
                             <div className="flex space-x-3">
                                 <Link
-                                    href="https://t.me/electrawire"
+                                    href="https://t.me/sobirovmarket"
                                     target="_blank"
                                     className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                                 >
@@ -57,7 +57,7 @@ export function Footer() {
                                     </svg>
                                 </Link>
                                 <Link
-                                    href="https://instagram.com/electrawire"
+                                    href="https://instagram.com/sobirovmarket"
                                     target="_blank"
                                     className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
                                 >
