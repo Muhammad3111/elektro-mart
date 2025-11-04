@@ -23,10 +23,10 @@ export function BrandsSlider({ brands: propBrands }: BrandsSliderProps) {
     const [emblaRef, emblaApi] = useEmblaCarousel(
         {
             loop: true,
-            align: "center",
+            align: "start",
             slidesToScroll: 1,
         },
-        [Autoplay({ delay: 3500, stopOnInteraction: true })]
+        [Autoplay({ delay: 3500, stopOnInteraction: false })]
     );
 
     useEffect(() => {
@@ -79,40 +79,7 @@ export function BrandsSlider({ brands: propBrands }: BrandsSliderProps) {
         return null;
     }
 
-    // If 6 or less brands, show grid instead of slider
-    if (brands.length <= 6) {
-        return (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                {brands.map((brand) => (
-                    <Link key={brand.id} href={`/catalog?brand=${brand.id}`}>
-                        <div className="flex flex-col group">
-                            <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2 overflow-hidden py-0">
-                                <CardContent className="p-0 aspect-[4/3] relative">
-                                    {brand.image ? (
-                                        <S3Image
-                                            src={brand.image}
-                                            alt={t(brand.nameUz, brand.nameRu)}
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                                            <ImageOff className="w-16 h-16 text-muted-foreground" />
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                            <h3 className="font-bold text-sm md:text-base text-center mt-3 group-hover:text-primary transition-colors">
-                                {t(brand.nameUz, brand.nameRu)}
-                            </h3>
-                        </div>
-                    </Link>
-                ))}
-            </div>
-        );
-    }
-
-    // Show slider for more than 6 brands
+    // Always show slider
     return (
         <div className="relative">
             {/* Slider */}
@@ -121,11 +88,11 @@ export function BrandsSlider({ brands: propBrands }: BrandsSliderProps) {
                     {brands.map((brand) => (
                         <div
                             key={brand.id}
-                            className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(16.666%-20px)]"
+                            className="flex-[0_0_100%] min-w-0 md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(16.666%-20px)]"
                         >
                             <Link href={`/catalog?brand=${brand.id}`}>
                                 <div className="flex flex-col group">
-                                    <Card className="hover:shadow-lg transition-all cursor-pointer hover:scale-105 border-2 overflow-hidden py-0">
+                                    <Card className="hover:shadow-lg transition-all duration-300 cursor-pointer border-2 hover:border-primary/50 overflow-hidden py-0">
                                         <CardContent className="p-0 aspect-[4/3] relative">
                                             {brand.image ? (
                                                 <S3Image

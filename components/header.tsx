@@ -762,6 +762,17 @@ export function Header() {
                                         {t("Bosh sahifa", "Главная")}
                                     </Link>
                                     <Link
+                                        href="/catalog"
+                                        className={`block px-4 py-3 rounded-lg hover:bg-accent transition-colors ${
+                                            isActive("/catalog")
+                                                ? "bg-accent text-primary"
+                                                : ""
+                                        }`}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        {t("Katalog", "Каталог")}
+                                    </Link>
+                                    <Link
                                         href="/about"
                                         className={`block px-4 py-3 rounded-lg hover:bg-accent transition-colors ${
                                             isActive("/about")

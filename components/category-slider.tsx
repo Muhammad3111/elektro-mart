@@ -20,11 +20,11 @@ export function CategorySlider({ categories }: CategorySliderProps) {
     const [emblaRef, emblaApi] = useEmblaCarousel(
         {
             loop: true,
-            align: "center",
+            align: "start",
             slidesToScroll: 1,
             containScroll: "trimSnaps",
         },
-        [Autoplay({ delay: 3500, stopOnInteraction: true })]
+        [Autoplay({ delay: 3500, stopOnInteraction: false })]
     );
 
     const onSelect = useCallback(() => {
