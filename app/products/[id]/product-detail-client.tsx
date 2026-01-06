@@ -25,58 +25,61 @@ import { toast } from "sonner";
 import { S3Image } from "@/components/s3-image";
 
 interface Product {
-  id: string;
-  nameUz: string;
-  nameRu: string;
-  descriptionUz?: string;
-  descriptionRu?: string;
-  shortDescriptionUz?: string;
-  shortDescriptionRu?: string;
-  price: number;
-  oldPrice?: number;
-  coverImage?: string;
-  galleryImages?: string[];
-  sku?: string;
-  productCode?: string;
-  inStock: boolean;
-  isNew?: boolean;
-  discount?: number;
-  rating?: number;
-  category?: {
     id: string;
     nameUz: string;
     nameRu: string;
-  };
-  brand?: {
-    id: string;
-    nameUz: string;
-    nameRu: string;
-  };
-  specifications?: Array<{
-    labelUz: string;
-    labelRu: string;
-    valueUz: string;
-    valueRu?: string;
-  }>;
+    descriptionUz?: string;
+    descriptionRu?: string;
+    shortDescriptionUz?: string;
+    shortDescriptionRu?: string;
+    price: number;
+    oldPrice?: number;
+    coverImage?: string;
+    galleryImages?: string[];
+    sku?: string;
+    productCode?: string;
+    inStock: boolean;
+    isNew?: boolean;
+    discount?: number;
+    rating?: number;
+    category?: {
+        id: string;
+        nameUz: string;
+        nameRu: string;
+    };
+    brand?: {
+        id: string;
+        nameUz: string;
+        nameRu: string;
+    };
+    specifications?: Array<{
+        labelUz: string;
+        labelRu: string;
+        valueUz: string;
+        valueRu?: string;
+    }>;
 }
 
 interface ProductDetailClientProps {
-  product: Product;
-  relatedProducts: Product[];
+    product: Product;
+    relatedProducts: Product[];
 }
 
-export function ProductDetailClient({ product, relatedProducts }: ProductDetailClientProps) {
+export function ProductDetailClient({
+    product,
+    relatedProducts,
+}: ProductDetailClientProps) {
     const { t, language } = useLanguage();
     const { addToCart } = useCart();
     const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
-    
+
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
 
     // Get product images - combine coverImage and galleryImages
     const productImages = [
         ...(product.coverImage ? [product.coverImage] : []),
-        ...(product.galleryImages || [])
+        ...(product.galleryImages || []),
     ];
 
     const handleAddToCart = () => {
@@ -92,7 +95,9 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
     const handleToggleFavorite = () => {
         if (isFavorite(product.id)) {
             removeFromFavorites(product.id);
-            toast.success(t("Sevimlilardan o'chirildi", "Удалено из избранного"));
+            toast.success(
+                t("Sevimlilardan o'chirildi", "Удалено из избранного")
+            );
         } else {
             addToFavorites({
                 id: product.id,
@@ -120,11 +125,23 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
         }
     };
 
-    const productName = language === 'uz' ? product.nameUz : product.nameRu;
-    const shortDescription = language === 'uz' ? product.shortDescriptionUz : product.shortDescriptionRu;
-    const productDescription = language === 'uz' ? product.descriptionUz : product.descriptionRu;
-    const categoryName = product.category ? (language === 'uz' ? product.category.nameUz : product.category.nameRu) : '';
-    const brandName = product.brand ? (language === 'uz' ? product.brand.nameUz : product.brand.nameRu) : '';
+    const productName = language === "en" ? product.nameUz : product.nameRu;
+    const shortDescription =
+        language === "en"
+            ? product.shortDescriptionUz
+            : product.shortDescriptionRu;
+    const productDescription =
+        language === "en" ? product.descriptionUz : product.descriptionRu;
+    const categoryName = product.category
+        ? language === "en"
+            ? product.category.nameUz
+            : product.category.nameRu
+        : "";
+    const brandName = product.brand
+        ? language === "en"
+            ? product.brand.nameUz
+            : product.brand.nameRu
+        : "";
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -132,7 +149,10 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
 
             <main className="flex-1 container mx-auto px-4 py-8">
                 {/* Breadcrumb */}
-                <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                <nav
+                    aria-label="Breadcrumb"
+                    className="flex items-center gap-2 text-sm text-muted-foreground mb-6"
+                >
                     <Link href="/" className="hover:text-primary">
                         {t("Bosh sahifa", "Главная")}
                     </Link>
@@ -170,13 +190,17 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                             {productImages.map((_, index) => (
                                                 <button
                                                     key={index}
-                                                    onClick={() => setSelectedImage(index)}
+                                                    onClick={() =>
+                                                        setSelectedImage(index)
+                                                    }
                                                     className={`h-2 rounded-full transition-all ${
                                                         index === selectedImage
                                                             ? "w-8 bg-primary"
                                                             : "w-2 bg-white/60 hover:bg-white/80"
                                                     }`}
-                                                    aria-label={`${index + 1}-rasm`}
+                                                    aria-label={`${
+                                                        index + 1
+                                                    }-rasm`}
                                                 />
                                             ))}
                                         </div>
@@ -192,24 +216,30 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                         {/* Thumbnail Gallery */}
                         {productImages.length > 1 && (
                             <div className="grid grid-cols-5 gap-2">
-                                {productImages.map((image: string, index: number) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => setSelectedImage(index)}
-                                        className={`relative aspect-square bg-accent rounded-lg overflow-hidden border-2 transition-all ${
-                                            selectedImage === index
-                                                ? "border-primary ring-2 ring-primary/20"
-                                                : "border-transparent hover:border-primary/50"
-                                        }`}
-                                    >
-                                        <S3Image
-                                            src={image}
-                                            alt={`${productName} ${index + 1}`}
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </button>
-                                ))}
+                                {productImages.map(
+                                    (image: string, index: number) => (
+                                        <button
+                                            key={index}
+                                            onClick={() =>
+                                                setSelectedImage(index)
+                                            }
+                                            className={`relative aspect-square bg-accent rounded-lg overflow-hidden border-2 transition-all ${
+                                                selectedImage === index
+                                                    ? "border-primary ring-2 ring-primary/20"
+                                                    : "border-transparent hover:border-primary/50"
+                                            }`}
+                                        >
+                                            <S3Image
+                                                src={image}
+                                                alt={`${productName} ${
+                                                    index + 1
+                                                }`}
+                                                fill
+                                                className="object-contain"
+                                            />
+                                        </button>
+                                    )
+                                )}
                             </div>
                         )}
                     </div>
@@ -218,10 +248,14 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                     <div className="space-y-6">
                         {/* Title */}
                         <div>
-                            <h1 className="text-3xl font-black mb-2">{productName}</h1>
+                            <h1 className="text-3xl font-black mb-2">
+                                {productName}
+                            </h1>
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 {product.sku && <span>SKU: {product.sku}</span>}
-                                {product.productCode && <span>Kod: {product.productCode}</span>}
+                                {product.productCode && (
+                                    <span>Kod: {product.productCode}</span>
+                                )}
                             </div>
                         </div>
 
@@ -229,14 +263,22 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                         <div className="flex items-center gap-4">
                             {categoryName && (
                                 <div className="text-sm">
-                                    <span className="text-muted-foreground">{t("Kategoriya:", "Категория:")}</span>{" "}
-                                    <span className="font-medium">{categoryName}</span>
+                                    <span className="text-muted-foreground">
+                                        {t("Kategoriya:", "Категория:")}
+                                    </span>{" "}
+                                    <span className="font-medium">
+                                        {categoryName}
+                                    </span>
                                 </div>
                             )}
                             {brandName && (
                                 <div className="text-sm">
-                                    <span className="text-muted-foreground">{t("Brend:", "Бренд:")}</span>{" "}
-                                    <span className="font-medium">{brandName}</span>
+                                    <span className="text-muted-foreground">
+                                        {t("Brend:", "Бренд:")}
+                                    </span>{" "}
+                                    <span className="font-medium">
+                                        {brandName}
+                                    </span>
                                 </div>
                             )}
                         </div>
@@ -245,18 +287,22 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                         <div className="space-y-2">
                             <div className="flex items-baseline gap-3">
                                 <span className="text-4xl font-black text-primary">
-                                    {formatPrice(product.price)} {t("so'm", "сум")}
+                                    {formatPrice(product.price)}{" "}
+                                    {t("so'm", "сум")}
                                 </span>
-                                {product.oldPrice && product.oldPrice > product.price && (
-                                    <span className="text-xl text-muted-foreground line-through">
-                                        {formatPrice(product.oldPrice)} {t("so'm", "сум")}
-                                    </span>
-                                )}
+                                {product.oldPrice &&
+                                    product.oldPrice > product.price && (
+                                        <span className="text-xl text-muted-foreground line-through">
+                                            {formatPrice(product.oldPrice)}{" "}
+                                            {t("so'm", "сум")}
+                                        </span>
+                                    )}
                             </div>
                             {product.discount && product.discount > 0 && (
                                 <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 px-3 py-1 rounded-full text-sm font-medium">
-                                    <Tag className="h-4 w-4" />
-                                    -{product.discount}% {t("chegirma", "скидка")}
+                                    <Tag className="h-4 w-4" />-
+                                    {product.discount}%{" "}
+                                    {t("chegirma", "скидка")}
                                 </div>
                             )}
                         </div>
@@ -280,7 +326,9 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                         {/* Short Description */}
                         {shortDescription && (
                             <div className="bg-accent/50 rounded-lg p-4">
-                                <p className="text-sm text-muted-foreground leading-relaxed">{shortDescription}</p>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    {shortDescription}
+                                </p>
                             </div>
                         )}
 
@@ -289,12 +337,21 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                             <Card>
                                 <CardContent className="p-6 space-y-4">
                                     <div className="flex items-center gap-4">
-                                        <span className="font-medium">{t("Miqdor:", "Количество:")}</span>
+                                        <span className="font-medium">
+                                            {t("Miqdor:", "Количество:")}
+                                        </span>
                                         <div className="flex items-center gap-2">
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                                onClick={() =>
+                                                    setQuantity(
+                                                        Math.max(
+                                                            1,
+                                                            quantity - 1
+                                                        )
+                                                    )
+                                                }
                                                 disabled={quantity <= 1}
                                                 aria-label="Kamaytirish"
                                             >
@@ -303,7 +360,16 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                             <Input
                                                 type="number"
                                                 value={quantity}
-                                                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                                onChange={(e) =>
+                                                    setQuantity(
+                                                        Math.max(
+                                                            1,
+                                                            parseInt(
+                                                                e.target.value
+                                                            ) || 1
+                                                        )
+                                                    )
+                                                }
                                                 className="w-20 text-center"
                                                 min="1"
                                                 max="999"
@@ -312,7 +378,9 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                             <Button
                                                 variant="outline"
                                                 size="icon"
-                                                onClick={() => setQuantity(quantity + 1)}
+                                                onClick={() =>
+                                                    setQuantity(quantity + 1)
+                                                }
                                                 aria-label="Ko'paytirish"
                                             >
                                                 <Plus className="h-4 w-4" />
@@ -326,14 +394,21 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                             className="flex-1 bg-primary hover:bg-primary/90 text-white h-12"
                                         >
                                             <ShoppingCart className="h-5 w-5 mr-2" />
-                                            {t("Savatga qo'shish", "Добавить в корзину")}
+                                            {t(
+                                                "Savatga qo'shish",
+                                                "Добавить в корзину"
+                                            )}
                                         </Button>
                                         <Button
                                             variant="outline"
                                             size="icon"
                                             onClick={handleToggleFavorite}
                                             className="h-12 w-12"
-                                            aria-label={isFavorite(product.id) ? "Sevimlilardan o'chirish" : "Sevimlilarga qo'shish"}
+                                            aria-label={
+                                                isFavorite(product.id)
+                                                    ? "Sevimlilardan o'chirish"
+                                                    : "Sevimlilarga qo'shish"
+                                            }
                                         >
                                             <Heart
                                                 className={`h-5 w-5 ${
@@ -343,9 +418,9 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                                 }`}
                                             />
                                         </Button>
-                                        <Button 
-                                            variant="outline" 
-                                            size="icon" 
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
                                             className="h-12 w-12"
                                             onClick={handleShare}
                                             aria-label="Ulashish"
@@ -369,43 +444,59 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                     {t("Tavsif", "Описание")}
                                 </h2>
                                 <div className="prose prose-sm max-w-none">
-                                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{productDescription}</p>
+                                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+                                        {productDescription}
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>
                     )}
 
                     {/* Specifications */}
-                    {product.specifications && product.specifications.length > 0 && (
-                        <Card>
-                            <CardContent className="p-6">
-                                <h2 className="text-2xl font-black mb-6">
-                                    {t("Texnik xususiyatlar", "Технические характеристики")}
-                                </h2>
-                                <div className="space-y-3">
-                                    {product.specifications.map((spec, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex justify-between items-center p-4 bg-accent/50 rounded-lg"
-                                        >
-                                            <span className="font-medium">
-                                                {language === 'uz' ? spec.labelUz : spec.labelRu}
-                                            </span>
-                                            <span className="text-muted-foreground">
-                                                {language === 'uz' ? spec.valueUz : (spec.valueRu || spec.valueUz)}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                    {product.specifications &&
+                        product.specifications.length > 0 && (
+                            <Card>
+                                <CardContent className="p-6">
+                                    <h2 className="text-2xl font-black mb-6">
+                                        {t(
+                                            "Texnik xususiyatlar",
+                                            "Технические характеристики"
+                                        )}
+                                    </h2>
+                                    <div className="space-y-3">
+                                        {product.specifications.map(
+                                            (spec, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="flex justify-between items-center p-4 bg-accent/50 rounded-lg"
+                                                >
+                                                    <span className="font-medium">
+                                                        {language === "en"
+                                                            ? spec.labelUz
+                                                            : spec.labelRu}
+                                                    </span>
+                                                    <span className="text-muted-foreground">
+                                                        {language === "en"
+                                                            ? spec.valueUz
+                                                            : spec.valueRu ||
+                                                              spec.valueUz}
+                                                    </span>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                 </div>
 
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (
                     <section aria-labelledby="related-products">
-                        <h2 id="related-products" className="text-2xl font-black mb-6">
+                        <h2
+                            id="related-products"
+                            className="text-2xl font-black mb-6"
+                        >
                             {t("O'xshash mahsulotlar", "Похожие товары")}
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
@@ -413,13 +504,21 @@ export function ProductDetailClient({ product, relatedProducts }: ProductDetailC
                                 <ProductCard
                                     key={relatedProduct.id}
                                     id={relatedProduct.id}
-                                    name={language === 'uz' ? relatedProduct.nameUz : relatedProduct.nameRu}
+                                    name={
+                                        language === "en"
+                                            ? relatedProduct.nameUz
+                                            : relatedProduct.nameRu
+                                    }
                                     price={relatedProduct.price.toString()}
                                     oldPrice={relatedProduct.oldPrice?.toString()}
                                     image={relatedProduct.coverImage || ""}
                                     rating={relatedProduct.rating}
                                     isNew={relatedProduct.isNew}
-                                    discount={relatedProduct.discount ? `${relatedProduct.discount}%` : undefined}
+                                    discount={
+                                        relatedProduct.discount
+                                            ? `${relatedProduct.discount}%`
+                                            : undefined
+                                    }
                                     productCode={relatedProduct.productCode}
                                     inStock={relatedProduct.inStock}
                                 />

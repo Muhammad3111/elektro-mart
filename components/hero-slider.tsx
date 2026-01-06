@@ -84,10 +84,14 @@ export function HeroSlider() {
                                     {/* Left side - Text content */}
                                     <div className="space-y-3 sm:space-y-4 md:space-y-6 text-center md:text-left">
                                         <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-foreground">
-                                            {language === 'uz' ? slider.titleUz : slider.titleRu}
+                                            {language === "en"
+                                                ? slider.titleUz
+                                                : slider.titleRu}
                                         </h1>
                                         <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground/80 max-w-lg mx-auto md:mx-0">
-                                            {language === 'uz' ? slider.subtitleUz : slider.subtitleRu}
+                                            {language === "en"
+                                                ? slider.subtitleUz
+                                                : slider.subtitleRu}
                                         </p>
                                         <Link
                                             href={slider.link}
@@ -97,7 +101,9 @@ export function HeroSlider() {
                                                 size="lg"
                                                 className="bg-primary hover:bg-primary/90 text-white h-10 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base md:text-lg"
                                             >
-                                                {language === 'uz' ? "Ko'rish" : "Смотреть"}
+                                                {language === "en"
+                                                    ? "Ko'rish"
+                                                    : "Смотреть"}
                                             </Button>
                                         </Link>
                                     </div>
@@ -107,7 +113,11 @@ export function HeroSlider() {
                                         <div className="relative w-full max-w-[250px] sm:max-w-[300px] md:max-w-md aspect-square">
                                             <S3Image
                                                 src={slider.coverImage}
-                                                alt={language === 'uz' ? slider.titleUz : slider.titleRu}
+                                                alt={
+                                                    language === "en"
+                                                        ? slider.titleUz
+                                                        : slider.titleRu
+                                                }
                                                 fill
                                                 className="object-contain rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
                                                 priority

@@ -34,10 +34,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
     title: {
         default: `${siteConfig.name} | Professional Electrical Products`,
-        template: `%s | ${siteConfig.shortName}`
+        template: `%s | ${siteConfig.shortName}`,
     },
     description: siteConfig.description.en,
-    keywords: siteConfig.keywords.en,
+    keywords: [...siteConfig.keywords.en],
     authors: [{ name: siteConfig.name }],
     creator: siteConfig.name,
     publisher: siteConfig.name,
@@ -50,18 +50,26 @@ export const metadata: Metadata = {
     alternates: {
         canonical: "/",
         languages: {
-            "en": "/",
-            "ru": "/?lang=ru",
+            en: "/",
+            ru: "/?lang=ru",
         },
     },
     icons: {
         icon: [
             { url: "/favicon/favicon.ico", sizes: "any" },
             { url: "/favicon/favicon.svg", type: "image/svg+xml" },
-            { url: "/favicon/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+            {
+                url: "/favicon/favicon-96x96.png",
+                sizes: "96x96",
+                type: "image/png",
+            },
         ],
         apple: [
-            { url: "/favicon/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+            {
+                url: "/favicon/apple-touch-icon.png",
+                sizes: "180x180",
+                type: "image/png",
+            },
         ],
     },
     manifest: "/favicon/site.webmanifest",
@@ -79,7 +87,7 @@ export const metadata: Metadata = {
                 width: 1200,
                 height: 630,
                 alt: `${siteConfig.name} - Electrical Products`,
-            }
+            },
         ],
     },
     twitter: {
@@ -114,7 +122,11 @@ export default function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <head>
                 <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                <link
+                    rel="preconnect"
+                    href="https://fonts.gstatic.com"
+                    crossOrigin="anonymous"
+                />
             </head>
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -126,8 +138,8 @@ export default function RootLayout({
                             <SearchProvider>
                                 <CartProvider>
                                     <FavoritesProvider>
-                                        <a 
-                                            href="#main-content" 
+                                        <a
+                                            href="#main-content"
                                             className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-md"
                                         >
                                             Skip to main content
@@ -135,7 +147,10 @@ export default function RootLayout({
                                         <PageLoading />
                                         {children}
                                         <FloatingButtons />
-                                        <Toaster position="top-center" richColors />
+                                        <Toaster
+                                            position="top-center"
+                                            richColors
+                                        />
                                     </FavoritesProvider>
                                 </CartProvider>
                             </SearchProvider>
