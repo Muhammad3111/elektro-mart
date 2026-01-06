@@ -10,6 +10,7 @@ import { useCart } from "@/contexts/cart-context";
 import { useFavorites } from "@/contexts/favorites-context";
 import { S3Image } from "@/components/s3-image";
 import { formatPrice } from "@/lib/utils/format-price";
+import { siteConfig } from "@/lib/config/site";
 
 interface ProductCardProps {
     id: number | string;
@@ -32,7 +33,6 @@ export function ProductCard({
     oldPrice,
     image,
     description,
-    rating,
     isNew = false,
     discount,
     productCode,
@@ -55,14 +55,14 @@ export function ProductCard({
     };
 
     return (
-        <Link href={`/products/${id}`} className="cursor-pointer block">
+        <Link href={`/products/${id}`} className="cursor-pointer block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg">
             <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 hover:shadow-primary/50 py-0 flex flex-col h-full border-0 gap-0">
                 <div className="relative aspect-square overflow-hidden shrink-0">
-                    {/* Badges - Always Visible */}
+                    {/* Badges */}
                     <div className="absolute top-2 left-2 z-10 flex flex-col gap-2">
                         {isNew && (
                             <Badge className="bg-primary text-white">
-                                {t("Yangi", "Новый")}
+                                {t("New", "Новый")}
                             </Badge>
                         )}
                         {discount && (
@@ -72,7 +72,7 @@ export function ProductCard({
                         )}
                     </div>
 
-                    {/* Favorite Icon - Always visible on mobile, visible on hover on desktop */}
+                    {/* Favorite Button */}
                     <div className="absolute top-2 right-2 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
                         <Button
                             size="icon"
@@ -93,22 +93,20 @@ export function ProductCard({
                                     });
                                 }
                             }}
+                            aria-label={isInFavorites ? t("Remove from favorites", "Удалить из избранного") : t("Add to favorites", "Добавить в избранное")}
                         >
                             <Heart
-                                className={`h-4 w-4 ${
-                                    isInFavorites
-                                        ? "fill-current text-red-500"
-                                        : ""
-                                }`}
+                                className={`h-4 w-4 ${isInFavorites ? "fill-current text-red-500" : ""}`}
+                                aria-hidden="true"
                             />
                         </Button>
                     </div>
 
-                    {/* Quick View Text - Center on hover (desktop only) */}
+                    {/* Quick View */}
                     <div className="absolute inset-0 flex items-center justify-center z-10 opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                         <div className="bg-white/95 px-6 py-3 rounded-lg shadow-lg">
                             <span className="text-sm font-semibold text-gray-800">
-                                {t("Tez ko'rish", "Быстрый просмотр")}
+                                {t("Quick View", "Быстрый просмотр")}
                             </span>
                         </div>
                     </div>
@@ -116,7 +114,7 @@ export function ProductCard({
                     {/* Product Image */}
                     {!image ? (
                         <div className="w-full h-full flex items-center justify-center bg-muted">
-                            <ImageIcon className="w-16 h-16 text-muted-foreground/50" />
+                            <ImageIcon className="w-16 h-16 text-muted-foreground/50" aria-hidden="true" />
                         </div>
                     ) : (
                         <S3Image
@@ -130,51 +128,45 @@ export function ProductCard({
                 </div>
 
                 <CardContent className="p-3 flex flex-col flex-1">
-                    {/* Top section - grows to fill space */}
                     <div className="space-y-2 flex-1">
                         {/* Product Code and Stock Status */}
                         <div className="flex items-center justify-between gap-2 text-[10px] md:text-xs">
                             {productCode && (
                                 <span className="text-muted-foreground font-medium">
-                                    {t("Kod", "Код")}: {productCode}
+                                    {t("Code", "Код")}: {productCode}
                                 </span>
                             )}
                             {inStock ? (
                                 <div className="flex items-center gap-1 text-green-600">
-                                    <CheckCircle className="h-3 w-3" />
+                                    <CheckCircle className="h-3 w-3" aria-hidden="true" />
                                     <span className="font-medium">
-                                        {t("Bor", "В наличии")}
+                                        {t("In Stock", "В наличии")}
                                     </span>
                                 </div>
                             ) : (
                                 <span className="text-red-500 font-medium">
-                                    {t("Yo'q", "Нет")}
+                                    {t("Out of Stock", "Нет в наличии")}
                                 </span>
                             )}
                         </div>
 
-                        {/* Product Name - 1 line */}
+                        {/* Product Name */}
                         <h3 className="font-bold text-xs md:text-sm line-clamp-1 group-hover:text-primary transition-colors">
                             {name}
                         </h3>
 
-                        {/* Description - 2 lines with ellipsis */}
+                        {/* Description */}
                         <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-2 min-h-10 md:min-h-12">
-                            {description ||
-                                t(
-                                    "Mahsulot tavsifi mavjud emas",
-                                    "Описание товара недоступно"
-                                )}
+                            {description || t("No description available", "Описание недоступно")}
                         </p>
                     </div>
 
-                    {/* Bottom section - always at bottom */}
+                    {/* Price and Cart */}
                     <div className="flex items-end justify-between gap-2 pt-2 mt-auto">
-                        {/* Left side: Prices */}
                         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                             {oldPrice && (
                                 <span className="text-[10px] md:text-xs text-muted-foreground line-through whitespace-nowrap">
-                                    {formatPrice(oldPrice)} UZS
+                                    {formatPrice(oldPrice)} {siteConfig.currencySymbol}
                                 </span>
                             )}
                             <div className="flex items-baseline gap-1 flex-wrap">
@@ -182,12 +174,11 @@ export function ProductCard({
                                     {formatPrice(price)}
                                 </span>
                                 <span className="text-xs md:text-sm font-bold text-primary whitespace-nowrap">
-                                    UZS
+                                    {siteConfig.currencySymbol}
                                 </span>
                             </div>
                         </div>
 
-                        {/* Right side: Cart Icon Button */}
                         <Button
                             size="icon"
                             className="bg-primary hover:bg-primary/90 text-white shadow-md group-hover:shadow-lg transition-shadow h-9 w-9 md:h-10 md:w-10 shrink-0"
@@ -196,8 +187,9 @@ export function ProductCard({
                                 e.stopPropagation();
                                 handleAddToCart(e);
                             }}
+                            aria-label={t("Add to cart", "Добавить в корзину")}
                         >
-                            <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
+                            <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" aria-hidden="true" />
                         </Button>
                     </div>
                 </CardContent>

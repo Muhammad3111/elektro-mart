@@ -2,12 +2,12 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-type Language = "uz" | "ru";
+export type Language = "en" | "ru";
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (uz: string, ru: string) => string;
+  t: (en: string, ru: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -16,20 +16,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window !== "undefined") {
       const savedLanguage = localStorage.getItem("language") as Language;
-      if (savedLanguage && (savedLanguage === "uz" || savedLanguage === "ru")) {
+      if (savedLanguage && (savedLanguage === "en" || savedLanguage === "ru")) {
         return savedLanguage;
       }
     }
-    return "uz";
+    return "en";
   });
 
-  // Save language to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("language", language);
+    // Update html lang attribute
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = language;
+    }
   }, [language]);
 
-  const t = (uz: string, ru: string) => {
-    return language === "uz" ? uz : ru;
+  const t = (en: string, ru: string) => {
+    return language === "en" ? en : ru;
   };
 
   return (

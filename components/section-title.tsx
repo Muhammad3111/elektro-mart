@@ -4,23 +4,23 @@ import { useEffect, useState } from "react";
 
 interface SectionTitleProps {
     children: React.ReactNode;
-    highlight?: string; // Highlighted word(s) in primary color
+    id?: string;
+    highlight?: string;
     centered?: boolean;
-    withLines?: boolean; // Show decorative lines on sides
-    animated?: boolean; // Enable snake animation
+    withLines?: boolean;
+    animated?: boolean;
 }
 
 export function SectionTitle({ 
     children, 
+    id,
     highlight, 
     centered = true, 
     withLines = true,
     animated = false
 }: SectionTitleProps) {
     const [isAnimating, setIsAnimating] = useState(false);
-    const text = children?.toString() || "";
     
-    // Snake wrap animation - runs every 5 seconds
     useEffect(() => {
         if (!animated) return;
         
@@ -32,7 +32,6 @@ export function SectionTitle({
         return () => clearInterval(interval);
     }, [animated]);
     
-    // If highlight is provided, split the text and highlight that part
     const renderText = () => {
         return children;
     };
@@ -40,8 +39,8 @@ export function SectionTitle({
     if (withLines) {
         return (
             <div className={`flex items-center gap-4 mb-8 ${centered ? 'justify-center' : ''}`}>
-                <div className="h-[2px] bg-linear-to-r from-transparent via-primary/50 to-primary flex-1 max-w-[100px]" />
-                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-center relative">
+                <div className="h-[2px] bg-linear-to-r from-transparent via-primary/50 to-primary flex-1 max-w-[100px]" aria-hidden="true" />
+                <h2 id={id} className="text-2xl md:text-3xl lg:text-4xl font-bold text-center relative">
                     <span className="relative inline-block" style={{ padding: '16px 8px' }}>
                         {renderText()}
                         {isAnimating && (
@@ -53,8 +52,8 @@ export function SectionTitle({
                                     right: '-8px',
                                     bottom: '-8px',
                                 }}
+                                aria-hidden="true"
                             >
-                                {/* Snake element that wraps around text */}
                                 <span 
                                     className="absolute w-[6px] h-[6px] rounded-full bg-primary"
                                     style={{
@@ -62,7 +61,6 @@ export function SectionTitle({
                                         animation: 'snake-crawl 8s linear',
                                     }}
                                 />
-                                {/* Trail effect */}
                                 <span 
                                     className="absolute w-[4px] h-[4px] rounded-full bg-primary"
                                     style={{
@@ -83,13 +81,13 @@ export function SectionTitle({
                         )}
                     </span>
                 </h2>
-                <div className="h-[2px] bg-linear-to-l from-transparent via-primary/50 to-primary flex-1 max-w-[100px]" />
+                <div className="h-[2px] bg-linear-to-l from-transparent via-primary/50 to-primary flex-1 max-w-[100px]" aria-hidden="true" />
             </div>
         );
     }
 
     return (
-        <h2 className={`text-2xl md:text-3xl lg:text-4xl font-bold mb-8 relative ${centered ? 'text-center' : ''}`}>
+        <h2 id={id} className={`text-2xl md:text-3xl lg:text-4xl font-bold mb-8 relative ${centered ? 'text-center' : ''}`}>
             <span className="relative inline-block" style={{ padding: '16px 8px' }}>
                 {renderText()}
                 {isAnimating && (
@@ -101,8 +99,8 @@ export function SectionTitle({
                             right: '-8px',
                             bottom: '-8px',
                         }}
+                        aria-hidden="true"
                     >
-                        {/* Snake element that wraps around text */}
                         <span 
                             className="absolute w-[6px] h-[6px] rounded-full bg-primary"
                             style={{
@@ -110,7 +108,6 @@ export function SectionTitle({
                                 animation: 'snake-crawl 8s linear',
                             }}
                         />
-                        {/* Trail effect */}
                         <span 
                             className="absolute w-[4px] h-[4px] rounded-full bg-primary"
                             style={{

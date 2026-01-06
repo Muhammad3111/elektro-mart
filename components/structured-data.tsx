@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { siteConfig } from "@/lib/config/site";
 
 interface Product {
     name: string;
@@ -14,24 +15,24 @@ interface Product {
 
 interface StructuredDataProps {
     type: "WebSite" | "Product" | "Organization" | "BreadcrumbList";
-    data?: any;
+    data?: Record<string, unknown>;
     product?: Product;
 }
 
 export function StructuredData({ type, data, product }: StructuredDataProps) {
-    let structuredData: any = {};
+    let structuredData: Record<string, unknown> = {};
 
     switch (type) {
         case "WebSite":
             structuredData = {
                 "@context": "https://schema.org",
                 "@type": "WebSite",
-                "name": "Sobirov Market",
-                "url": "https://elektromart.uz",
-                "description": "O'zbekistonda eng yaxshi elektr kabel va aksessuarlar",
+                "name": siteConfig.name,
+                "url": siteConfig.url,
+                "description": siteConfig.description.en,
                 "potentialAction": {
                     "@type": "SearchAction",
-                    "target": "https://elektromart.uz/catalog?search={search_term_string}",
+                    "target": `${siteConfig.url}/catalog?search={search_term_string}`,
                     "query-input": "required name=search_term_string"
                 }
             };
@@ -41,23 +42,23 @@ export function StructuredData({ type, data, product }: StructuredDataProps) {
             structuredData = {
                 "@context": "https://schema.org",
                 "@type": "Organization",
-                "name": "Sobirov Market",
-                "url": "https://elektromart.uz",
-                "logo": "https://elektromart.uz/logo.png",
-                "description": "Professional elektr kabel va aksessuarlar do'koni",
+                "name": siteConfig.name,
+                "url": siteConfig.url,
+                "logo": `${siteConfig.url}/logo.png`,
+                "description": siteConfig.description.en,
                 "address": {
                     "@type": "PostalAddress",
                     "addressCountry": "UZ",
-                    "addressLocality": "Toshkent"
+                    "addressLocality": "Tashkent"
                 },
                 "contactPoint": {
                     "@type": "ContactPoint",
-                    "telephone": "+998-90-123-45-67",
+                    "telephone": siteConfig.contact.phone,
                     "contactType": "customer service"
                 },
                 "sameAs": [
-                    "https://t.me/sobirovmarket",
-                    "https://instagram.com/sobirovmarket"
+                    siteConfig.social.telegram,
+                    siteConfig.social.instagram
                 ]
             };
             break;
@@ -72,16 +73,16 @@ export function StructuredData({ type, data, product }: StructuredDataProps) {
                     "image": product.image,
                     "brand": {
                         "@type": "Brand",
-                        "name": product.brand || "Sobirov Market"
+                        "name": product.brand || siteConfig.name
                     },
                     "offers": {
                         "@type": "Offer",
                         "price": product.price.replace(/,/g, ""),
-                        "priceCurrency": "UZS",
+                        "priceCurrency": siteConfig.currency,
                         "availability": "https://schema.org/InStock",
                         "seller": {
                             "@type": "Organization",
-                            "name": "Sobirov Market"
+                            "name": siteConfig.name
                         }
                     },
                     ...(product.rating && {
@@ -99,7 +100,7 @@ export function StructuredData({ type, data, product }: StructuredDataProps) {
             break;
 
         case "BreadcrumbList":
-            structuredData = data;
+            structuredData = data || {};
             break;
     }
 

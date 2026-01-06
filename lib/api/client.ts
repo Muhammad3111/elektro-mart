@@ -5,8 +5,13 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
+// Retry configuration
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 sekund
+
 export interface ApiRequestOptions extends RequestInit {
   params?: Record<string, unknown>;
+  retries?: number;
 }
 
 /**
@@ -17,11 +22,21 @@ function getAuthToken(): string | null {
   return localStorage.getItem("access_token");
 }
 
+/**
+ * Delay helper
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * API request with retry logic
+ */
 export async function apiRequest<T>(
   endpoint: string,
   options: ApiRequestOptions = {}
 ): Promise<T> {
-  const { params, ...fetchOptions } = options;
+  const { params, retries = 0, ...fetchOptions } = options;
 
   // Query params qo'shish
   let url = `${API_URL}${endpoint}`;
@@ -56,15 +71,38 @@ export async function apiRequest<T>(
     (headers as Record<string, string>).Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    headers,
-  });
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers,
+    });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Unknown error" }));
-    throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    // Rate limiting - 429 status
+    if (response.status === 429 && retries < MAX_RETRIES) {
+      const retryAfter = response.headers.get('Retry-After');
+      const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : RETRY_DELAY * (retries + 1);
+      await delay(waitTime);
+      return apiRequest<T>(endpoint, { ...options, retries: retries + 1 });
+    }
+
+    // Server error - retry
+    if (response.status >= 500 && retries < MAX_RETRIES) {
+      await delay(RETRY_DELAY * (retries + 1));
+      return apiRequest<T>(endpoint, { ...options, retries: retries + 1 });
+    }
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: "Unknown error" }));
+      throw new Error(error.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    // Network error - retry
+    if (error instanceof TypeError && error.message === 'Failed to fetch' && retries < MAX_RETRIES) {
+      await delay(RETRY_DELAY * (retries + 1));
+      return apiRequest<T>(endpoint, { ...options, retries: retries + 1 });
+    }
+    throw error;
   }
-
-  return response.json();
 }

@@ -1,478 +1,220 @@
-"use client";
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { ProductDetailClient } from "./product-detail-client";
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-    ShoppingCart,
-    CheckCircle,
-    Minus,
-    Plus,
-    Share2,
-    Tag,
-    Heart,
-} from "lucide-react";
-import { useLanguage } from "@/contexts/language-context";
-import { useCart } from "@/contexts/cart-context";
-import { useFavorites } from "@/contexts/favorites-context";
-import { formatPrice } from "@/lib/utils/format-price";
-import { ProductCard } from "@/components/product-card";
-import { useParams } from "next/navigation";
-import { productsAPI } from "@/lib/api";
-import { Product } from "@/types/product";
-import { toast } from "sonner";
-import { S3Image } from "@/components/s3-image";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
-export default function ProductDetailPage() {
-    const params = useParams();
-    const productId = params.id as string;
-    const { t, language } = useLanguage();
-    const { addToCart } = useCart();
-    const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+interface Product {
+  id: string;
+  nameUz: string;
+  nameRu: string;
+  descriptionUz?: string;
+  descriptionRu?: string;
+  shortDescriptionUz?: string;
+  shortDescriptionRu?: string;
+  price: number;
+  oldPrice?: number;
+  coverImage?: string;
+  galleryImages?: string[];
+  sku?: string;
+  productCode?: string;
+  inStock: boolean;
+  isNew?: boolean;
+  discount?: number;
+  rating?: number;
+  categoryId?: string;
+  brandId?: string;
+  category?: {
+    id: string;
+    nameUz: string;
+    nameRu: string;
+  };
+  brand?: {
+    id: string;
+    nameUz: string;
+    nameRu: string;
+  };
+  specifications?: Array<{
+    labelUz: string;
+    labelRu: string;
+    valueUz: string;
+    valueRu?: string;
+  }>;
+}
+
+interface ProductsResponse {
+  data: Product[];
+  total: number;
+}
+
+// Server-side data fetching
+async function getProduct(id: string): Promise<Product | null> {
+  try {
+    const res = await fetch(`${API_URL}/products/${id}`, {
+      next: { revalidate: 60 }, // 1 daqiqa cache
+    });
     
-    const [quantity, setQuantity] = useState(1);
-    const [selectedImage, setSelectedImage] = useState(0);
-    const [product, setProduct] = useState<Product | null>(null);
-    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch product:", error);
+    return null;
+  }
+}
 
-    const loadProduct = async () => {
-        try {
-            setLoading(true);
-            const data = await productsAPI.getById(productId);
-            setProduct(data);
-            
-            // Load related products from same category
-            if (data.categoryId) {
-                const related = await productsAPI.getAll({
-                    categoryId: data.categoryId,
-                    limit: 8,
-                    isActive: true,
-                });
-                setRelatedProducts(related.data.filter(p => p.id !== productId).slice(0, 4));
-            }
-        } catch (err) {
-            console.error("Failed to load product:", err);
-            toast.error(t("Mahsulot yuklanmadi", "Не удалось загрузить товар"));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (productId) {
-            loadProduct();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [productId]);
-
-    // Reset selected image when product changes
-    useEffect(() => {
-        setSelectedImage(0);
-    }, [product?.id]);
-
-    // Get product images - combine coverImage and galleryImages
-    const productImages = product ? [
-        ...(product.coverImage ? [product.coverImage] : []),
-        ...(product.galleryImages || [])
-    ] : [];
-
-    const handleAddToCart = () => {
-        if (product) {
-            addToCart({
-                id: product.id,
-                name: product.nameUz,
-                price: product.price.toString(),
-                image: product.coverImage || "",
-            });
-            toast.success(t("Savatga qo'shildi", "Добавлено в корзину"));
-        }
-    };
-
-    const handleToggleFavorite = () => {
-        if (product) {
-            if (isFavorite(product.id)) {
-                removeFromFavorites(product.id);
-                toast.success(t("Sevimlilardan o'chirildi", "Удалено из избранного"));
-            } else {
-                addToFavorites({
-                    id: product.id,
-                    name: product.nameUz,
-                    price: product.price.toString(),
-                    image: product.coverImage || "",
-                });
-                toast.success(t("Sevimlilarga qo'shildi", "Добавлено в избранное"));
-            }
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen flex flex-col">
-                <Header />
-                <main className="flex-1 container mx-auto px-4 py-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                        {/* Image Skeleton */}
-                        <div className="space-y-4">
-                            <Skeleton className="aspect-square w-full rounded-lg" />
-                            <div className="grid grid-cols-4 gap-2">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <Skeleton key={i} className="aspect-square rounded-lg" />
-                                ))}
-                            </div>
-                        </div>
-                        
-                        {/* Details Skeleton */}
-                        <div className="space-y-6">
-                            <Skeleton className="h-12 w-3/4" />
-                            <Skeleton className="h-6 w-1/2" />
-                            <Skeleton className="h-24 w-full" />
-                            <Skeleton className="h-16 w-full" />
-                            <Skeleton className="h-12 w-full" />
-                        </div>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
-    if (!product) {
-        return (
-            <div className="min-h-screen flex flex-col">
-                <Header />
-                <main className="flex-1 container mx-auto px-4 py-8">
-                    <div className="text-center py-16">
-                        <h1 className="text-2xl font-bold mb-4">
-                            {t("Mahsulot topilmadi", "Товар не найден")}
-                        </h1>
-                        <Link href="/catalog">
-                            <Button>{t("Katalogga qaytish", "Вернуться в каталог")}</Button>
-                        </Link>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
-
-    const productName = language === 'uz' ? product.nameUz : product.nameRu;
-    const shortDescription = language === 'uz' ? product.shortDescriptionUz : product.shortDescriptionRu;
-    const productDescription = language === 'uz' ? product.descriptionUz : product.descriptionRu;
-    const categoryName = product.category ? (language === 'uz' ? product.category.nameUz : product.category.nameRu) : '';
-    const brandName = product.brand ? (language === 'uz' ? product.brand.nameUz : product.brand.nameRu) : '';
-
-    return (
-        <div className="min-h-screen flex flex-col">
-            <Header />
-
-            <main className="flex-1 container mx-auto px-4 py-8">
-                {/* Breadcrumb */}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                    <Link href="/" className="hover:text-primary">
-                        {t("Bosh sahifa", "Главная")}
-                    </Link>
-                    <span>/</span>
-                    <Link href="/catalog" className="hover:text-primary">
-                        {t("Katalog", "Каталог")}
-                    </Link>
-                    {categoryName && (
-                        <>
-                            <span>/</span>
-                            <span>{categoryName}</span>
-                        </>
-                    )}
-                </div>
-
-                {/* Product Details */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                    {/* Product Images */}
-                    <div className="space-y-4">
-                        {/* Main Image with Navigation */}
-                        <div className="relative aspect-square bg-accent rounded-lg overflow-hidden group">
-                            {productImages.length > 0 ? (
-                                <>
-                                    <S3Image
-                                        key={`main-${selectedImage}-${productImages[selectedImage]}`}
-                                        src={productImages[selectedImage]}
-                                        alt={productName}
-                                        fill
-                                        className="object-contain"
-                                    />
-                                    {/* Indicator Dots - only show if multiple images */}
-                                    {productImages.length > 1 && (
-                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                                            {productImages.map((_, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        setSelectedImage(index);
-                                                    }}
-                                                    className={`h-2 rounded-full transition-all ${
-                                                        index === selectedImage
-                                                            ? "w-8 bg-primary"
-                                                            : "w-2 bg-white/60 hover:bg-white/80"
-                                                    }`}
-                                                    aria-label={`Go to image ${index + 1}`}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                </>
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <Tag className="h-24 w-24 text-muted-foreground" />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Thumbnail Gallery */}
-                        {productImages.length > 1 && (
-                            <div className="grid grid-cols-5 gap-2">
-                                {productImages.map((image: string, index: number) => (
-                                    <button
-                                        key={index}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            setSelectedImage(index);
-                                        }}
-                                        className={`relative aspect-square bg-accent rounded-lg overflow-hidden border-2 transition-all ${
-                                            selectedImage === index
-                                                ? "border-primary ring-2 ring-primary/20"
-                                                : "border-transparent hover:border-primary/50"
-                                        }`}
-                                    >
-                                        <S3Image
-                                            src={image}
-                                            alt={`${productName} ${index + 1}`}
-                                            fill
-                                            className="object-contain"
-                                        />
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="space-y-6">
-                        {/* Title */}
-                        <div>
-                            <h1 className="text-3xl font-black mb-2">{productName}</h1>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                {product.sku && (
-                                    <span>SKU: {product.sku}</span>
-                                )}
-                                {product.productCode && (
-                                    <span>Kod: {product.productCode}</span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Category & Brand */}
-                        <div className="flex items-center gap-4">
-                            {categoryName && (
-                                <div className="text-sm">
-                                    <span className="text-muted-foreground">{t("Kategoriya:", "Категория:")}</span>{" "}
-                                    <span className="font-medium">{categoryName}</span>
-                                </div>
-                            )}
-                            {brandName && (
-                                <div className="text-sm">
-                                    <span className="text-muted-foreground">{t("Brend:", "Бренд:")}</span>{" "}
-                                    <span className="font-medium">{brandName}</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Price */}
-                        <div className="space-y-2">
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-black text-primary">
-                                    {formatPrice(product.price)} {t("so'm", "сум")}
-                                </span>
-                                {product.oldPrice && product.oldPrice > product.price && (
-                                    <span className="text-xl text-muted-foreground line-through">
-                                        {formatPrice(product.oldPrice)} {t("so'm", "сум")}
-                                    </span>
-                                )}
-                            </div>
-                            {product.discount && product.discount > 0 && (
-                                <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 px-3 py-1 rounded-full text-sm font-medium">
-                                    <Tag className="h-4 w-4" />
-                                    -{product.discount}% {t("chegirma", "скидка")}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Stock Status */}
-                        <div className="flex items-center gap-2">
-                            {product.inStock ? (
-                                <>
-                                    <CheckCircle className="h-5 w-5 text-green-500" />
-                                    <span className="text-green-500 font-medium">
-                                        {t("Omborda bor", "В наличии")}
-                                    </span>
-                                </>
-                            ) : (
-                                <span className="text-red-500 font-medium">
-                                    {t("Omborda yo'q", "Нет в наличии")}
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Short Description */}
-                        {shortDescription && (
-                            <div className="bg-accent/50 rounded-lg p-4">
-                                <p className="text-sm text-muted-foreground leading-relaxed">{shortDescription}</p>
-                            </div>
-                        )}
-
-                        {/* Quantity & Add to Cart */}
-                        {product.inStock && (
-                            <Card>
-                                <CardContent className="p-6 space-y-4">
-                                    <div className="flex items-center gap-4">
-                                        <span className="font-medium">{t("Miqdor:", "Количество:")}</span>
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                                disabled={quantity <= 1}
-                                            >
-                                                <Minus className="h-4 w-4" />
-                                            </Button>
-                                            <Input
-                                                type="number"
-                                                value={quantity}
-                                                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                                className="w-20 text-center"
-                                                min="1"
-                                                max="999"
-                                            />
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => setQuantity(quantity + 1)}
-                                                disabled={false}
-                                            >
-                                                <Plus className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-3">
-                                        <Button
-                                            onClick={handleAddToCart}
-                                            className="flex-1 bg-primary hover:bg-primary/90 text-white h-12"
-                                        >
-                                            <ShoppingCart className="h-5 w-5 mr-2" />
-                                            {t("Savatga qo'shish", "Добавить в корзину")}
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={handleToggleFavorite}
-                                            className="h-12 w-12"
-                                        >
-                                            <Heart
-                                                className={`h-5 w-5 ${
-                                                    isFavorite(product.id)
-                                                        ? "fill-red-500 text-red-500"
-                                                        : ""
-                                                }`}
-                                            />
-                                        </Button>
-                                        <Button variant="outline" size="icon" className="h-12 w-12">
-                                            <Share2 className="h-5 w-5" />
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </div>
-                </div>
-
-                {/* Description and Specifications Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                    {/* Description */}
-                    {productDescription && (
-                        <Card>
-                            <CardContent className="p-6">
-                                <h2 className="text-2xl font-black mb-6">
-                                    {t("Tavsif", "Описание")}
-                                </h2>
-                                <div className="prose prose-sm max-w-none">
-                                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{productDescription}</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Specifications */}
-                    {product.specifications && product.specifications.length > 0 && (
-                        <Card>
-                            <CardContent className="p-6">
-                                <h2 className="text-2xl font-black mb-6">
-                                    {t("Texnik xususiyatlar", "Технические характеристики")}
-                                </h2>
-                                <div className="space-y-3">
-                                    {product.specifications.map((spec, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex justify-between items-center p-4 bg-accent/50 rounded-lg"
-                                        >
-                                            <span className="font-medium">
-                                                {language === 'uz' ? spec.labelUz : spec.labelRu}
-                                            </span>
-                                            <span className="text-muted-foreground">
-                                                {language === 'uz' ? spec.valueUz : (spec.valueRu || spec.valueUz)}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-
-                {/* Related Products */}
-                {relatedProducts.length > 0 && (
-                    <div>
-                        <h2 className="text-2xl font-black mb-6">
-                            {t("O'xshash mahsulotlar", "Похожие товары")}
-                        </h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-                            {relatedProducts.map((relatedProduct) => (
-                                <ProductCard
-                                    key={relatedProduct.id}
-                                    id={relatedProduct.id}
-                                    name={language === 'uz' ? relatedProduct.nameUz : relatedProduct.nameRu}
-                                    price={relatedProduct.price.toString()}
-                                    oldPrice={relatedProduct.oldPrice?.toString()}
-                                    image={relatedProduct.coverImage || ""}
-                                    rating={relatedProduct.rating}
-                                    isNew={relatedProduct.isNew}
-                                    discount={relatedProduct.discount ? `${relatedProduct.discount}%` : undefined}
-                                    productCode={relatedProduct.productCode}
-                                    inStock={relatedProduct.inStock}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </main>
-
-            <Footer />
-        </div>
+async function getRelatedProducts(categoryId: string, productId: string): Promise<Product[]> {
+  try {
+    const res = await fetch(
+      `${API_URL}/products?categoryId=${categoryId}&limit=8&isActive=true`,
+      { next: { revalidate: 300 } } // 5 daqiqa cache
     );
+    
+    if (!res.ok) return [];
+    const data: ProductsResponse = await res.json();
+    return data.data.filter(p => p.id !== productId).slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
+// Dynamic metadata for SEO
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}): Promise<Metadata> {
+  const { id } = await params;
+  const product = await getProduct(id);
+  
+  if (!product) {
+    return {
+      title: "Mahsulot topilmadi",
+      description: "So'ralgan mahsulot topilmadi",
+    };
+  }
+
+  const title = product.nameUz;
+  const description = product.shortDescriptionUz || product.descriptionUz || `${product.nameUz} - Sobirov Market`;
+  const imageUrl = product.coverImage 
+    ? (product.coverImage.startsWith('http') 
+        ? product.coverImage 
+        : `${process.env.NEXT_PUBLIC_S3_URL_IMAGE}/${product.coverImage}`)
+    : '/og-image.jpg';
+
+  return {
+    title,
+    description,
+    keywords: `${product.nameUz}, ${product.category?.nameUz || ''}, elektr mahsulotlari, Sobirov Market`,
+    openGraph: {
+      title: `${title} | Sobirov Market`,
+      description,
+      type: "website",
+      url: `https://elektromart.uz/products/${id}`,
+      images: [
+        {
+          url: imageUrl,
+          width: 800,
+          height: 600,
+          alt: title,
+        },
+      ],
+      siteName: "Sobirov Market",
+      locale: "uz_UZ",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Sobirov Market`,
+      description,
+      images: [imageUrl],
+    },
+    alternates: {
+      canonical: `https://elektromart.uz/products/${id}`,
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
+
+// Generate static params for popular products (optional)
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(`${API_URL}/products?limit=50&isActive=true`);
+    if (!res.ok) return [];
+    
+    const data: ProductsResponse = await res.json();
+    return data.data.map((product) => ({
+      id: product.id,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+// Page component
+export default async function ProductPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params;
+  const product = await getProduct(id);
+  
+  if (!product) {
+    notFound();
+  }
+
+  const relatedProducts = product.categoryId 
+    ? await getRelatedProducts(product.categoryId, id)
+    : [];
+
+  // JSON-LD Structured Data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.nameUz,
+    description: product.descriptionUz || product.shortDescriptionUz,
+    image: product.coverImage,
+    sku: product.sku || product.productCode,
+    brand: product.brand ? {
+      "@type": "Brand",
+      name: product.brand.nameUz,
+    } : undefined,
+    category: product.category?.nameUz,
+    offers: {
+      "@type": "Offer",
+      price: product.price,
+      priceCurrency: "UZS",
+      availability: product.inStock 
+        ? "https://schema.org/InStock" 
+        : "https://schema.org/OutOfStock",
+      seller: {
+        "@type": "Organization",
+        name: "Sobirov Market",
+      },
+    },
+    ...(product.rating && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: product.rating,
+        bestRating: 5,
+        worstRating: 1,
+        ratingCount: 100,
+      },
+    }),
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductDetailClient 
+        product={product} 
+        relatedProducts={relatedProducts} 
+      />
+    </>
+  );
 }

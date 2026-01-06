@@ -7,7 +7,6 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ProductCard } from "@/components/product-card";
 import { ProductFilter, FilterState } from "@/components/product-filter";
-import { SEO } from "@/components/seo";
 import { Button } from "@/components/ui/button";
 import {
     Select,
@@ -283,12 +282,6 @@ function CatalogContent() {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <SEO
-                title="Katalog - Barcha mahsulotlar"
-                description="Sobirov Market katalogi - elektr kabel, ulagichlar, rozetkalar, avtomatlar va boshqa elektr aksessuarlar. Siemens, Schneider, ABB, Legrand brendlari. Eng yaxshi narxlar va sifat kafolati."
-                keywords="elektr katalog, kabel katalog, elektr mahsulotlari, ulagichlar, rozetkalar, avtomatlar, elektr aksessuarlar katalog"
-                canonical="/catalog"
-            />
             <Header />
             
             {/* Catalog Banners Slider */}
