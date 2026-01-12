@@ -115,7 +115,7 @@ export function BrandTable() {
   };
 
   const filteredBrands = brands.filter(brand =>
-    brand.nameUz.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    brand.nameEn.toLowerCase().includes(searchTerm.toLowerCase()) ||
     brand.nameRu.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -183,7 +183,7 @@ export function BrandTable() {
                     {brand.image ? (
                       <S3Image
                         src={brand.image}
-                        alt={brand.nameUz}
+                        alt={brand.nameEn}
                         fill
                         className="object-cover"
                       />
@@ -194,9 +194,9 @@ export function BrandTable() {
 
                   {/* Brand Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-lg">{t(brand.nameUz, brand.nameRu)}</div>
+                    <div className="font-medium text-lg">{t(brand.nameEn, brand.nameRu)}</div>
                     <div className="text-sm text-muted-foreground">
-                      {t("O'zb", "Узб")}: {brand.nameUz} | {t("Рус", "Рус")}: {brand.nameRu}
+                      {t("O'zb", "Узб")}: {brand.nameEn} | {t("Рус", "Рус")}: {brand.nameRu}
                     </div>
                   </div>
 
@@ -279,7 +279,7 @@ export function BrandTable() {
       <CrudModal
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        titleUz={editingBrand ? "Brendni tahrirlash" : "Yangi brend qo'shish"}
+        titleEn={editingBrand ? "Brendni tahrirlash" : "Yangi brend qo'shish"}
         titleRu={editingBrand ? "Редактировать бренд" : "Добавить новый бренд"}
       >
         <BrandForm
@@ -307,7 +307,7 @@ export function BrandTable() {
               )}
               {deletingBrand && (
                 <div className="mt-2 p-2 bg-muted rounded">
-                  <strong>{t(deletingBrand.nameUz, deletingBrand.nameRu)}</strong>
+                  <strong>{t(deletingBrand.nameEn, deletingBrand.nameRu)}</strong>
                 </div>
               )}
             </DialogDescription>

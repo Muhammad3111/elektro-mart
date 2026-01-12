@@ -22,14 +22,19 @@ import {
     Check,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
-import { listObjectsFromS3, type S3ObjectInfo } from "@/lib/s3/list";
-import { uploadToObjectStorage } from "@/lib/s3/upload";
-import { getPresignedUrl } from "@/lib/s3/get-url";
+import { uploadFile } from "@/lib/s3/client-upload";
+import { getToken } from "@/lib/api/auth";
 import { toast } from "sonner";
 
-const BUCKET_NAME = process.env.NEXT_PUBLIC_S3_BUCKET || "elektromart";
+type S3ObjectInfo = {
+    key: string;
+    size: number;
+    lastModified: string;
+    type: "image" | "video" | "other";
+    url?: string;
+};
 
-type ImageWithUrl = S3ObjectInfo & { url?: string };
+type ImageWithUrl = S3ObjectInfo;
 
 interface MediaGalleryModalProps {
     open: boolean;
@@ -51,12 +56,13 @@ export function MediaGalleryModal({
     const [searchQuery, setSearchQuery] = useState("");
     const [images, setImages] = useState<ImageWithUrl[]>([]);
     const [loading, setLoading] = useState(false);
-    const [selectedImages, setSelectedImages] = useState<string[]>(selectedUrls);
-    
+    const [selectedImages, setSelectedImages] =
+        useState<string[]>(selectedUrls);
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
-    
+
     // Upload tab state
     const [uploadFiles, setUploadFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
@@ -64,26 +70,37 @@ export function MediaGalleryModal({
     const loadImages = useCallback(async () => {
         try {
             setLoading(true);
-            const result = await listObjectsFromS3(BUCKET_NAME, "", undefined, 1000);
-            const imageObjects = result.objects.filter(obj => obj.type === "image");
-            
-            // Generate presigned URLs for each image
-            const imagesWithUrls = await Promise.all(
-                imageObjects.map(async (img) => {
-                    try {
-                        const url = await getPresignedUrl(BUCKET_NAME, img.key, 3600);
-                        return { ...img, url };
-                    } catch (error) {
-                        console.error("Failed to generate URL for:", img.key, error);
-                        return img;
-                    }
-                })
+            const token = getToken();
+            if (!token) {
+                toast.error(
+                    t("Avtorizatsiya talab qilinadi", "Требуется авторизация")
+                );
+                return;
+            }
+
+            const response = await fetch("/api/s3/list?maxKeys=1000", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to load images");
+            }
+
+            const result = await response.json();
+            const imageObjects = result.objects.filter(
+                (obj: S3ObjectInfo) => obj.type === "image"
             );
-            
-            setImages(imagesWithUrls);
+            setImages(imageObjects);
         } catch (error) {
             console.error("Failed to load images:", error);
-            toast.error(t("Rasmlarni yuklashda xatolik", "Ошибка при загрузке изображений"));
+            toast.error(
+                t(
+                    "Rasmlarni yuklashda xatolik",
+                    "Ошибка при загрузке изображений"
+                )
+            );
         } finally {
             setLoading(false);
         }
@@ -98,25 +115,35 @@ export function MediaGalleryModal({
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        
+
         // Validate files
-        const validFiles = files.filter(file => {
+        const validFiles = files.filter((file) => {
             if (!file.type.startsWith("image/")) {
-                toast.error(t(`${file.name} - faqat rasm fayllarini yuklash mumkin`, `${file.name} - можно загружать только изображения`));
+                toast.error(
+                    t(
+                        `${file.name} - faqat rasm fayllarini yuklash mumkin`,
+                        `${file.name} - можно загружать только изображения`
+                    )
+                );
                 return false;
             }
             if (file.size > 10 * 1024 * 1024) {
-                toast.error(t(`${file.name} - hajmi 10MB dan oshmasligi kerak`, `${file.name} - размер не должен превышать 10MB`));
+                toast.error(
+                    t(
+                        `${file.name} - hajmi 10MB dan oshmasligi kerak`,
+                        `${file.name} - размер не должен превышать 10MB`
+                    )
+                );
                 return false;
             }
             return true;
         });
-        
-        setUploadFiles(prev => [...prev, ...validFiles]);
+
+        setUploadFiles((prev) => [...prev, ...validFiles]);
     };
 
     const removeUploadFile = (index: number) => {
-        setUploadFiles(prev => prev.filter((_, i) => i !== index));
+        setUploadFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleUpload = async () => {
@@ -125,38 +152,33 @@ export function MediaGalleryModal({
         try {
             setUploading(true);
             const uploadedKeys: string[] = [];
-            
+
             for (const file of uploadFiles) {
-                const arrayBuffer = await file.arrayBuffer();
-                const uint8Array = new Uint8Array(arrayBuffer);
-                const key = `images/${Date.now()}-${file.name}`;
-                
-                await uploadToObjectStorage(
-                    BUCKET_NAME,
-                    key,
-                    uint8Array,
-                    file.type
-                );
-                
-                // Store S3 key instead of presigned URL
-                uploadedKeys.push(key);
+                const result = await uploadFile(file, "images");
+                if (result.success && result.key) {
+                    uploadedKeys.push(result.key);
+                } else {
+                    throw new Error(result.error || "Upload failed");
+                }
             }
 
-            toast.success(t(
-                `${uploadFiles.length} ta rasm yuklandi`,
-                `Загружено ${uploadFiles.length} изображений`
-            ));
-            
+            toast.success(
+                t(
+                    `${uploadFiles.length} ta rasm yuklandi`,
+                    `Загружено ${uploadFiles.length} изображений`
+                )
+            );
+
             setUploadFiles([]);
             await loadImages();
-            
+
             // Auto-select uploaded images by their keys
             if (mode === "single" && uploadedKeys.length > 0) {
                 setSelectedImages([uploadedKeys[0]]);
             } else {
-                setSelectedImages(prev => [...prev, ...uploadedKeys]);
+                setSelectedImages((prev) => [...prev, ...uploadedKeys]);
             }
-            
+
             setActiveTab("media");
         } catch (error) {
             console.error("Upload failed:", error);
@@ -170,9 +192,9 @@ export function MediaGalleryModal({
         if (mode === "single") {
             setSelectedImages([key]);
         } else {
-            setSelectedImages(prev =>
+            setSelectedImages((prev) =>
                 prev.includes(key)
-                    ? prev.filter(u => u !== key)
+                    ? prev.filter((u) => u !== key)
                     : [...prev, key]
             );
         }
@@ -187,7 +209,7 @@ export function MediaGalleryModal({
     const getImageUrl = (image: ImageWithUrl) => {
         return image.url || "";
     };
-    
+
     const getImageKey = (image: ImageWithUrl) => {
         return image.key;
     };
@@ -197,10 +219,12 @@ export function MediaGalleryModal({
         const k = 1024;
         const sizes = ["B", "KB", "MB", "GB"];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+        return (
+            Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
+        );
     };
 
-    const filteredImages = images.filter(img =>
+    const filteredImages = images.filter((img) =>
         img.key.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -222,16 +246,29 @@ export function MediaGalleryModal({
                     <DialogTitle>
                         {mode === "single"
                             ? t("Cover rasm tanlash", "Выбрать обложку")
-                            : t("Gallery rasmlarni tanlash", "Выбрать изображения для галереи")}
+                            : t(
+                                  "Gallery rasmlarni tanlash",
+                                  "Выбрать изображения для галереи"
+                              )}
                     </DialogTitle>
                     <DialogDescription>
                         {mode === "single"
-                            ? t("Bitta rasm tanlang", "Выберите одно изображение")
-                            : t("Bir nechta rasm tanlang (3-10 ta)", "Выберите несколько изображений (3-10)")}
+                            ? t(
+                                  "Bitta rasm tanlang",
+                                  "Выберите одно изображение"
+                              )
+                            : t(
+                                  "Bir nechta rasm tanlang (3-10 ta)",
+                                  "Выберите несколько изображений (3-10)"
+                              )}
                     </DialogDescription>
                 </DialogHeader>
 
-                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "media" | "upload")} className="flex-1 flex flex-col overflow-hidden">
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(v) => setActiveTab(v as "media" | "upload")}
+                    className="flex-1 flex flex-col overflow-hidden"
+                >
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="media">
                             <ImageIcon className="h-4 w-4 mr-2" />
@@ -243,12 +280,18 @@ export function MediaGalleryModal({
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="media" className="flex-1 flex flex-col overflow-hidden mt-4">
+                    <TabsContent
+                        value="media"
+                        className="flex-1 flex flex-col overflow-hidden mt-4"
+                    >
                         {/* Search */}
                         <div className="relative mb-4">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <Input
-                                placeholder={t("Rasm qidirish...", "Поиск изображения...")}
+                                placeholder={t(
+                                    "Rasm qidirish...",
+                                    "Поиск изображения..."
+                                )}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-10"
@@ -260,125 +303,211 @@ export function MediaGalleryModal({
                             {loading ? (
                                 <div className="grid grid-cols-5 gap-4">
                                     {Array.from({ length: 8 }).map((_, i) => (
-                                        <div key={i} className="aspect-square bg-gray-200 animate-pulse rounded-lg" />
+                                        <div
+                                            key={i}
+                                            className="aspect-square bg-gray-200 animate-pulse rounded-lg"
+                                        />
                                     ))}
                                 </div>
                             ) : filteredImages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-center py-12">
                                     <ImageIcon className="h-16 w-16 text-muted-foreground mb-4" />
                                     <p className="text-muted-foreground">
-                                        {t("Rasmlar topilmadi", "Изображения не найдены")}
+                                        {t(
+                                            "Rasmlar topilmadi",
+                                            "Изображения не найдены"
+                                        )}
                                     </p>
                                 </div>
                             ) : (
                                 <>
                                     <div className="grid grid-cols-5 gap-4 pb-4">
                                         {paginatedImages.map((image) => {
-                                        const imageUrl = getImageUrl(image);
-                                        const imageKey = getImageKey(image);
-                                        const isSelected = selectedImages.includes(imageKey);
-                                        const fileName = image.key.split("/").pop() || image.key;
-                                        
-                                        return (
-                                            <Card
-                                                key={image.key}
-                                                className={`group overflow-hidden cursor-pointer transition-all ${
-                                                    isSelected ? "ring-2 ring-primary" : ""
-                                                }`}
-                                                onClick={() => toggleImageSelection(imageKey)}
-                                            >
-                                                <CardContent className="p-0 py-0">
-                                                    <div className="relative aspect-square bg-gray-100">
-                                                        <img
-                                                            src={imageUrl}
-                                                            alt={fileName}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                        {isSelected && (
-                                                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                                                                <div className="bg-primary text-primary-foreground rounded-full p-2">
-                                                                    <Check className="h-6 w-6" />
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="p-2">
-                                                        <p className="text-xs truncate" title={fileName}>
-                                                            {fileName}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {formatFileSize(image.size)}
-                                                        </p>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        );
-                                    })}
-                                </div>
+                                            const imageUrl = getImageUrl(image);
+                                            const imageKey = getImageKey(image);
+                                            const isSelected =
+                                                selectedImages.includes(
+                                                    imageKey
+                                                );
+                                            const fileName =
+                                                image.key.split("/").pop() ||
+                                                image.key;
 
-                                {/* Pagination */}
-                                {totalPages > 1 && (
-                                    <div className="flex items-center justify-between pt-4 border-t">
-                                        <div className="text-sm text-muted-foreground">
-                                            {t(
-                                                `${startIndex + 1}-${Math.min(endIndex, filteredImages.length)} / ${filteredImages.length} ta rasm`,
-                                                `${startIndex + 1}-${Math.min(endIndex, filteredImages.length)} из ${filteredImages.length} изображений`
-                                            )}
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                                disabled={currentPage === 1}
-                                            >
-                                                {t("Oldingi", "Предыдущая")}
-                                            </Button>
-                                            <div className="flex items-center gap-2">
-                                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                                    let pageNum;
-                                                    if (totalPages <= 5) {
-                                                        pageNum = i + 1;
-                                                    } else if (currentPage <= 3) {
-                                                        pageNum = i + 1;
-                                                    } else if (currentPage >= totalPages - 2) {
-                                                        pageNum = totalPages - 4 + i;
-                                                    } else {
-                                                        pageNum = currentPage - 2 + i;
+                                            return (
+                                                <Card
+                                                    key={image.key}
+                                                    className={`group overflow-hidden cursor-pointer transition-all ${
+                                                        isSelected
+                                                            ? "ring-2 ring-primary"
+                                                            : ""
+                                                    }`}
+                                                    onClick={() =>
+                                                        toggleImageSelection(
+                                                            imageKey
+                                                        )
                                                     }
-                                                    return (
-                                                        <Button
-                                                            key={i}
-                                                            type="button"
-                                                            variant={currentPage === pageNum ? "default" : "outline"}
-                                                            size="sm"
-                                                            onClick={() => setCurrentPage(pageNum)}
-                                                            className="w-8 h-8 p-0"
-                                                        >
-                                                            {pageNum}
-                                                        </Button>
-                                                    );
-                                                })}
-                                            </div>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                                disabled={currentPage === totalPages}
-                                            >
-                                                {t("Keyingi", "Следующая")}
-                                            </Button>
-                                        </div>
+                                                >
+                                                    <CardContent className="p-0 py-0">
+                                                        <div className="relative aspect-square bg-gray-100">
+                                                            <img
+                                                                src={imageUrl}
+                                                                alt={fileName}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                            {isSelected && (
+                                                                <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                                                    <div className="bg-primary text-primary-foreground rounded-full p-2">
+                                                                        <Check className="h-6 w-6" />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="p-2">
+                                                            <p
+                                                                className="text-xs truncate"
+                                                                title={fileName}
+                                                            >
+                                                                {fileName}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {formatFileSize(
+                                                                    image.size
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            );
+                                        })}
                                     </div>
-                                )}
-                            </>
+
+                                    {/* Pagination */}
+                                    {totalPages > 1 && (
+                                        <div className="flex items-center justify-between pt-4 border-t">
+                                            <div className="text-sm text-muted-foreground">
+                                                {t(
+                                                    `${
+                                                        startIndex + 1
+                                                    }-${Math.min(
+                                                        endIndex,
+                                                        filteredImages.length
+                                                    )} / ${
+                                                        filteredImages.length
+                                                    } ta rasm`,
+                                                    `${
+                                                        startIndex + 1
+                                                    }-${Math.min(
+                                                        endIndex,
+                                                        filteredImages.length
+                                                    )} из ${
+                                                        filteredImages.length
+                                                    } изображений`
+                                                )}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        setCurrentPage((prev) =>
+                                                            Math.max(
+                                                                1,
+                                                                prev - 1
+                                                            )
+                                                        )
+                                                    }
+                                                    disabled={currentPage === 1}
+                                                >
+                                                    {t("Oldingi", "Предыдущая")}
+                                                </Button>
+                                                <div className="flex items-center gap-2">
+                                                    {Array.from(
+                                                        {
+                                                            length: Math.min(
+                                                                5,
+                                                                totalPages
+                                                            ),
+                                                        },
+                                                        (_, i) => {
+                                                            let pageNum;
+                                                            if (
+                                                                totalPages <= 5
+                                                            ) {
+                                                                pageNum = i + 1;
+                                                            } else if (
+                                                                currentPage <= 3
+                                                            ) {
+                                                                pageNum = i + 1;
+                                                            } else if (
+                                                                currentPage >=
+                                                                totalPages - 2
+                                                            ) {
+                                                                pageNum =
+                                                                    totalPages -
+                                                                    4 +
+                                                                    i;
+                                                            } else {
+                                                                pageNum =
+                                                                    currentPage -
+                                                                    2 +
+                                                                    i;
+                                                            }
+                                                            return (
+                                                                <Button
+                                                                    key={i}
+                                                                    type="button"
+                                                                    variant={
+                                                                        currentPage ===
+                                                                        pageNum
+                                                                            ? "default"
+                                                                            : "outline"
+                                                                    }
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        setCurrentPage(
+                                                                            pageNum
+                                                                        )
+                                                                    }
+                                                                    className="w-8 h-8 p-0"
+                                                                >
+                                                                    {pageNum}
+                                                                </Button>
+                                                            );
+                                                        }
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        setCurrentPage((prev) =>
+                                                            Math.min(
+                                                                totalPages,
+                                                                prev + 1
+                                                            )
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        currentPage ===
+                                                        totalPages
+                                                    }
+                                                >
+                                                    {t("Keyingi", "Следующая")}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="upload" className="flex-1 flex flex-col overflow-hidden mt-4">
+                    <TabsContent
+                        value="upload"
+                        className="flex-1 flex flex-col overflow-hidden mt-4"
+                    >
                         <div className="space-y-4">
                             {/* File Input */}
                             <div className="border-2 border-dashed rounded-lg p-8 text-center">
@@ -414,7 +543,11 @@ export function MediaGalleryModal({
                             {uploadFiles.length > 0 && (
                                 <div className="space-y-2 max-h-60 overflow-y-auto">
                                     <p className="text-sm font-medium">
-                                        {t("Tanlangan fayllar", "Выбранные файлы")} ({uploadFiles.length})
+                                        {t(
+                                            "Tanlangan fayllar",
+                                            "Выбранные файлы"
+                                        )}{" "}
+                                        ({uploadFiles.length})
                                     </p>
                                     {uploadFiles.map((file, index) => (
                                         <div
@@ -428,7 +561,9 @@ export function MediaGalleryModal({
                                                         {file.name}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
-                                                        {formatFileSize(file.size)}
+                                                        {formatFileSize(
+                                                            file.size
+                                                        )}
                                                     </p>
                                                 </div>
                                             </div>
@@ -436,7 +571,9 @@ export function MediaGalleryModal({
                                                 variant="ghost"
                                                 size="icon"
                                                 className="h-8 w-8 shrink-0"
-                                                onClick={() => removeUploadFile(index)}
+                                                onClick={() =>
+                                                    removeUploadFile(index)
+                                                }
                                             >
                                                 <X className="h-4 w-4" />
                                             </Button>

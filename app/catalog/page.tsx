@@ -19,7 +19,12 @@ import { ChevronLeft, ChevronRight, PackageSearch } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { categoriesAPI, brandsAPI, productsAPI, catalogBannersAPI } from "@/lib/api";
+import {
+    categoriesAPI,
+    brandsAPI,
+    productsAPI,
+    catalogBannersAPI,
+} from "@/lib/api";
 import { Category } from "@/types/category";
 import { Brand } from "@/types/brand";
 import { Product } from "@/types/product";
@@ -30,7 +35,7 @@ import { S3Image } from "@/components/s3-image";
 function CatalogContent() {
     const { t } = useLanguage();
     const searchParams = useSearchParams();
-    
+
     const categoryParam = searchParams.get("category");
     const subcategoryParam = searchParams.get("subcategory");
     const searchQuery = searchParams.get("search") || "";
@@ -46,7 +51,7 @@ function CatalogContent() {
         isNew: false,
         hasDiscount: false,
     });
-    
+
     const [selectedSlide, setSelectedSlide] = useState(0);
     const [categories, setCategories] = useState<Category[]>([]);
     const [brands, setBrands] = useState<Brand[]>([]);
@@ -62,23 +67,23 @@ function CatalogContent() {
     const [minPrice, setMinPrice] = useState(0);
     const [maxPrice, setMaxPrice] = useState(500000);
     const itemsPerPage = 16;
-    
+
     const [emblaRef, emblaApi] = useEmblaCarousel(
         { loop: true, align: "start" },
         [Autoplay({ delay: 3500, stopOnInteraction: true })]
     );
-    
+
     // Track selected slide
     useEffect(() => {
         if (!emblaApi) return;
-        
+
         const onSelect = () => {
             setSelectedSlide(emblaApi.selectedScrollSnap());
         };
-        
+
         emblaApi.on("select", onSelect);
         onSelect();
-        
+
         return () => {
             emblaApi.off("select", onSelect);
         };
@@ -102,15 +107,13 @@ function CatalogContent() {
         }
     };
 
-    useEffect(() => {
-        loadProducts();
-    }, [currentPage, sortBy, filters, categoryParam, searchQuery]);
-
     const loadCategories = async () => {
         try {
             setLoadingCategories(true);
             const data = await categoriesAPI.getAll();
-            const parentCategories = data.filter((c) => !c.parentId && c.isActive);
+            const parentCategories = data.filter(
+                (c) => !c.parentId && c.isActive
+            );
             setCategories(parentCategories);
         } catch (err) {
             console.error("Failed to load categories:", err);
@@ -134,11 +137,11 @@ function CatalogContent() {
     const loadProducts = useCallback(async () => {
         try {
             setLoadingProducts(true);
-            
+
             // Map sortBy values to API parameters
             let apiSortBy = "createdAt";
             let apiSortOrder = "DESC";
-            
+
             switch (sortBy) {
                 case "newest":
                     apiSortBy = "createdAt";
@@ -157,7 +160,7 @@ function CatalogContent() {
                     apiSortOrder = "DESC";
                     break;
             }
-            
+
             const params: any = {
                 page: currentPage,
                 limit: itemsPerPage,
@@ -170,14 +173,17 @@ function CatalogContent() {
             if (filters.search) params.search = filters.search;
             if (searchQuery) params.search = searchQuery;
             // Categories from URL and filter - birlashtirib yuborish
-            const allCategories = [...new Set([
-                ...(categoryParam ? [categoryParam] : []),
-                ...filters.categories
-            ])];
+            const allCategories = [
+                ...new Set([
+                    ...(categoryParam ? [categoryParam] : []),
+                    ...filters.categories,
+                ]),
+            ];
             if (allCategories.length > 0) {
                 params.categories = allCategories;
             }
-            if (filters.subcategories.length > 0) params.subcategories = filters.subcategories;
+            if (filters.subcategories.length > 0)
+                params.subcategories = filters.subcategories;
             if (filters.brands.length > 0) params.brandId = filters.brands[0];
             // Only send price range if user has set it
             if (filters.priceRange && filters.priceRange.length === 2) {
@@ -192,11 +198,14 @@ function CatalogContent() {
             setTotalItems(result.total);
             const pages = Math.ceil(result.total / result.limit);
             setTotalPages(pages > 0 ? pages : 1);
-            
+
             // Calculate min and max price from products
             if (result.data.length > 0) {
-                const prices = result.data.map(p => {
-                    const price = typeof p.price === 'string' ? parseFloat(p.price) : p.price;
+                const prices = result.data.map((p) => {
+                    const price =
+                        typeof p.price === "string"
+                            ? parseFloat(p.price)
+                            : p.price;
                     return price;
                 });
                 const calculatedMin = Math.floor(Math.min(...prices));
@@ -209,27 +218,42 @@ function CatalogContent() {
         } finally {
             setLoadingProducts(false);
         }
-    }, [currentPage, itemsPerPage, sortBy, filters, categoryParam, searchQuery, minPrice, maxPrice]);
+    }, [
+        currentPage,
+        itemsPerPage,
+        sortBy,
+        filters,
+        categoryParam,
+        searchQuery,
+        minPrice,
+        maxPrice,
+    ]);
 
     useEffect(() => {
         loadProducts();
     }, [loadProducts]);
 
-    // Find current category and subcategories  
+    // Find current category and subcategories
     const currentCategory = categoryParam
         ? categories.find((c) => c.id === categoryParam)
         : null;
-    
+
     const subcategories = useMemo(() => {
         if (!currentCategory) return [];
-        return categories.filter((c) => c.parentId === currentCategory.id && c.isActive);
+        return categories.filter(
+            (c) => c.parentId === currentCategory.id && c.isActive
+        );
     }, [currentCategory, categories]);
 
-    const availableBrands = useMemo(() => brands.map(b => ({ 
-        id: b.id, 
-        name: b.nameUz,
-        image: b.image 
-    })), [brands]);
+    const availableBrands = useMemo(
+        () =>
+            brands.map((b) => ({
+                id: b.id,
+                name: b.nameEn,
+                image: b.image,
+            })),
+        [brands]
+    );
 
     // Update filters when URL params change
     useEffect(() => {
@@ -237,7 +261,9 @@ function CatalogContent() {
             ...prev,
             search: searchQuery,
             categories: categoryParam ? [categoryParam] : prev.categories,
-            subcategories: subcategoryParam ? [subcategoryParam] : prev.subcategories,
+            subcategories: subcategoryParam
+                ? [subcategoryParam]
+                : prev.subcategories,
             brands: brandParam ? [brandParam] : prev.brands,
         }));
         setCurrentPage(1); // Reset to first page when filters change
@@ -246,12 +272,18 @@ function CatalogContent() {
     // Reset to first page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [filters.categories, filters.subcategories, filters.brands, filters.isNew, filters.hasDiscount]);
+    }, [
+        filters.categories,
+        filters.subcategories,
+        filters.brands,
+        filters.isNew,
+        filters.hasDiscount,
+    ]);
 
     // Pagination handlers
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const getPageNumbers = () => {
@@ -265,14 +297,14 @@ function CatalogContent() {
         } else {
             pages.push(1);
             if (currentPage > 3) pages.push("...");
-            
+
             const start = Math.max(2, currentPage - 1);
             const end = Math.min(totalPages - 1, currentPage + 1);
-            
+
             for (let i = start; i <= end; i++) {
                 pages.push(i);
             }
-            
+
             if (currentPage < totalPages - 2) pages.push("...");
             pages.push(totalPages);
         }
@@ -283,7 +315,7 @@ function CatalogContent() {
     return (
         <div className="min-h-screen flex flex-col">
             <Header />
-            
+
             {/* Catalog Banners Slider */}
             {!searchQuery && (
                 <div className="container mx-auto px-4 py-6">
@@ -304,7 +336,10 @@ function CatalogContent() {
                         </div>
                     ) : banners.length > 0 ? (
                         <div className="relative">
-                            <div className="overflow-hidden rounded-xl" ref={emblaRef}>
+                            <div
+                                className="overflow-hidden rounded-xl"
+                                ref={emblaRef}
+                            >
                                 <div className="flex">
                                     {banners.map((banner) => (
                                         <div
@@ -315,15 +350,21 @@ function CatalogContent() {
                                                 <div className="relative h-[200px] md:h-[250px] bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl overflow-hidden group">
                                                     <S3Image
                                                         src={banner.coverImage}
-                                                        alt={t(banner.titleUz, banner.titleRu)}
+                                                        alt={t(
+                                                            banner.titleEn,
+                                                            banner.titleRu
+                                                        )}
                                                         fill
                                                         className="object-contain md:object-cover group-hover:scale-105 transition-transform duration-500"
                                                     />
-                                                    
+
                                                     <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex items-center">
                                                         <div className="container mx-auto px-6">
                                                             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">
-                                                                {t(banner.titleUz, banner.titleRu)}
+                                                                {t(
+                                                                    banner.titleEn,
+                                                                    banner.titleRu
+                                                                )}
                                                             </h2>
                                                         </div>
                                                     </div>
@@ -333,14 +374,16 @@ function CatalogContent() {
                                     ))}
                                 </div>
                             </div>
-                            
+
                             {/* Indicator dots */}
                             {banners.length > 1 && (
                                 <div className="flex justify-center gap-2 mt-4">
                                     {banners.map((_, index) => (
                                         <button
                                             key={index}
-                                            onClick={() => emblaApi?.scrollTo(index)}
+                                            onClick={() =>
+                                                emblaApi?.scrollTo(index)
+                                            }
                                             className={`h-2 rounded-full transition-all ${
                                                 index === selectedSlide
                                                     ? "w-6 bg-primary"
@@ -377,12 +420,15 @@ function CatalogContent() {
                             <div className="flex-1">
                                 <h1 className="text-4xl font-black">
                                     {searchQuery
-                                        ? t("Qidiruv natijalari", "Результаты поиска")
-                                        : t("Barcha mahsulotlar", "Все товары")}
+                                        ? t(
+                                              "Search Results",
+                                              "Результаты поиска"
+                                          )
+                                        : t("All Products", "Все товары")}
                                 </h1>
                                 <p className="text-muted-foreground mt-1">
                                     {totalItems}{" "}
-                                    {t("ta mahsulot topildi", "товаров найдено")}
+                                    {t("products found", "товаров найдено")}
                                 </p>
                             </div>
 
@@ -397,23 +443,23 @@ function CatalogContent() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="newest">
-                                            {t("Yangi kelganlar", "Новинки")}
+                                            {t("New Arrivals", "Новинки")}
                                         </SelectItem>
                                         <SelectItem value="best">
                                             {t(
-                                                "Eng ko'p sotilgan",
+                                                "Best Sellers",
                                                 "Самые продаваемые"
                                             )}
                                         </SelectItem>
                                         <SelectItem value="price-low">
                                             {t(
-                                                "Narx: Pastdan yuqoriga",
+                                                "Price: Low to High",
                                                 "Цена: По возрастанию"
                                             )}
                                         </SelectItem>
                                         <SelectItem value="price-high">
                                             {t(
-                                                "Narx: Yuqoridan pastga",
+                                                "Price: High to Low",
                                                 "Цена: По убыванию"
                                             )}
                                         </SelectItem>
@@ -436,18 +482,22 @@ function CatalogContent() {
                         ) : products.length > 0 ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                                 {products.map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    id={product.id}
-                                    name={product.nameUz}
-                                    price={product.price.toString()}
-                                    oldPrice={product.oldPrice?.toString()}
-                                    image={product.coverImage || ""}
-                                    rating={product.rating}
-                                    isNew={product.isNew}
-                                    discount={product.discount ? `${product.discount}%` : undefined}
-                                    productCode={product.productCode}
-                                    inStock={product.inStock}
+                                    <ProductCard
+                                        key={product.id}
+                                        id={product.id}
+                                        name={product.nameEn}
+                                        price={product.price.toString()}
+                                        oldPrice={product.oldPrice?.toString()}
+                                        image={product.coverImage || ""}
+                                        rating={product.rating}
+                                        isNew={product.isNew}
+                                        discount={
+                                            product.discount
+                                                ? `${product.discount}%`
+                                                : undefined
+                                        }
+                                        productCode={product.productCode}
+                                        inStock={product.inStock}
                                     />
                                 ))}
                             </div>
@@ -455,11 +505,14 @@ function CatalogContent() {
                             <div className="flex flex-col items-center justify-center py-16 px-4">
                                 <PackageSearch className="h-24 w-24 text-muted-foreground mb-4" />
                                 <h3 className="text-2xl font-bold mb-2">
-                                    {t("Natija topilmadi", "Результаты не найдены")}
+                                    {t(
+                                        "No Results Found",
+                                        "Результаты не найдены"
+                                    )}
                                 </h3>
                                 <p className="text-muted-foreground text-center max-w-md">
                                     {t(
-                                        "Filtrlarga mos mahsulot topilmadi. Iltimos, boshqa parametrlarni tanlang.",
+                                        "No products match the filters. Please select different parameters.",
                                         "Товары, соответствующие фильтрам, не найдены. Пожалуйста, выберите другие параметры."
                                     )}
                                 </p>
@@ -467,42 +520,63 @@ function CatalogContent() {
                         )}
 
                         {/* Pagination */}
-                        {!loadingProducts && products.length > 0 && totalPages > 1 && (
-                            <div className="flex items-center justify-center gap-2 mt-12">
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                >
-                                    <ChevronLeft className="h-5 w-5" />
-                                </Button>
-                                {getPageNumbers().map((page, index) => (
-                                    page === "..." ? (
-                                        <span key={`ellipsis-${index}`} className="text-muted-foreground px-2">
-                                            ...
-                                        </span>
-                                    ) : (
-                                        <Button 
-                                            key={page}
-                                            variant={currentPage === page ? "default" : "ghost"}
-                                            className={currentPage === page ? "bg-primary text-white hover:bg-primary/90" : ""}
-                                            onClick={() => handlePageChange(page as number)}
-                                        >
-                                            {page}
-                                        </Button>
-                                    )
-                                ))}
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                >
-                                    <ChevronRight className="h-5 w-5" />
-                                </Button>
-                            </div>
-                        )}
+                        {!loadingProducts &&
+                            products.length > 0 &&
+                            totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 mt-12">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() =>
+                                            handlePageChange(currentPage - 1)
+                                        }
+                                        disabled={currentPage === 1}
+                                    >
+                                        <ChevronLeft className="h-5 w-5" />
+                                    </Button>
+                                    {getPageNumbers().map((page, index) =>
+                                        page === "..." ? (
+                                            <span
+                                                key={`ellipsis-${index}`}
+                                                className="text-muted-foreground px-2"
+                                            >
+                                                ...
+                                            </span>
+                                        ) : (
+                                            <Button
+                                                key={page}
+                                                variant={
+                                                    currentPage === page
+                                                        ? "default"
+                                                        : "ghost"
+                                                }
+                                                className={
+                                                    currentPage === page
+                                                        ? "bg-primary text-white hover:bg-primary/90"
+                                                        : ""
+                                                }
+                                                onClick={() =>
+                                                    handlePageChange(
+                                                        page as number
+                                                    )
+                                                }
+                                            >
+                                                {page}
+                                            </Button>
+                                        )
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() =>
+                                            handlePageChange(currentPage + 1)
+                                        }
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <ChevronRight className="h-5 w-5" />
+                                    </Button>
+                                </div>
+                            )}
                     </div>
                 </div>
             </main>

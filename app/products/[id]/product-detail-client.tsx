@@ -26,11 +26,11 @@ import { S3Image } from "@/components/s3-image";
 
 interface Product {
     id: string;
-    nameUz: string;
+    nameEn: string;
     nameRu: string;
-    descriptionUz?: string;
+    descriptionEn?: string;
     descriptionRu?: string;
-    shortDescriptionUz?: string;
+    shortDescriptionEn?: string;
     shortDescriptionRu?: string;
     price: number;
     oldPrice?: number;
@@ -44,18 +44,18 @@ interface Product {
     rating?: number;
     category?: {
         id: string;
-        nameUz: string;
+        nameEn: string;
         nameRu: string;
     };
     brand?: {
         id: string;
-        nameUz: string;
+        nameEn: string;
         nameRu: string;
     };
     specifications?: Array<{
-        labelUz: string;
+        labelEn: string;
         labelRu: string;
-        valueUz: string;
+        valueEn: string;
         valueRu?: string;
     }>;
 }
@@ -85,27 +85,25 @@ export function ProductDetailClient({
     const handleAddToCart = () => {
         addToCart({
             id: product.id,
-            name: product.nameUz,
+            name: product.nameEn,
             price: product.price.toString(),
             image: product.coverImage || "",
         });
-        toast.success(t("Savatga qo'shildi", "Добавлено в корзину"));
+        toast.success(t("Added to cart", "Добавлено в корзину"));
     };
 
     const handleToggleFavorite = () => {
         if (isFavorite(product.id)) {
             removeFromFavorites(product.id);
-            toast.success(
-                t("Sevimlilardan o'chirildi", "Удалено из избранного")
-            );
+            toast.success(t("Removed from favorites", "Удалено из избранного"));
         } else {
             addToFavorites({
                 id: product.id,
-                name: product.nameUz,
+                name: product.nameEn,
                 price: product.price.toString(),
                 image: product.coverImage || "",
             });
-            toast.success(t("Sevimlilarga qo'shildi", "Добавлено в избранное"));
+            toast.success(t("Added to favorites", "Добавлено в избранное"));
         }
     };
 
@@ -121,25 +119,25 @@ export function ProductDetailClient({
             }
         } else {
             navigator.clipboard.writeText(window.location.href);
-            toast.success(t("Havola nusxalandi", "Ссылка скопирована"));
+            toast.success(t("Link copied", "Ссылка скопирована"));
         }
     };
 
-    const productName = language === "en" ? product.nameUz : product.nameRu;
+    const productName = language === "en" ? product.nameEn : product.nameRu;
     const shortDescription =
         language === "en"
-            ? product.shortDescriptionUz
+            ? product.shortDescriptionEn
             : product.shortDescriptionRu;
     const productDescription =
-        language === "en" ? product.descriptionUz : product.descriptionRu;
+        language === "en" ? product.descriptionEn : product.descriptionRu;
     const categoryName = product.category
         ? language === "en"
-            ? product.category.nameUz
+            ? product.category.nameEn
             : product.category.nameRu
         : "";
     const brandName = product.brand
         ? language === "en"
-            ? product.brand.nameUz
+            ? product.brand.nameEn
             : product.brand.nameRu
         : "";
 
@@ -154,11 +152,11 @@ export function ProductDetailClient({
                     className="flex items-center gap-2 text-sm text-muted-foreground mb-6"
                 >
                     <Link href="/" className="hover:text-primary">
-                        {t("Bosh sahifa", "Главная")}
+                        {t("Home", "Главная")}
                     </Link>
                     <span>/</span>
                     <Link href="/catalog" className="hover:text-primary">
-                        {t("Katalog", "Каталог")}
+                        {t("Catalog", "Каталог")}
                     </Link>
                     {categoryName && (
                         <>
@@ -264,7 +262,7 @@ export function ProductDetailClient({
                             {categoryName && (
                                 <div className="text-sm">
                                     <span className="text-muted-foreground">
-                                        {t("Kategoriya:", "Категория:")}
+                                        {t("Category:", "Категория:")}
                                     </span>{" "}
                                     <span className="font-medium">
                                         {categoryName}
@@ -274,7 +272,7 @@ export function ProductDetailClient({
                             {brandName && (
                                 <div className="text-sm">
                                     <span className="text-muted-foreground">
-                                        {t("Brend:", "Бренд:")}
+                                        {t("Brand:", "Бренд:")}
                                     </span>{" "}
                                     <span className="font-medium">
                                         {brandName}
@@ -288,13 +286,13 @@ export function ProductDetailClient({
                             <div className="flex items-baseline gap-3">
                                 <span className="text-4xl font-black text-primary">
                                     {formatPrice(product.price)}{" "}
-                                    {t("so'm", "сум")}
+                                    {t("UZS", "сум")}
                                 </span>
                                 {product.oldPrice &&
                                     product.oldPrice > product.price && (
                                         <span className="text-xl text-muted-foreground line-through">
                                             {formatPrice(product.oldPrice)}{" "}
-                                            {t("so'm", "сум")}
+                                            {t("UZS", "сум")}
                                         </span>
                                     )}
                             </div>
@@ -302,7 +300,7 @@ export function ProductDetailClient({
                                 <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 px-3 py-1 rounded-full text-sm font-medium">
                                     <Tag className="h-4 w-4" />-
                                     {product.discount}%{" "}
-                                    {t("chegirma", "скидка")}
+                                    {t("discount", "скидка")}
                                 </div>
                             )}
                         </div>
@@ -313,12 +311,12 @@ export function ProductDetailClient({
                                 <>
                                     <CheckCircle className="h-5 w-5 text-green-500" />
                                     <span className="text-green-500 font-medium">
-                                        {t("Omborda bor", "В наличии")}
+                                        {t("In Stock", "В наличии")}
                                     </span>
                                 </>
                             ) : (
                                 <span className="text-red-500 font-medium">
-                                    {t("Omborda yo'q", "Нет в наличии")}
+                                    {t("Out of Stock", "Нет в наличии")}
                                 </span>
                             )}
                         </div>
@@ -338,7 +336,7 @@ export function ProductDetailClient({
                                 <CardContent className="p-6 space-y-4">
                                     <div className="flex items-center gap-4">
                                         <span className="font-medium">
-                                            {t("Miqdor:", "Количество:")}
+                                            {t("Quantity:", "Количество:")}
                                         </span>
                                         <div className="flex items-center gap-2">
                                             <Button
@@ -395,7 +393,7 @@ export function ProductDetailClient({
                                         >
                                             <ShoppingCart className="h-5 w-5 mr-2" />
                                             {t(
-                                                "Savatga qo'shish",
+                                                "Add to Cart",
                                                 "Добавить в корзину"
                                             )}
                                         </Button>
@@ -441,7 +439,7 @@ export function ProductDetailClient({
                         <Card>
                             <CardContent className="p-6">
                                 <h2 className="text-2xl font-black mb-6">
-                                    {t("Tavsif", "Описание")}
+                                    {t("Description", "Описание")}
                                 </h2>
                                 <div className="prose prose-sm max-w-none">
                                     <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
@@ -472,14 +470,14 @@ export function ProductDetailClient({
                                                 >
                                                     <span className="font-medium">
                                                         {language === "en"
-                                                            ? spec.labelUz
+                                                            ? spec.labelEn
                                                             : spec.labelRu}
                                                     </span>
                                                     <span className="text-muted-foreground">
                                                         {language === "en"
-                                                            ? spec.valueUz
+                                                            ? spec.valueEn
                                                             : spec.valueRu ||
-                                                              spec.valueUz}
+                                                              spec.valueEn}
                                                     </span>
                                                 </div>
                                             )
@@ -497,7 +495,7 @@ export function ProductDetailClient({
                             id="related-products"
                             className="text-2xl font-black mb-6"
                         >
-                            {t("O'xshash mahsulotlar", "Похожие товары")}
+                            {t("Related Products", "Похожие товары")}
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
                             {relatedProducts.map((relatedProduct) => (
@@ -506,7 +504,7 @@ export function ProductDetailClient({
                                     id={relatedProduct.id}
                                     name={
                                         language === "en"
-                                            ? relatedProduct.nameUz
+                                            ? relatedProduct.nameEn
                                             : relatedProduct.nameRu
                                     }
                                     price={relatedProduct.price.toString()}

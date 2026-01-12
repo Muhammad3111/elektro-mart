@@ -73,7 +73,7 @@ export default function BrandDetailPage() {
     );
   }
 
-  const brandName = t(brand.nameUz, brand.nameRu);
+  const brandName = t(brand.nameEn, brand.nameRu);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -103,7 +103,7 @@ export default function BrandDetailPage() {
       {/* Products Grid */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold">
-          {t("Mahsulotlar", "Товары")}
+          {t("Products", "Товары")}
         </h2>
         
         {/* TODO: Add products grid here when products API is ready */}

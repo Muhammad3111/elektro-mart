@@ -113,7 +113,7 @@ export function HomeSliderTable() {
   };
 
   const filteredSliders = sliders.filter((slider) =>
-    slider.titleUz.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    slider.titleEn.toLowerCase().includes(searchTerm.toLowerCase()) ||
     slider.titleRu.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -160,7 +160,7 @@ export function HomeSliderTable() {
                 {slider.coverImage ? (
                   <S3Image
                     src={slider.coverImage}
-                    alt={slider.titleUz}
+                    alt={slider.titleEn}
                     fill
                     className="object-cover"
                   />
@@ -171,9 +171,9 @@ export function HomeSliderTable() {
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-lg">{t(slider.titleUz, slider.titleRu)}</div>
+                <div className="font-medium text-lg">{t(slider.titleEn, slider.titleRu)}</div>
                 <div className="text-sm text-muted-foreground line-clamp-1">
-                  {t(slider.subtitleUz, slider.subtitleRu)}
+                  {t(slider.subtitleEn, slider.subtitleRu)}
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
                   {t("Havola", "Ссылка")}: {slider.link}

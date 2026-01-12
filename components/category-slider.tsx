@@ -48,37 +48,45 @@ export function CategorySlider({ categories }: CategorySliderProps) {
                 <div className="flex gap-4">
                     {categories.map((category) => {
                         return (
-                        <div
-                            key={category.id}
-                            className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-8px)] md:flex-[0_0_calc(33.333%-11px)] lg:flex-[0_0_calc(15.38%-13px)]"
-                        >
-                            <Link href={`/catalog?category=${category.id}`} className="cursor-pointer">
-                                <div className="flex flex-col group">
-                                    {/* Card with Full Image */}
-                                    <Card className="w-full hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden border-2 hover:border-primary/50 py-0">
-                                        <CardContent className="p-0 aspect-[4/3] relative">
-                                            {category.image ? (
-                                                <S3Image
-                                                    src={category.image}
-                                                    alt={category.nameUz}
-                                                    fill
-                                                    className="object-cover group-hover:scale-110 transition-transform duration-300"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                                                    <ImageOff className="w-16 h-16 text-muted-foreground" />
-                                                </div>
-                                            )}
-                                        </CardContent>
-                                    </Card>
+                            <div
+                                key={category.id}
+                                className="flex-[0_0_100%] min-w-0 sm:flex-[0_0_calc(50%-8px)] md:flex-[0_0_calc(33.333%-11px)] lg:flex-[0_0_calc(15.38%-13px)]"
+                            >
+                                <Link
+                                    href={`/catalog?category=${category.id}`}
+                                    className="cursor-pointer"
+                                >
+                                    <div className="flex flex-col group">
+                                        {/* Card with Full Image */}
+                                        <Card className="w-full hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden border-2 hover:border-primary/50 py-0">
+                                            <CardContent className="p-0 aspect-[4/3] relative">
+                                                {category.image ? (
+                                                    <S3Image
+                                                        src={category.image}
+                                                        alt={category.nameEn}
+                                                        fill
+                                                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 15vw"
+                                                        className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                                        loading="eager"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                                                        <ImageOff className="w-16 h-16 text-muted-foreground" />
+                                                    </div>
+                                                )}
+                                            </CardContent>
+                                        </Card>
 
-                                    {/* Title Below Card */}
-                                    <h3 className="font-bold text-sm md:text-base text-center mt-3 group-hover:text-primary transition-colors">
-                                        {t(category.nameUz, category.nameRu)}
-                                    </h3>
-                                </div>
-                            </Link>
-                        </div>
+                                        {/* Title Below Card */}
+                                        <h3 className="font-bold text-sm md:text-base text-center mt-3 group-hover:text-primary transition-colors">
+                                            {t(
+                                                category.nameEn,
+                                                category.nameRu
+                                            )}
+                                        </h3>
+                                    </div>
+                                </Link>
+                            </div>
                         );
                     })}
                 </div>

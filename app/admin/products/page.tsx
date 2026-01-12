@@ -214,7 +214,7 @@ export default function AdminProductsPage() {
                                     </SelectItem>
                                     {categories.map((cat) => (
                                         <SelectItem key={cat.id} value={cat.id}>
-                                            {cat.nameUz}
+                                            {cat.nameEn}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -312,7 +312,7 @@ export default function AdminProductsPage() {
                                                                 {product.coverImage ? (
                                                                     <S3Image
                                                                         src={product.coverImage}
-                                                                        alt={product.nameUz}
+                                                                        alt={product.nameEn}
                                                                         fill
                                                                         className="object-cover"
                                                                     />
@@ -324,7 +324,7 @@ export default function AdminProductsPage() {
                                                             </div>
                                                             <div className="min-w-0">
                                                                 <p className="font-semibold truncate">
-                                                                    {product.nameUz}
+                                                                    {product.nameEn}
                                                                 </p>
                                                                 <div className="flex items-center gap-2 mt-1">
                                                                     {product.isNew && (
@@ -342,7 +342,7 @@ export default function AdminProductsPage() {
                                                         </div>
                                                     </td>
                                                     <td className="p-4">
-                                                        {product.category?.nameUz || "-"}
+                                                        {product.category?.nameEn || "-"}
                                                     </td>
                                                     <td className="p-4">
                                                         <div>
@@ -465,7 +465,7 @@ export default function AdminProductsPage() {
                             )}
                             {deletingProduct && (
                                 <div className="mt-2 font-semibold">
-                                    {t(deletingProduct.nameUz, deletingProduct.nameRu)}
+                                    {t(deletingProduct.nameEn, deletingProduct.nameRu)}
                                 </div>
                             )}
                         </DialogDescription>

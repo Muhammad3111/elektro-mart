@@ -58,7 +58,7 @@ export default function OrderDetailsPage() {
             setOrder(data);
         } catch (error) {
             console.error("Failed to load order:", error);
-            toast.error(t("Buyurtmani yuklashda xatolik", "Ошибка загрузки заказа"));
+            toast.error(t("Error loading order", "Ошибка загрузки заказа"));
             router.push("/profile?tab=orders");
         } finally {
             setLoading(false);
@@ -93,13 +93,13 @@ export default function OrderDetailsPage() {
     const getStatusText = (status: string) => {
         switch (status) {
             case "delivered":
-                return t("Yetkazildi", "Доставлено");
+                return t("Delivered", "Доставлено");
             case "processing":
-                return t("Jarayonda", "В обработке");
+                return t("Processing", "В обработке");
             case "cancelled":
-                return t("Bekor qilindi", "Отменено");
+                return t("Cancelled", "Отменено");
             case "pending":
-                return t("Kutilmoqda", "Ожидание");
+                return t("Pending", "Ожидание");
             default:
                 return status;
         }
@@ -107,25 +107,25 @@ export default function OrderDetailsPage() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('uz-UZ', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+        return date.toLocaleDateString("uz-UZ", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
         });
     };
 
     const formatPrice = (price: string) => {
-        return new Intl.NumberFormat('uz-UZ').format(parseFloat(price));
+        return new Intl.NumberFormat("uz-UZ").format(parseFloat(price));
     };
 
     const getPaymentMethodText = (method: string) => {
         switch (method) {
             case "cash":
-                return t("Naqd pul", "Наличные");
+                return t("Cash", "Наличные");
             case "card":
-                return t("Karta", "Карта");
+                return t("Card", "Карта");
             case "online":
                 return t("Online", "Онлайн");
             default:
@@ -140,7 +140,9 @@ export default function OrderDetailsPage() {
                 <main className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-                        <p className="text-muted-foreground">{t("Yuklanmoqda...", "Загрузка...")}</p>
+                        <p className="text-muted-foreground">
+                            {t("Loading...", "Загрузка...")}
+                        </p>
                     </div>
                 </main>
                 <Footer />
@@ -156,7 +158,7 @@ export default function OrderDetailsPage() {
                     <div className="text-center">
                         <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                         <p className="text-xl text-muted-foreground">
-                            {t("Buyurtma topilmadi", "Заказ не найден")}
+                            {t("Order not found", "Заказ не найден")}
                         </p>
                     </div>
                 </main>
@@ -168,8 +170,8 @@ export default function OrderDetailsPage() {
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <SEO
-                title={`${t("Buyurtma", "Заказ")} #${order.orderNumber}`}
-                description={t("Buyurtma tafsilotlari", "Детали заказа")}
+                title={`${t("Order", "Заказ")} #${order.orderNumber}`}
+                description={t("Order Details", "Детали заказа")}
                 canonical={`/orders/${orderId}`}
                 noindex={true}
             />
@@ -183,7 +185,7 @@ export default function OrderDetailsPage() {
                     className="mb-6"
                 >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    {t("Buyurtmalarga qaytish", "Вернуться к заказам")}
+                    {t("Back to Orders", "Вернуться к заказам")}
                 </Button>
 
                 {/* Order Header */}
@@ -191,13 +193,17 @@ export default function OrderDetailsPage() {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
                             <h1 className="text-4xl font-black mb-2">
-                                {t("Buyurtma", "Заказ")} #{order.orderNumber}
+                                {t("Order", "Заказ")} #{order.orderNumber}
                             </h1>
                             <p className="text-muted-foreground">
                                 {formatDate(order.createdAt)}
                             </p>
                         </div>
-                        <Badge className={`${getStatusBadge(order.status)} border text-base px-4 py-2`}>
+                        <Badge
+                            className={`${getStatusBadge(
+                                order.status
+                            )} border text-base px-4 py-2`}
+                        >
                             <div className="flex items-center gap-2">
                                 {getStatusIcon(order.status)}
                                 <span>{getStatusText(order.status)}</span>
@@ -214,14 +220,20 @@ export default function OrderDetailsPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Package className="h-5 w-5" />
-                                    {t("Mijoz ma'lumotlari", "Информация о клиенте")}
+                                    {t(
+                                        "Customer Information",
+                                        "Информация о клиенте"
+                                    )}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-sm text-muted-foreground mb-1">
-                                            {t("Ism va Familiya", "Имя и Фамилия")}
+                                            {t(
+                                                "First and Last Name",
+                                                "Имя и Фамилия"
+                                            )}
                                         </p>
                                         <p className="font-medium">
                                             {order.firstName} {order.lastName}
@@ -231,10 +243,16 @@ export default function OrderDetailsPage() {
                                         <Phone className="h-4 w-4 text-muted-foreground mt-1" />
                                         <div>
                                             <p className="text-sm text-muted-foreground mb-1">
-                                                {t("Telefon", "Телефон")}
+                                                {t("Phone", "Телефон")}
                                             </p>
                                             <p className="font-medium">
-                                                🇺🇿 {order.phone.startsWith('+998') ? order.phone : `+998${order.phone.replace(/^998/, '')}`}
+                                                🇺🇿{" "}
+                                                {order.phone.startsWith("+998")
+                                                    ? order.phone
+                                                    : `+998${order.phone.replace(
+                                                          /^998/,
+                                                          ""
+                                                      )}`}
                                             </p>
                                         </div>
                                     </div>
@@ -244,17 +262,20 @@ export default function OrderDetailsPage() {
                                             <p className="text-sm text-muted-foreground mb-1">
                                                 {t("Email", "Email")}
                                             </p>
-                                            <p className="font-medium">{order.email}</p>
+                                            <p className="font-medium">
+                                                {order.email}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-2">
                                         <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
                                         <div>
                                             <p className="text-sm text-muted-foreground mb-1">
-                                                {t("Manzil", "Адрес")}
+                                                {t("Address", "Адрес")}
                                             </p>
                                             <p className="font-medium">
-                                                {order.address}, {order.city}, {order.region}
+                                                {order.address}, {order.city},{" "}
+                                                {order.region}
                                             </p>
                                         </div>
                                     </div>
@@ -267,18 +288,26 @@ export default function OrderDetailsPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Package className="h-5 w-5" />
-                                    {t("Buyurtma mahsulotlari", "Товары заказа")}
+                                    {t("Order Items", "Товары заказа")}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
                                     {order.items.map((item) => (
-                                        <div key={item.id} className="flex gap-4 p-4 border rounded-lg">
+                                        <div
+                                            key={item.id}
+                                            className="flex gap-4 p-4 border rounded-lg"
+                                        >
                                             <div className="relative w-20 h-20 bg-accent rounded flex items-center justify-center shrink-0 overflow-hidden">
                                                 {item.product?.coverImage ? (
                                                     <S3Image
-                                                        src={item.product.coverImage}
-                                                        alt={item.product.nameUz}
+                                                        src={
+                                                            item.product
+                                                                .coverImage
+                                                        }
+                                                        alt={
+                                                            item.product.nameEn
+                                                        }
                                                         fill
                                                         className="object-cover"
                                                     />
@@ -288,23 +317,36 @@ export default function OrderDetailsPage() {
                                             </div>
                                             <div className="flex-1">
                                                 <h3 className="font-semibold mb-1">
-                                                    {item.product?.nameUz || item.productId}
+                                                    {item.product?.nameEn ||
+                                                        item.productId}
                                                 </h3>
                                                 <p className="text-sm text-muted-foreground mb-2">
-                                                    {item.product?.shortDescriptionUz}
+                                                    {
+                                                        item.product
+                                                            ?.shortDescriptionEn
+                                                    }
                                                 </p>
                                                 <div className="flex items-center gap-4 text-sm">
                                                     <span className="text-muted-foreground">
-                                                        {t("Miqdor", "Количество")}: {item.quantity}
+                                                        {t(
+                                                            "Quantity",
+                                                            "Количество"
+                                                        )}
+                                                        : {item.quantity}
                                                     </span>
                                                     <span className="text-muted-foreground">
-                                                        {t("Narx", "Цена")}: {formatPrice(item.price)} UZS
+                                                        {t("Price", "Цена")}:{" "}
+                                                        {formatPrice(
+                                                            item.price
+                                                        )}{" "}
+                                                        UZS
                                                     </span>
                                                 </div>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-lg font-bold text-primary">
-                                                    {formatPrice(item.subtotal)} UZS
+                                                    {formatPrice(item.subtotal)}{" "}
+                                                    UZS
                                                 </p>
                                             </div>
                                         </div>
@@ -319,11 +361,13 @@ export default function OrderDetailsPage() {
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
                                         <FileText className="h-5 w-5" />
-                                        {t("Izoh", "Примечание")}
+                                        {t("Note", "Примечание")}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-muted-foreground">{order.notes}</p>
+                                    <p className="text-muted-foreground">
+                                        {order.notes}
+                                    </p>
                                 </CardContent>
                             </Card>
                         )}
@@ -336,24 +380,37 @@ export default function OrderDetailsPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <CreditCard className="h-5 w-5" />
-                                    {t("To'lov ma'lumotlari", "Информация об оплате")}
+                                    {t(
+                                        "Payment Information",
+                                        "Информация об оплате"
+                                    )}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
                                     <p className="text-sm text-muted-foreground mb-1">
-                                        {t("To'lov usuli", "Способ оплаты")}
+                                        {t("Payment Method", "Способ оплаты")}
                                     </p>
                                     <p className="font-medium">
-                                        {getPaymentMethodText(order.paymentMethod)}
+                                        {getPaymentMethodText(
+                                            order.paymentMethod
+                                        )}
                                     </p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground mb-1">
-                                        {t("To'lov holati", "Статус оплаты")}
+                                        {t("Payment Status", "Статус оплаты")}
                                     </p>
-                                    <Badge variant={order.isPaid ? "default" : "secondary"}>
-                                        {order.isPaid ? t("To'langan", "Оплачено") : t("To'lanmagan", "Не оплачено")}
+                                    <Badge
+                                        variant={
+                                            order.isPaid
+                                                ? "default"
+                                                : "secondary"
+                                        }
+                                    >
+                                        {order.isPaid
+                                            ? t("Paid", "Оплачено")
+                                            : t("Unpaid", "Не оплачено")}
                                     </Badge>
                                 </div>
                             </CardContent>
@@ -363,25 +420,37 @@ export default function OrderDetailsPage() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>
-                                    {t("Buyurtma xulosasi", "Итоги заказа")}
+                                    {t("Order Summary", "Итоги заказа")}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">
-                                            {t("Mahsulotlar soni", "Количество товаров")}
+                                            {t(
+                                                "Mahsulotlar soni",
+                                                "Количество товаров"
+                                            )}
                                         </span>
                                         <span className="font-medium">
-                                            {order.items.length} {t("ta", "шт")}
+                                            {order.items.length}{" "}
+                                            {t("items", "шт")}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">
-                                            {t("Jami miqdor", "Общее количество")}
+                                            {t(
+                                                "Jami miqdor",
+                                                "Общее количество"
+                                            )}
                                         </span>
                                         <span className="font-medium">
-                                            {order.items.reduce((sum, item) => sum + item.quantity, 0)} {t("dona", "шт")}
+                                            {order.items.reduce(
+                                                (sum, item) =>
+                                                    sum + item.quantity,
+                                                0
+                                            )}{" "}
+                                            {t("pcs", "шт")}
                                         </span>
                                     </div>
                                 </div>

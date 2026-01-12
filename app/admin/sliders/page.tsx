@@ -231,15 +231,15 @@ export default function AdminSlidersPage() {
                                         <CardContent className="p-6">
                                             <div className="flex flex-col lg:flex-row gap-6">
                                                 <div className="relative w-full lg:w-64 h-32 rounded-lg overflow-hidden bg-accent shrink-0">
-                                                    <S3Image src={slider.coverImage} alt={slider.titleUz} fill className="object-cover" />
+                                                    <S3Image src={slider.coverImage} alt={slider.titleEn} fill className="object-cover" />
                                                 </div>
                                                 <div className="flex-1 space-y-3">
                                                     <div>
-                                                        <h3 className="text-xl font-bold">{slider.titleUz}</h3>
+                                                        <h3 className="text-xl font-bold">{slider.titleEn}</h3>
                                                         <p className="text-sm text-muted-foreground">{slider.titleRu}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm">{slider.subtitleUz}</p>
+                                                        <p className="text-sm">{slider.subtitleEn}</p>
                                                         <p className="text-sm text-muted-foreground">{slider.subtitleRu}</p>
                                                     </div>
                                                     <div className="flex items-center gap-2 text-sm">
@@ -284,10 +284,10 @@ export default function AdminSlidersPage() {
                                         <CardContent className="p-6">
                                             <div className="space-y-4">
                                                 <div className="relative w-full h-48 rounded-lg overflow-hidden bg-accent">
-                                                    <S3Image src={banner.coverImage} alt={banner.titleUz} fill className="object-cover" />
+                                                    <S3Image src={banner.coverImage} alt={banner.titleEn} fill className="object-cover" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-lg font-bold">{banner.titleUz}</h3>
+                                                    <h3 className="text-lg font-bold">{banner.titleEn}</h3>
                                                     <p className="text-sm text-muted-foreground">{banner.titleRu}</p>
                                                     <div className="flex items-center gap-2 mt-2">
                                                         {banner.isActive && (
@@ -322,7 +322,7 @@ export default function AdminSlidersPage() {
                 <CrudModal
                     open={sliderDialogOpen}
                     onOpenChange={setSliderDialogOpen}
-                    titleUz={editingSlider ? "Sliderni tahrirlash" : "Yangi slider qo'shish"}
+                    titleEn={editingSlider ? "Sliderni tahrirlash" : "Yangi slider qo'shish"}
                     titleRu={editingSlider ? "Редактировать слайдер" : "Добавить новый слайдер"}
                     maxWidth="2xl"
                 >
@@ -338,7 +338,7 @@ export default function AdminSlidersPage() {
                 <CrudModal
                     open={bannerDialogOpen}
                     onOpenChange={setBannerDialogOpen}
-                    titleUz={editingBanner ? "Bannerni tahrirlash" : "Yangi banner qo'shish"}
+                    titleEn={editingBanner ? "Bannerni tahrirlash" : "Yangi banner qo'shish"}
                     titleRu={editingBanner ? "Редактировать баннер" : "Добавить новый баннер"}
                     maxWidth="2xl"
                 >

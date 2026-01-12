@@ -100,10 +100,10 @@ export function DeleteCategoryModal({
           <div className="mt-4 rounded-lg bg-muted p-4">
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-semibold">{t(category.nameUz, category.nameRu)}</div>
+                <div className="font-semibold">{t(category.nameEn, category.nameRu)}</div>
                 <div className="text-sm text-muted-foreground">
                   {category.parent
-                    ? `${t("Parent", "Родитель")}: ${t(category.parent.nameUz, category.parent.nameRu)}`
+                    ? `${t("Parent", "Родитель")}: ${t(category.parent.nameEn, category.parent.nameRu)}`
                     : t("Asosiy kategoriya", "Основная категория")}
                 </div>
                 {category.productsCount !== undefined && category.productsCount > 0 && (

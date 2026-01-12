@@ -55,24 +55,30 @@ export default function CheckoutPage() {
     );
     const total = subtotal;
 
-
     const handleSubmitOrder = async () => {
         // Validation - email optional, phone required
-        if (!firstName.trim() || !lastName.trim() || !phone.trim() || !address.trim() || !city.trim() || !region.trim()) {
+        if (
+            !firstName.trim() ||
+            !lastName.trim() ||
+            !phone.trim() ||
+            !address.trim() ||
+            !city.trim() ||
+            !region.trim()
+        ) {
             toast.error(
                 t(
-                    "Iltimos, barcha majburiy maydonlarni to'ldiring!",
+                    "Please fill in all required fields!",
                     "Пожалуйста, заполните все обязательные поля!"
                 )
             );
             return;
         }
-        
+
         // Phone validation
         if (phone.replace(/\D/g, "").length !== 12) {
             toast.error(
                 t(
-                    "To'liq telefon raqamini kiriting",
+                    "Please enter a valid phone number",
                     "Введите полный номер телефона"
                 )
             );
@@ -80,12 +86,7 @@ export default function CheckoutPage() {
         }
 
         if (cartItems.length === 0) {
-            toast.error(
-                t(
-                    "Savatingiz bo'sh!",
-                    "Ваша корзина пуста!"
-                )
-            );
+            toast.error(t("Your cart is empty!", "Ваша корзина пуста!"));
             return;
         }
 
@@ -103,10 +104,10 @@ export default function CheckoutPage() {
                 region,
                 paymentMethod: "cash" as const,
                 notes: notes || undefined,
-                items: cartItems.map(item => ({
+                items: cartItems.map((item) => ({
                     productId: String(item.id),
-                    quantity: item.quantity
-                }))
+                    quantity: item.quantity,
+                })),
             };
 
             // Send to server API
@@ -138,7 +139,7 @@ export default function CheckoutPage() {
             try {
                 const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
                 const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
-                
+
                 if (botToken && chatId) {
                     await fetch(
                         `https://api.telegram.org/bot${botToken}/sendMessage`,
@@ -156,19 +157,22 @@ export default function CheckoutPage() {
                     );
                 }
             } catch (telegramError) {
-                console.error("Failed to send Telegram notification:", telegramError);
+                console.error(
+                    "Failed to send Telegram notification:",
+                    telegramError
+                );
             }
 
             toast.success(
                 t(
-                    "Buyurtma muvaffaqiyatli yuborildi! Tez orada siz bilan bog'lanamiz.",
+                    "Order placed successfully! We will contact you soon.",
                     "Заказ успешно отправлен! Мы свяжемся с вами в ближайшее время."
                 )
             );
-            
+
             // Clear cart after successful order
             clearCart();
-            
+
             // Redirect to order confirmation or profile
             setTimeout(() => {
                 if (isAuthenticated) {
@@ -181,7 +185,7 @@ export default function CheckoutPage() {
             console.error("Error creating order:", error);
             toast.error(
                 t(
-                    "Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.",
+                    "An error occurred. Please try again.",
                     "Произошла ошибка. Пожалуйста, попробуйте еще раз."
                 )
             );
@@ -206,10 +210,7 @@ export default function CheckoutPage() {
                     <div className="w-full lg:w-2/3">
                         <div className="mb-8">
                             <h1 className="text-4xl font-black mb-2">
-                                {t(
-                                    "Buyurtmani rasmiylashtirish",
-                                    "Оформление заказа"
-                                )}
+                                {t("Checkout", "Оформление заказа")}
                             </h1>
                             <p className="text-muted-foreground">
                                 {t(
@@ -224,7 +225,7 @@ export default function CheckoutPage() {
                             <CardContent className="p-6">
                                 <h2 className="text-2xl font-bold mb-6">
                                     {t(
-                                        "Aloqa ma'lumotlari",
+                                        "Contact Information",
                                         "Контактная информация"
                                     )}
                                 </h2>
@@ -233,27 +234,49 @@ export default function CheckoutPage() {
                                     {/* Name Fields */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <Label htmlFor="firstName" className="text-base">
-                                                {t("Ism", "Имя")} <span className="text-red-500">*</span>
+                                            <Label
+                                                htmlFor="firstName"
+                                                className="text-base"
+                                            >
+                                                {t("First Name", "Имя")}{" "}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Input
                                                 id="firstName"
                                                 value={firstName}
-                                                onChange={(e) => setFirstName(e.target.value)}
-                                                placeholder={t("Ismingiz", "Ваше имя")}
+                                                onChange={(e) =>
+                                                    setFirstName(e.target.value)
+                                                }
+                                                placeholder={t(
+                                                    "Your Name",
+                                                    "Ваше имя"
+                                                )}
                                                 className="mt-2"
                                                 disabled={isAuthenticated}
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="lastName" className="text-base">
-                                                {t("Familiya", "Фамилия")} <span className="text-red-500">*</span>
+                                            <Label
+                                                htmlFor="lastName"
+                                                className="text-base"
+                                            >
+                                                {t("Last Name", "Фамилия")}{" "}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Input
                                                 id="lastName"
                                                 value={lastName}
-                                                onChange={(e) => setLastName(e.target.value)}
-                                                placeholder={t("Familiyangiz", "Ваша фамилия")}
+                                                onChange={(e) =>
+                                                    setLastName(e.target.value)
+                                                }
+                                                placeholder={t(
+                                                    "Your Last Name",
+                                                    "Ваша фамилия"
+                                                )}
                                                 className="mt-2"
                                                 disabled={isAuthenticated}
                                             />
@@ -263,69 +286,124 @@ export default function CheckoutPage() {
                                     {/* Contact Fields */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <Label htmlFor="email" className="text-base">
-                                                {t("Email", "Email")} <span className="text-muted-foreground text-sm">({t("ixtiyoriy", "необязательно")})</span>
+                                            <Label
+                                                htmlFor="email"
+                                                className="text-base"
+                                            >
+                                                {t("Email", "Email")}{" "}
+                                                <span className="text-muted-foreground text-sm">
+                                                    (
+                                                    {t(
+                                                        "optional",
+                                                        "необязательно"
+                                                    )}
+                                                    )
+                                                </span>
                                             </Label>
                                             <Input
                                                 id="email"
                                                 type="email"
                                                 value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
+                                                onChange={(e) =>
+                                                    setEmail(e.target.value)
+                                                }
                                                 placeholder="email@example.com"
                                                 className="mt-2"
                                                 disabled={isAuthenticated}
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="phone" className="text-base">
-                                                {t("Telefon raqam", "Номер телефона")} <span className="text-red-500">*</span>
+                                            <Label
+                                                htmlFor="phone"
+                                                className="text-base"
+                                            >
+                                                {t(
+                                                    "Phone Number",
+                                                    "Номер телефона"
+                                                )}{" "}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
                                             </Label>
                                             <PhoneInput
                                                 id="phone"
                                                 value={phone}
                                                 onChange={setPhone}
                                                 className="mt-2"
-                                                disabled={isAuthenticated && !!user?.phone}
+                                                disabled={
+                                                    isAuthenticated &&
+                                                    !!user?.phone
+                                                }
                                             />
                                         </div>
                                     </div>
 
                                     {/* Address Fields */}
                                     <div>
-                                        <Label htmlFor="address" className="text-base">
-                                            {t("Manzil", "Адрес")} <span className="text-red-500">*</span>
+                                        <Label
+                                            htmlFor="address"
+                                            className="text-base"
+                                        >
+                                            {t("Address", "Адрес")}{" "}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
                                         </Label>
                                         <Input
                                             id="address"
                                             value={address}
-                                            onChange={(e) => setAddress(e.target.value)}
-                                            placeholder={t("To'liq manzil", "Полный адрес")}
+                                            onChange={(e) =>
+                                                setAddress(e.target.value)
+                                            }
+                                            placeholder={t(
+                                                "Full Address",
+                                                "Полный адрес"
+                                            )}
                                             className="h-12 mt-2"
                                         />
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <Label htmlFor="city" className="text-base">
-                                                {t("Shahar", "Город")} <span className="text-red-500">*</span>
+                                            <Label
+                                                htmlFor="city"
+                                                className="text-base"
+                                            >
+                                                {t("City", "Город")}{" "}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Input
                                                 id="city"
                                                 value={city}
-                                                onChange={(e) => setCity(e.target.value)}
-                                                placeholder={t("Shahar", "Город")}
+                                                onChange={(e) =>
+                                                    setCity(e.target.value)
+                                                }
+                                                placeholder={t("City", "Город")}
                                                 className="mt-2"
                                             />
                                         </div>
                                         <div>
-                                            <Label htmlFor="region" className="text-base">
-                                                {t("Viloyat", "Регион")} <span className="text-red-500">*</span>
+                                            <Label
+                                                htmlFor="region"
+                                                className="text-base"
+                                            >
+                                                {t("Region", "Регион")}{" "}
+                                                <span className="text-red-500">
+                                                    *
+                                                </span>
                                             </Label>
                                             <Input
                                                 id="region"
                                                 value={region}
-                                                onChange={(e) => setRegion(e.target.value)}
-                                                placeholder={t("Viloyat", "Регион")}
+                                                onChange={(e) =>
+                                                    setRegion(e.target.value)
+                                                }
+                                                placeholder={t(
+                                                    "Region",
+                                                    "Регион"
+                                                )}
                                                 className="mt-2"
                                             />
                                         </div>
@@ -333,15 +411,23 @@ export default function CheckoutPage() {
 
                                     {/* Notes */}
                                     <div>
-                                        <Label htmlFor="notes" className="text-base">
-                                            {t("Izoh (ixtiyoriy)", "Примечание (необязательно)")}
+                                        <Label
+                                            htmlFor="notes"
+                                            className="text-base"
+                                        >
+                                            {t(
+                                                "Notes (optional)",
+                                                "Примечание (необязательно)"
+                                            )}
                                         </Label>
                                         <Textarea
                                             id="notes"
                                             value={notes}
-                                            onChange={(e) => setNotes(e.target.value)}
+                                            onChange={(e) =>
+                                                setNotes(e.target.value)
+                                            }
                                             placeholder={t(
-                                                "Qo'shimcha ma'lumotlar...",
+                                                "Additional information...",
                                                 "Дополнительная информация..."
                                             )}
                                             className="mt-2 min-h-[100px]"
@@ -351,7 +437,7 @@ export default function CheckoutPage() {
                                     <div className="bg-accent/50 p-4 rounded-lg">
                                         <p className="text-sm text-muted-foreground">
                                             {t(
-                                                "Buyurtmangizni qabul qilganimizdan so'ng, tez orada siz bilan bog'lanib, yetkazib berish tafsilotlarini aniqlaymiz.",
+                                                "After receiving your order, we will contact you shortly to clarify delivery details.",
                                                 "После получения вашего заказа мы свяжемся с вами в ближайшее время для уточнения деталей доставки."
                                             )}
                                         </p>
@@ -361,18 +447,27 @@ export default function CheckoutPage() {
                                 <div className="mt-8">
                                     <Button
                                         onClick={handleSubmitOrder}
-                                        disabled={isSubmitting || cartItems.length === 0}
+                                        disabled={
+                                            isSubmitting ||
+                                            cartItems.length === 0
+                                        }
                                         className="w-full bg-primary hover:bg-primary/90 text-white gap-2 h-14 text-lg"
                                     >
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="h-5 w-5 animate-spin" />
-                                                {t("Yuborilmoqda...", "Отправка...")}
+                                                {t(
+                                                    "Submitting...",
+                                                    "Отправка..."
+                                                )}
                                             </>
                                         ) : (
                                             <>
                                                 <Send className="h-5 w-5" />
-                                                {t("Buyurtma berish", "Оформить заказ")}
+                                                {t(
+                                                    "Place Order",
+                                                    "Оформить заказ"
+                                                )}
                                             </>
                                         )}
                                     </Button>
@@ -388,13 +483,13 @@ export default function CheckoutPage() {
                                 <div className="flex items-center gap-2 mb-4 pb-4 border-b">
                                     <ShoppingBag className="h-6 w-6 text-primary" />
                                     <h2 className="text-2xl font-bold">
-                                        {t("Sizning buyurtmangiz", "Ваш заказ")}
+                                        {t("Your Order", "Ваш заказ")}
                                     </h2>
                                 </div>
 
                                 {cartItems.length === 0 ? (
                                     <p className="text-center text-muted-foreground py-8">
-                                        {t("Savat bo'sh", "Корзина пуста")}
+                                        {t("Cart is empty", "Корзина пуста")}
                                     </p>
                                 ) : (
                                     <>
@@ -413,7 +508,7 @@ export default function CheckoutPage() {
                                                         </p>
                                                         <p className="text-sm text-muted-foreground">
                                                             {t(
-                                                                "Miqdor",
+                                                                "Quantity",
                                                                 "Количество"
                                                             )}
                                                             : {item.quantity}
@@ -438,7 +533,7 @@ export default function CheckoutPage() {
                                                 </p>
                                                 <p className="font-semibold">
                                                     {cartItems.length}{" "}
-                                                    {t("ta", "шт")}
+                                                    {t("items", "шт")}
                                                 </p>
                                             </div>
                                             <div className="flex justify-between items-center">
@@ -454,7 +549,7 @@ export default function CheckoutPage() {
                                                             sum + item.quantity,
                                                         0
                                                     )}{" "}
-                                                    {t("dona", "шт")}
+                                                    {t("pcs", "шт")}
                                                 </p>
                                             </div>
                                         </div>

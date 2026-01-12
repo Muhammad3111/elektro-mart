@@ -37,10 +37,14 @@ export default function Home() {
         try {
             setLoadingCategories(true);
             const data = await categoriesAPI.getAll();
-            const parentCategories = data.filter((c) => !c.parentId && c.isActive);
-            const categoriesWithSubs = parentCategories.map(parent => ({
+            const parentCategories = data.filter(
+                (c) => !c.parentId && c.isActive
+            );
+            const categoriesWithSubs = parentCategories.map((parent) => ({
                 ...parent,
-                subCategories: data.filter(sub => sub.parentId === parent.id && sub.isActive)
+                subCategories: data.filter(
+                    (sub) => sub.parentId === parent.id && sub.isActive
+                ),
             }));
             setCategories(categoriesWithSubs);
         } catch (err) {
@@ -85,13 +89,12 @@ export default function Home() {
 
     useEffect(() => {
         loadCategories();
-        loadFeaturedProducts();
         loadBrands();
-    }, [loadFeaturedProducts]);
+    }, []);
 
     useEffect(() => {
         loadFeaturedProducts();
-    }, [selectedCategory, loadFeaturedProducts]);
+    }, [selectedCategory]);
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -104,9 +107,15 @@ export default function Home() {
                 <HeroSlider />
 
                 {/* Categories Slider */}
-                <section className="bg-background py-16" aria-labelledby="categories-title">
+                <section
+                    className="bg-background py-16"
+                    aria-labelledby="categories-title"
+                >
                     <div className="container mx-auto px-4">
-                        <SectionTitle id="categories-title" highlight={t("categories", "категории")}>
+                        <SectionTitle
+                            id="categories-title"
+                            highlight={t("categories", "категории")}
+                        >
                             {t("Product Categories", "Категории товаров")}
                         </SectionTitle>
                         {loadingCategories ? (
@@ -114,10 +123,13 @@ export default function Home() {
                         ) : (
                             <CategorySlider categories={categories} />
                         )}
-                        
+
                         <div className="mt-8 text-center">
                             <Link href="/categories">
-                                <Button size="lg" className="bg-primary hover:bg-primary/90 text-white h-12 px-8">
+                                <Button
+                                    size="lg"
+                                    className="bg-primary hover:bg-primary/90 text-white h-12 px-8"
+                                >
                                     {t("View All", "Посмотреть все")}
                                 </Button>
                             </Link>
@@ -126,18 +138,39 @@ export default function Home() {
                 </section>
 
                 {/* Featured Products with Category Filter */}
-                <section className="bg-primary/5 py-16" aria-labelledby="featured-title">
+                <section
+                    className="bg-primary/5 py-16"
+                    aria-labelledby="featured-title"
+                >
                     <div className="container mx-auto px-4">
-                        <SectionTitle id="featured-title" highlight={t("Featured", "Избранные")}>
+                        <SectionTitle
+                            id="featured-title"
+                            highlight={t("Featured", "Избранные")}
+                        >
                             {t("Featured Products", "Избранные товары")}
                         </SectionTitle>
 
                         {/* Category Filter Tabs */}
-                        <div className="flex gap-2 mb-8 overflow-x-auto pb-2" role="tablist" aria-label={t("Filter by category", "Фильтр по категории")}>
+                        <div
+                            className="flex gap-2 mb-8 overflow-x-auto pb-2"
+                            role="tablist"
+                            aria-label={t(
+                                "Filter by category",
+                                "Фильтр по категории"
+                            )}
+                        >
                             <Button
-                                variant={selectedCategory === "all" ? "default" : "outline"}
+                                variant={
+                                    selectedCategory === "all"
+                                        ? "default"
+                                        : "outline"
+                                }
                                 onClick={() => setSelectedCategory("all")}
-                                className={selectedCategory === "all" ? "bg-primary hover:bg-primary/90 text-white" : ""}
+                                className={
+                                    selectedCategory === "all"
+                                        ? "bg-primary hover:bg-primary/90 text-white"
+                                        : ""
+                                }
                                 role="tab"
                                 aria-selected={selectedCategory === "all"}
                             >
@@ -146,13 +179,25 @@ export default function Home() {
                             {categories.map((category) => (
                                 <Button
                                     key={category.id}
-                                    variant={selectedCategory === category.id ? "default" : "outline"}
-                                    onClick={() => setSelectedCategory(category.id)}
-                                    className={selectedCategory === category.id ? "bg-primary hover:bg-primary/90 text-white" : ""}
+                                    variant={
+                                        selectedCategory === category.id
+                                            ? "default"
+                                            : "outline"
+                                    }
+                                    onClick={() =>
+                                        setSelectedCategory(category.id)
+                                    }
+                                    className={
+                                        selectedCategory === category.id
+                                            ? "bg-primary hover:bg-primary/90 text-white"
+                                            : ""
+                                    }
                                     role="tab"
-                                    aria-selected={selectedCategory === category.id}
+                                    aria-selected={
+                                        selectedCategory === category.id
+                                    }
                                 >
-                                    {t(category.nameUz, category.nameRu)}
+                                    {t(category.nameEn, category.nameRu)}
                                 </Button>
                             ))}
                         </div>
@@ -169,19 +214,29 @@ export default function Home() {
                                 ))}
                             </div>
                         ) : products.length > 0 ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6" role="tabpanel">
+                            <div
+                                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6"
+                                role="tabpanel"
+                            >
                                 {products.map((product) => (
                                     <ProductCard
                                         key={product.id}
                                         id={product.id}
-                                        name={product.nameUz}
+                                        name={product.nameEn}
                                         price={product.price.toString()}
                                         oldPrice={product.oldPrice?.toString()}
                                         image={product.coverImage || ""}
-                                        description={product.shortDescriptionUz || product.descriptionUz}
+                                        description={
+                                            product.shortDescriptionEn ||
+                                            product.descriptionEn
+                                        }
                                         rating={product.rating}
                                         isNew={product.isNew}
-                                        discount={product.discount ? `${product.discount}%` : undefined}
+                                        discount={
+                                            product.discount
+                                                ? `${product.discount}%`
+                                                : undefined
+                                        }
                                         productCode={product.productCode}
                                         inStock={product.inStock}
                                     />
@@ -191,10 +246,16 @@ export default function Home() {
                             <div className="flex flex-col items-center justify-center py-16 px-4">
                                 <div className="text-center">
                                     <h3 className="text-2xl font-bold mb-2">
-                                        {t("No products found", "Товары не найдены")}
+                                        {t(
+                                            "No products found",
+                                            "Товары не найдены"
+                                        )}
                                     </h3>
                                     <p className="text-muted-foreground">
-                                        {t("No products in this category yet", "В этой категории пока нет товаров")}
+                                        {t(
+                                            "No products in this category yet",
+                                            "В этой категории пока нет товаров"
+                                        )}
                                     </p>
                                 </div>
                             </div>
@@ -202,7 +263,10 @@ export default function Home() {
 
                         <div className="mt-8 text-center">
                             <Link href="/catalog">
-                                <Button size="lg" className="bg-primary hover:bg-primary/90 text-white h-12 px-8">
+                                <Button
+                                    size="lg"
+                                    className="bg-primary hover:bg-primary/90 text-white h-12 px-8"
+                                >
                                     {t("View All", "Посмотреть все")}
                                 </Button>
                             </Link>
@@ -211,9 +275,15 @@ export default function Home() {
                 </section>
 
                 {/* Why Choose Us Section */}
-                <section className="bg-background py-16" aria-labelledby="why-us-title">
+                <section
+                    className="bg-background py-16"
+                    aria-labelledby="why-us-title"
+                >
                     <div className="container mx-auto px-4">
-                        <SectionTitle id="why-us-title" highlight={t("us", "нас")}>
+                        <SectionTitle
+                            id="why-us-title"
+                            highlight={t("us", "нас")}
+                        >
                             {t("Why Choose Us", "Почему именно мы")}
                         </SectionTitle>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -221,14 +291,20 @@ export default function Home() {
                                 <CardContent className="p-6 space-y-3">
                                     <div className="flex justify-center">
                                         <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
-                                            <Truck className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" aria-hidden="true" />
+                                            <Truck
+                                                className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300"
+                                                aria-hidden="true"
+                                            />
                                         </div>
                                     </div>
                                     <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
                                         {t("Fast Delivery", "Быстрая доставка")}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
-                                        {t("Quick and reliable delivery service", "Быстрая и надежная служба доставки")}
+                                        {t(
+                                            "Quick and reliable delivery service",
+                                            "Быстрая и надежная служба доставки"
+                                        )}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -237,14 +313,20 @@ export default function Home() {
                                 <CardContent className="p-6 space-y-3">
                                     <div className="flex justify-center">
                                         <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
-                                            <Shield className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" aria-hidden="true" />
+                                            <Shield
+                                                className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300"
+                                                aria-hidden="true"
+                                            />
                                         </div>
                                     </div>
                                     <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
                                         {t("Warranty", "Гарантия")}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
-                                        {t("Warranty on all products", "Гарантия на все товары")}
+                                        {t(
+                                            "Warranty on all products",
+                                            "Гарантия на все товары"
+                                        )}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -253,14 +335,20 @@ export default function Home() {
                                 <CardContent className="p-6 space-y-3">
                                     <div className="flex justify-center">
                                         <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
-                                            <Headphones className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" aria-hidden="true" />
+                                            <Headphones
+                                                className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300"
+                                                aria-hidden="true"
+                                            />
                                         </div>
                                     </div>
                                     <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
                                         {t("24/7 Support", "Поддержка 24/7")}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
-                                        {t("Always at your service", "Всегда к вашим услугам")}
+                                        {t(
+                                            "Always at your service",
+                                            "Всегда к вашим услугам"
+                                        )}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -269,14 +357,23 @@ export default function Home() {
                                 <CardContent className="p-6 space-y-3">
                                     <div className="flex justify-center">
                                         <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
-                                            <Award className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" aria-hidden="true" />
+                                            <Award
+                                                className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300"
+                                                aria-hidden="true"
+                                            />
                                         </div>
                                     </div>
                                     <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
-                                        {t("Quality Guarantee", "Гарантия качества")}
+                                        {t(
+                                            "Quality Guarantee",
+                                            "Гарантия качества"
+                                        )}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
-                                        {t("Only certified products", "Только сертифицированные товары")}
+                                        {t(
+                                            "Only certified products",
+                                            "Только сертифицированные товары"
+                                        )}
                                     </p>
                                 </CardContent>
                             </Card>
@@ -285,15 +382,24 @@ export default function Home() {
                 </section>
 
                 {/* Brands Section */}
-                <section className="bg-primary/5 py-16" aria-labelledby="brands-title">
+                <section
+                    className="bg-primary/5 py-16"
+                    aria-labelledby="brands-title"
+                >
                     <div className="container mx-auto px-4">
-                        <SectionTitle id="brands-title" highlight={t("Brands", "бренды")}>
+                        <SectionTitle
+                            id="brands-title"
+                            highlight={t("Brands", "бренды")}
+                        >
                             {t("Our Brands", "Наши бренды")}
                         </SectionTitle>
                         {loadingBrands ? (
                             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
                                 {[...Array(6)].map((_, i) => (
-                                    <div key={i} className="border-2 rounded-lg">
+                                    <div
+                                        key={i}
+                                        className="border-2 rounded-lg"
+                                    >
                                         <div className="p-6 flex items-center justify-center h-24">
                                             <Skeleton className="w-16 h-8" />
                                         </div>
@@ -307,13 +413,22 @@ export default function Home() {
                 </section>
 
                 {/* Contact Information Section */}
-                <section className="bg-background py-16" aria-labelledby="contact-title">
+                <section
+                    className="bg-background py-16"
+                    aria-labelledby="contact-title"
+                >
                     <div className="container mx-auto px-4">
-                        <SectionTitle id="contact-title" highlight={t("information", "информация")}>
-                            {t("Our Contact Information", "Наша контактная информация")}
+                        <SectionTitle
+                            id="contact-title"
+                            highlight={t("information", "информация")}
+                        >
+                            {t(
+                                "Our Contact Information",
+                                "Наша контактная информация"
+                            )}
                         </SectionTitle>
                         <ContactInfo />
-                        
+
                         <div className="mt-12">
                             <YandexMap />
                         </div>
@@ -321,16 +436,31 @@ export default function Home() {
                 </section>
 
                 {/* CTA Section */}
-                <section className="bg-background py-16" aria-labelledby="cta-title">
+                <section
+                    className="bg-background py-16"
+                    aria-labelledby="cta-title"
+                >
                     <div className="container mx-auto px-4 text-center space-y-6">
-                        <SectionTitle id="cta-title" highlight={t("special", "Специальные")}>
-                            {t("Special Offers for Professional Projects", "Специальные предложения для профессиональных проектов")}
+                        <SectionTitle
+                            id="cta-title"
+                            highlight={t("special", "Специальные")}
+                        >
+                            {t(
+                                "Special Offers for Professional Projects",
+                                "Специальные предложения для профессиональных проектов"
+                            )}
                         </SectionTitle>
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                            {t("Special prices and personal manager for large orders", "Специальные цены и персональный менеджер для крупных заказов")}
+                            {t(
+                                "Special prices and personal manager for large orders",
+                                "Специальные цены и персональный менеджер для крупных заказов"
+                            )}
                         </p>
                         <Link href="/contact">
-                            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white h-14 px-8">
+                            <Button
+                                size="lg"
+                                className="bg-primary hover:bg-primary/90 text-white h-14 px-8"
+                            >
                                 {t("Contact Us", "Свяжитесь с нами")}
                             </Button>
                         </Link>

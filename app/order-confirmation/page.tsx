@@ -58,12 +58,12 @@ export default function OrderConfirmationPage() {
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
               <ShoppingBag className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">{t("Buyurtma tafsilotlari", "Детали заказа")}</h2>
+              <h2 className="text-2xl font-bold">{t("Order Details", "Детали заказа")}</h2>
             </div>
             
             {cartItems.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                {t("Mahsulotlar topilmadi", "Товары не найдены")}
+                {t("No products found", "Товары не найдены")}
               </p>
             ) : (
               <>
@@ -76,7 +76,7 @@ export default function OrderConfirmationPage() {
                       <div className="flex-grow">
                         <p className="font-semibold">{item.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {t("Miqdor", "Количество")}: {item.quantity} {t("dona", "шт")}
+                          {t("Quantity", "Количество")}: {item.quantity} {t("pcs", "шт")}
                         </p>
                       </div>
                       <p className="font-bold text-primary">{item.price} UZS</p>
@@ -136,7 +136,7 @@ export default function OrderConfirmationPage() {
           <Link href="/" className="w-full sm:w-auto">
             <Button className="w-full bg-primary hover:bg-primary/90 text-white gap-2 h-12">
               <Home className="h-5 w-5" />
-              {t("Bosh sahifaga qaytish", "Вернуться на главную")}
+              {t("Return to Home", "Вернуться на главную")}
             </Button>
           </Link>
           <Link href="/catalog" className="w-full sm:w-auto">

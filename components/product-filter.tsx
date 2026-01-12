@@ -244,7 +244,7 @@ export function ProductFilter({
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-xl font-bold">
-                        {t("Filtrlar", "Фильтры")}
+                        {t("Filters", "Фильтры")}
                     </CardTitle>
                     <Button
                         variant="ghost"
@@ -264,7 +264,7 @@ export function ProductFilter({
                 <CardContent className="space-y-6">
                     {/* Categories Filter */}
                     <div className="space-y-2">
-                        <Label>{t("Kategoriyalar", "Категории")}</Label>
+                        <Label>{t("Categories", "Категории")}</Label>
                         {loadingCategories ? (
                             <div className="space-y-2">
                                 <div className="h-8 bg-muted animate-pulse rounded-md" />
@@ -291,7 +291,7 @@ export function ProductFilter({
                                                         <div className="relative w-4 h-4">
                                                             <S3Image
                                                                 src={category.image}
-                                                                alt={category.nameUz}
+                                                                alt={category.nameEn}
                                                                 fill
                                                                 className="object-contain"
                                                             />
@@ -303,7 +303,7 @@ export function ProductFilter({
                                                         htmlFor={`category-${category.id}`}
                                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
                                                     >
-                                                        {t(category.nameUz, category.nameRu)}
+                                                        {t(category.nameEn, category.nameRu)}
                                                     </label>
                                                     {hasSubcategories && (
                                                         <Button
@@ -336,7 +336,7 @@ export function ProductFilter({
                                                                 htmlFor={`subcategory-${subcategory.id}`}
                                                                 className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                                                             >
-                                                                {t(subcategory.nameUz, subcategory.nameRu)}
+                                                                {t(subcategory.nameEn, subcategory.nameRu)}
                                                             </label>
                                                         </div>
                                                     ))}
@@ -352,7 +352,7 @@ export function ProductFilter({
 
                     {/* Price Range Slider */}
                     <div className="space-y-2">
-                        <Label>{t("Narx oralig'i", "Диапазон цен")}</Label>
+                        <Label>{t("Price Range", "Диапазон цен")}</Label>
                         <div className="space-y-4 pt-2">
                             <Slider
                                 min={minPrice}
@@ -380,7 +380,7 @@ export function ProductFilter({
                     {/* Brands */}
                     {brands.length > 0 && (
                         <div className="space-y-2">
-                            <Label>{t("Brendlar", "Бренды")}</Label>
+                            <Label>{t("Brands", "Бренды")}</Label>
                             <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {brands.map((brand) => (
                                     <div
@@ -440,7 +440,7 @@ export function ProductFilter({
                                     htmlFor="isNew"
                                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                                 >
-                                    {t("Yangi", "Новинки")}
+                                    {t("New", "Новинки")}
                                 </label>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -470,7 +470,7 @@ export function ProductFilter({
                         onClick={clearFilters}
                     >
                         <X className="h-4 w-4 mr-2" />
-                        {t("Filtrlarni tozalash", "Очистить фильтры")}
+                        {t("Clear Filters", "Очистить фильтры")}
                     </Button>
                 </CardContent>
             )}

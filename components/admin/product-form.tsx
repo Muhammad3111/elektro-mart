@@ -10,7 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { MediaGalleryModal } from "@/components/admin/media-gallery-modal";
 import { SpecificationsManager } from "@/components/admin/specifications-manager";
@@ -35,11 +41,11 @@ export function ProductForm({ productId }: ProductFormProps) {
     const [formData, setFormData] = useState<CreateProductDto>({
         sku: "",
         productCode: "",
-        nameUz: "",
+        nameEn: "",
         nameRu: "",
-        shortDescriptionUz: "",
+        shortDescriptionEn: "",
         shortDescriptionRu: "",
-        descriptionUz: "",
+        descriptionEn: "",
         descriptionRu: "",
         price: 0,
         oldPrice: undefined,
@@ -73,61 +79,71 @@ export function ProductForm({ productId }: ProductFormProps) {
     const [galleryImageUrls, setGalleryImageUrls] = useState<string[]>([]);
     const [exchangeRate, setExchangeRate] = useState(12500);
 
-    const loadProduct = useCallback(async (id: string) => {
-        try {
-            setLoading(true);
-            const product = await productsAPI.getById(id);
-            
-            setFormData({
-                sku: product.sku,
-                productCode: product.productCode,
-                nameUz: product.nameUz,
-                nameRu: product.nameRu,
-                shortDescriptionUz: product.shortDescriptionUz || "",
-                shortDescriptionRu: product.shortDescriptionRu || "",
-                descriptionUz: product.descriptionUz,
-                descriptionRu: product.descriptionRu,
-                price: product.price,
-                oldPrice: product.oldPrice,
-                discount: product.discount,
-                coverImage: product.coverImage || "",
-                galleryImages: product.galleryImages || [],
-                categoryId: product.categoryId,
-                subcategoryId: product.subcategoryId || "",
-                brandId: product.brandId || "",
-                isActive: product.isActive,
-                isFeatured: product.isFeatured,
-                isNew: product.isNew,
-                stockQuantity: product.stockQuantity,
-                order: product.order,
-                metaTitle: product.metaTitle || "",
-                metaDescription: product.metaDescription || "",
-                keywords: product.keywords || [],
-                specifications: product.specifications?.map(spec => ({
-                    labelUz: spec.labelUz,
-                    labelRu: spec.labelRu,
-                    valueUz: spec.valueUz,
-                    valueRu: spec.valueRu,
-                    order: spec.order,
-                })) || [],
-            });
-            
-            // Load image URLs for display
-            if (product.coverImage) {
-                getImageUrl(product.coverImage).then(setCoverImageUrl);
+    const loadProduct = useCallback(
+        async (id: string) => {
+            try {
+                setLoading(true);
+                const product = await productsAPI.getById(id);
+
+                setFormData({
+                    sku: product.sku,
+                    productCode: product.productCode,
+                    nameEn: product.nameEn,
+                    nameRu: product.nameRu,
+                    shortDescriptionEn: product.shortDescriptionEn || "",
+                    shortDescriptionRu: product.shortDescriptionRu || "",
+                    descriptionEn: product.descriptionEn,
+                    descriptionRu: product.descriptionRu,
+                    price: product.price,
+                    oldPrice: product.oldPrice,
+                    discount: product.discount,
+                    coverImage: product.coverImage || "",
+                    galleryImages: product.galleryImages || [],
+                    categoryId: product.categoryId,
+                    subcategoryId: product.subcategoryId || "",
+                    brandId: product.brandId || "",
+                    isActive: product.isActive,
+                    isFeatured: product.isFeatured,
+                    isNew: product.isNew,
+                    stockQuantity: product.stockQuantity,
+                    order: product.order,
+                    metaTitle: product.metaTitle || "",
+                    metaDescription: product.metaDescription || "",
+                    keywords: product.keywords || [],
+                    specifications:
+                        product.specifications?.map((spec) => ({
+                            labelEn: spec.labelEn,
+                            labelRu: spec.labelRu,
+                            valueEn: spec.valueEn,
+                            valueRu: spec.valueRu,
+                            order: spec.order,
+                        })) || [],
+                });
+
+                // Load image URLs for display
+                if (product.coverImage) {
+                    getImageUrl(product.coverImage).then(setCoverImageUrl);
+                }
+                if (product.galleryImages && product.galleryImages.length > 0) {
+                    Promise.all(
+                        product.galleryImages.map((key) => getImageUrl(key))
+                    ).then(setGalleryImageUrls);
+                }
+            } catch (error) {
+                console.error("Error loading product:", error);
+                toast.error(
+                    t(
+                        "Mahsulotni yuklashda xatolik",
+                        "Ошибка при загрузке товара"
+                    )
+                );
+                router.push("/admin/products");
+            } finally {
+                setLoading(false);
             }
-            if (product.galleryImages && product.galleryImages.length > 0) {
-                Promise.all(product.galleryImages.map(key => getImageUrl(key)))
-                    .then(setGalleryImageUrls);
-            }
-        } catch (error) {
-            console.error("Error loading product:", error);
-            toast.error(t("Mahsulotni yuklashda xatolik", "Ошибка при загрузке товара"));
-            router.push("/admin/products");
-        } finally {
-            setLoading(false);
-        }
-    }, [t, router]);
+        },
+        [t, router]
+    );
 
     useEffect(() => {
         loadCategories();
@@ -142,7 +158,7 @@ export function ProductForm({ productId }: ProductFormProps) {
             loadSubcategories(formData.categoryId);
         } else {
             setSubcategories([]);
-            setFormData(prev => ({ ...prev, subcategoryId: "" }));
+            setFormData((prev) => ({ ...prev, subcategoryId: "" }));
         }
     }, [formData.categoryId]);
 
@@ -158,7 +174,9 @@ export function ProductForm({ productId }: ProductFormProps) {
     const loadSubcategories = async (parentId: string) => {
         try {
             const result = await categoriesAPI.getAll();
-            setSubcategories(result.filter((cat: Category) => cat.parentId === parentId));
+            setSubcategories(
+                result.filter((cat: Category) => cat.parentId === parentId)
+            );
         } catch (error) {
             console.error("Error loading subcategories:", error);
         }
@@ -186,13 +204,17 @@ export function ProductForm({ productId }: ProductFormProps) {
             return;
         }
 
-        if (!formData.nameUz || !formData.nameRu) {
-            toast.error(t("Mahsulot nomini kiriting", "Введите название товара"));
+        if (!formData.nameEn || !formData.nameRu) {
+            toast.error(
+                t("Mahsulot nomini kiriting", "Введите название товара")
+            );
             return;
         }
 
-        if (!formData.descriptionUz || !formData.descriptionRu) {
-            toast.error(t("Mahsulot tavsifini kiriting", "Введите описание товара"));
+        if (!formData.descriptionEn || !formData.descriptionRu) {
+            toast.error(
+                t("Mahsulot tavsifini kiriting", "Введите описание товара")
+            );
             return;
         }
 
@@ -212,20 +234,34 @@ export function ProductForm({ productId }: ProductFormProps) {
             const payload: CreateProductDto = {
                 ...formData,
                 price: Number(formData.price),
-                oldPrice: formData.oldPrice ? Number(formData.oldPrice) : undefined,
-                discount: formData.discount ? Number(formData.discount) : undefined,
+                oldPrice: formData.oldPrice
+                    ? Number(formData.oldPrice)
+                    : undefined,
+                discount: formData.discount
+                    ? Number(formData.discount)
+                    : undefined,
                 stockQuantity: Number(formData.stockQuantity),
                 order: Number(formData.order),
                 subcategoryId: formData.subcategoryId || undefined,
                 brandId: formData.brandId || undefined,
-                shortDescriptionUz: formData.shortDescriptionUz || undefined,
+                shortDescriptionEn: formData.shortDescriptionEn || undefined,
                 shortDescriptionRu: formData.shortDescriptionRu || undefined,
                 metaTitle: formData.metaTitle || undefined,
                 metaDescription: formData.metaDescription || undefined,
-                keywords: formData.keywords && formData.keywords.length > 0 ? formData.keywords : undefined,
+                keywords:
+                    formData.keywords && formData.keywords.length > 0
+                        ? formData.keywords
+                        : undefined,
                 coverImage: formData.coverImage || undefined,
-                galleryImages: formData.galleryImages && formData.galleryImages.length > 0 ? formData.galleryImages : undefined,
-                specifications: formData.specifications && formData.specifications.length > 0 ? formData.specifications : undefined,
+                galleryImages:
+                    formData.galleryImages && formData.galleryImages.length > 0
+                        ? formData.galleryImages
+                        : undefined,
+                specifications:
+                    formData.specifications &&
+                    formData.specifications.length > 0
+                        ? formData.specifications
+                        : undefined,
             };
 
             if (isEditMode && productId) {
@@ -238,8 +274,12 @@ export function ProductForm({ productId }: ProductFormProps) {
             router.push("/admin/products");
         } catch (error: unknown) {
             console.error("Error saving product:", error);
-            const errorMessage = (error as any)?.response?.data?.message || (error as any)?.message;
-            toast.error(errorMessage || t("Xatolik yuz berdi", "Произошла ошибка"));
+            const errorMessage =
+                (error as any)?.response?.data?.message ||
+                (error as any)?.message;
+            toast.error(
+                errorMessage || t("Xatolik yuz berdi", "Произошла ошибка")
+            );
         } finally {
             setSubmitting(false);
         }
@@ -251,7 +291,9 @@ export function ProductForm({ productId }: ProductFormProps) {
                 <div className="flex items-center justify-center min-h-[60vh]">
                     <div className="flex flex-col items-center gap-4">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                        <p className="text-muted-foreground">{t("Yuklanmoqda...", "Загрузка...")}</p>
+                        <p className="text-muted-foreground">
+                            {t("Yuklanmoqda...", "Загрузка...")}
+                        </p>
                     </div>
                 </div>
             </AdminLayout>
@@ -274,54 +316,90 @@ export function ProductForm({ productId }: ProductFormProps) {
                         </Button>
                         <div>
                             <h1 className="text-4xl font-black">
-                                {isEditMode 
-                                    ? t("Mahsulotni tahrirlash", "Редактировать товар")
-                                    : t("Yangi mahsulot qo'shish", "Добавить новый товар")
-                                }
+                                {isEditMode
+                                    ? t(
+                                          "Mahsulotni tahrirlash",
+                                          "Редактировать товар"
+                                      )
+                                    : t(
+                                          "Yangi mahsulot qo'shish",
+                                          "Добавить новый товар"
+                                      )}
                             </h1>
                             <p className="text-muted-foreground mt-2">
                                 {isEditMode
-                                    ? t("Mahsulot ma'lumotlarini yangilang", "Обновите информацию о товаре")
-                                    : t("Asosiy ma'lumotlarni to'ldiring", "Заполните основную информацию")
-                                }
+                                    ? t(
+                                          "Mahsulot ma'lumotlarini yangilang",
+                                          "Обновите информацию о товаре"
+                                      )
+                                    : t(
+                                          "Asosiy ma'lumotlarni to'ldiring",
+                                          "Заполните основную информацию"
+                                      )}
                             </p>
                         </div>
                     </div>
-                    <Button type="submit" disabled={submitting} className="gap-2">
+                    <Button
+                        type="submit"
+                        disabled={submitting}
+                        className="gap-2"
+                    >
                         <Save className="h-5 w-5" />
-                        {submitting ? t("Saqlanmoqda...", "Сохранение...") : t("Saqlash", "Сохранить")}
+                        {submitting
+                            ? t("Saqlanmoqda...", "Сохранение...")
+                            : t("Saqlash", "Сохранить")}
                     </Button>
                 </div>
 
                 {/* Basic Information */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t("Asosiy ma'lumotlar", "Основная информация")}</CardTitle>
+                        <CardTitle>
+                            {t("Asosiy ma'lumotlar", "Основная информация")}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {/* SKU and Product Code */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="sku">
-                                    {t("SKU", "SKU")} <span className="text-red-500">*</span>
+                                    {t("SKU", "SKU")}{" "}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="sku"
                                     value={formData.sku}
-                                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                    placeholder={t("Masalan: PROD-001", "Например: PROD-001")}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            sku: e.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        "Masalan: PROD-001",
+                                        "Например: PROD-001"
+                                    )}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="productCode">
-                                    {t("Mahsulot kodi", "Код товара")} <span className="text-red-500">*</span>
+                                    {t("Mahsulot kodi", "Код товара")}{" "}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="productCode"
                                     value={formData.productCode}
-                                    onChange={(e) => setFormData({ ...formData, productCode: e.target.value })}
-                                    placeholder={t("Masalan: PC-001", "Например: PC-001")}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            productCode: e.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        "Masalan: PC-001",
+                                        "Например: PC-001"
+                                    )}
                                     required
                                 />
                             </div>
@@ -330,26 +408,47 @@ export function ProductForm({ productId }: ProductFormProps) {
                         {/* Names */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="nameUz">
-                                    {t("Nomi (O'zbek)", "Название (Узбек)")} <span className="text-red-500">*</span>
+                                <Label htmlFor="nameEn">
+                                    {t(
+                                        "Name (English)",
+                                        "Название (Английский)"
+                                    )}{" "}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
-                                    id="nameUz"
-                                    value={formData.nameUz}
-                                    onChange={(e) => setFormData({ ...formData, nameUz: e.target.value })}
-                                    placeholder={t("Mahsulot nomi", "Название товара")}
+                                    id="nameEn"
+                                    value={formData.nameEn}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            nameEn: e.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        "Mahsulot nomi",
+                                        "Название товара"
+                                    )}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="nameRu">
-                                    {t("Nomi (Rus)", "Название (Русский)")} <span className="text-red-500">*</span>
+                                    {t("Name (Russian)", "Название (Русский)")}{" "}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="nameRu"
                                     value={formData.nameRu}
-                                    onChange={(e) => setFormData({ ...formData, nameRu: e.target.value })}
-                                    placeholder={t("Название товара", "Название товара")}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            nameRu: e.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        "Название товара",
+                                        "Название товара"
+                                    )}
                                     required
                                 />
                             </div>
@@ -358,27 +457,51 @@ export function ProductForm({ productId }: ProductFormProps) {
                         {/* Descriptions */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="descriptionUz">
-                                    {t("Tavsif (O'zbek)", "Описание (Узбек)")} <span className="text-red-500">*</span>
+                                <Label htmlFor="descriptionEn">
+                                    {t(
+                                        "Description (English)",
+                                        "Описание (Английский)"
+                                    )}{" "}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Textarea
-                                    id="descriptionUz"
-                                    value={formData.descriptionUz}
-                                    onChange={(e) => setFormData({ ...formData, descriptionUz: e.target.value })}
-                                    placeholder={t("Mahsulot tavsifi", "Описание товара")}
+                                    id="descriptionEn"
+                                    value={formData.descriptionEn}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            descriptionEn: e.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        "Mahsulot tavsifi",
+                                        "Описание товара"
+                                    )}
                                     rows={4}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="descriptionRu">
-                                    {t("Tavsif (Rus)", "Описание (Русский)")} <span className="text-red-500">*</span>
+                                    {t(
+                                        "Description (Russian)",
+                                        "Описание (Русский)"
+                                    )}{" "}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Textarea
                                     id="descriptionRu"
                                     value={formData.descriptionRu}
-                                    onChange={(e) => setFormData({ ...formData, descriptionRu: e.target.value })}
-                                    placeholder={t("Описание товара", "Описание товара")}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            descriptionRu: e.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        "Описание товара",
+                                        "Описание товара"
+                                    )}
                                     rows={4}
                                     required
                                 />
@@ -388,53 +511,90 @@ export function ProductForm({ productId }: ProductFormProps) {
                         {/* Short Descriptions */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="shortDescriptionUz">
-                                    {t("Qisqa tavsif (O'zbek)", "Краткое описание (Узбек)")}
+                                <Label htmlFor="shortDescriptionEn">
+                                    {t(
+                                        "Short Description (English)",
+                                        "Краткое описание (Английский)"
+                                    )}
                                 </Label>
                                 <Textarea
-                                    id="shortDescriptionUz"
-                                    value={formData.shortDescriptionUz}
-                                    onChange={(e) => setFormData({ ...formData, shortDescriptionUz: e.target.value })}
-                                    placeholder={t("50-150 belgi", "50-150 символов")}
+                                    id="shortDescriptionEn"
+                                    value={formData.shortDescriptionEn}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            shortDescriptionEn: e.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        "50-150 belgi",
+                                        "50-150 символов"
+                                    )}
                                     rows={2}
                                     maxLength={150}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    {formData.shortDescriptionUz?.length || 0}/150
+                                    {formData.shortDescriptionEn?.length || 0}
+                                    /150
                                 </p>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="shortDescriptionRu">
-                                    {t("Qisqa tavsif (Rus)", "Краткое описание (Русский)")}
+                                    {t(
+                                        "Short Description (Russian)",
+                                        "Краткое описание (Русский)"
+                                    )}
                                 </Label>
                                 <Textarea
                                     id="shortDescriptionRu"
                                     value={formData.shortDescriptionRu}
-                                    onChange={(e) => setFormData({ ...formData, shortDescriptionRu: e.target.value })}
-                                    placeholder={t("50-150 символов", "50-150 символов")}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            shortDescriptionRu: e.target.value,
+                                        })
+                                    }
+                                    placeholder={t(
+                                        "50-150 символов",
+                                        "50-150 символов"
+                                    )}
                                     rows={2}
                                     maxLength={150}
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    {formData.shortDescriptionRu?.length || 0}/150
+                                    {formData.shortDescriptionRu?.length || 0}
+                                    /150
                                 </p>
                             </div>
                         </div>
 
                         {/* Category */}
                         <div className="space-y-2">
-                            <Label>{t("Kategoriya", "Категория")} <span className="text-red-500">*</span></Label>
+                            <Label>
+                                {t("Kategoriya", "Категория")}{" "}
+                                <span className="text-red-500">*</span>
+                            </Label>
                             <Select
                                 value={formData.categoryId}
-                                onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+                                onValueChange={(value) =>
+                                    setFormData({
+                                        ...formData,
+                                        categoryId: value,
+                                    })
+                                }
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder={t("Kategoriyani tanlang", "Выберите категорию")} />
+                                    <SelectValue
+                                        placeholder={t(
+                                            "Kategoriyani tanlang",
+                                            "Выберите категорию"
+                                        )}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {categories.map((cat) => (
                                         <SelectItem key={cat.id} value={cat.id}>
-                                            {cat.nameUz}
+                                            {cat.nameEn}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -444,18 +604,33 @@ export function ProductForm({ productId }: ProductFormProps) {
                         {/* Subcategory */}
                         {subcategories.length > 0 && (
                             <div className="space-y-2">
-                                <Label>{t("Sub-kategoriya", "Подкатегория")}</Label>
+                                <Label>
+                                    {t("Sub-kategoriya", "Подкатегория")}
+                                </Label>
                                 <Select
                                     value={formData.subcategoryId}
-                                    onValueChange={(value) => setFormData({ ...formData, subcategoryId: value })}
+                                    onValueChange={(value) =>
+                                        setFormData({
+                                            ...formData,
+                                            subcategoryId: value,
+                                        })
+                                    }
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder={t("Tanlang", "Выберите")} />
+                                        <SelectValue
+                                            placeholder={t(
+                                                "Tanlang",
+                                                "Выберите"
+                                            )}
+                                        />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {subcategories.map((cat) => (
-                                            <SelectItem key={cat.id} value={cat.id}>
-                                                {cat.nameUz}
+                                            <SelectItem
+                                                key={cat.id}
+                                                value={cat.id}
+                                            >
+                                                {cat.nameEn}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -468,15 +643,22 @@ export function ProductForm({ productId }: ProductFormProps) {
                             <Label>{t("Brend", "Бренд")}</Label>
                             <Select
                                 value={formData.brandId}
-                                onValueChange={(value) => setFormData({ ...formData, brandId: value })}
+                                onValueChange={(value) =>
+                                    setFormData({ ...formData, brandId: value })
+                                }
                             >
                                 <SelectTrigger>
-                                    <SelectValue placeholder={t("Tanlang", "Выберите")} />
+                                    <SelectValue
+                                        placeholder={t("Tanlang", "Выберите")}
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {brands.map((brand) => (
-                                        <SelectItem key={brand.id} value={brand.id}>
-                                            {brand.nameUz}
+                                        <SelectItem
+                                            key={brand.id}
+                                            value={brand.id}
+                                        >
+                                            {brand.nameEn}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -488,13 +670,17 @@ export function ProductForm({ productId }: ProductFormProps) {
                 {/* Pricing Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t("Narx va chegirma", "Цена и скидка")}</CardTitle>
+                        <CardTitle>
+                            {t("Narx va chegirma", "Цена и скидка")}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {/* USD to UZS Converter */}
                         <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
                             <div className="space-y-2">
-                                <Label htmlFor="usdPrice">{t("USD da narx", "Цена в USD")}</Label>
+                                <Label htmlFor="usdPrice">
+                                    {t("USD da narx", "Цена в USD")}
+                                </Label>
                                 <Input
                                     id="usdPrice"
                                     type="number"
@@ -503,8 +689,13 @@ export function ProductForm({ productId }: ProductFormProps) {
                                         const value = e.target.value;
                                         setUsdPrice(value);
                                         if (value) {
-                                            const uzsValue = Math.round(Number(value) * exchangeRate);
-                                            setFormData({ ...formData, price: uzsValue });
+                                            const uzsValue = Math.round(
+                                                Number(value) * exchangeRate
+                                            );
+                                            setFormData({
+                                                ...formData,
+                                                price: uzsValue,
+                                            });
                                         }
                                     }}
                                     placeholder="100"
@@ -512,11 +703,19 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     step="0.01"
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    {t("USD da kiritish uchun", "Для ввода в USD")}
+                                    {t(
+                                        "USD da kiritish uchun",
+                                        "Для ввода в USD"
+                                    )}
                                 </p>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="exchangeRate">{t("Kurs (1 USD = ? UZS)", "Курс (1 USD = ? UZS)")}</Label>
+                                <Label htmlFor="exchangeRate">
+                                    {t(
+                                        "Kurs (1 USD = ? UZS)",
+                                        "Курс (1 USD = ? UZS)"
+                                    )}
+                                </Label>
                                 <Input
                                     id="exchangeRate"
                                     type="number"
@@ -525,8 +724,13 @@ export function ProductForm({ productId }: ProductFormProps) {
                                         const newRate = Number(e.target.value);
                                         setExchangeRate(newRate);
                                         if (usdPrice) {
-                                            const uzsValue = Math.round(Number(usdPrice) * newRate);
-                                            setFormData({ ...formData, price: uzsValue });
+                                            const uzsValue = Math.round(
+                                                Number(usdPrice) * newRate
+                                            );
+                                            setFormData({
+                                                ...formData,
+                                                price: uzsValue,
+                                            });
                                         }
                                     }}
                                     placeholder="12500"
@@ -540,13 +744,19 @@ export function ProductForm({ productId }: ProductFormProps) {
 
                         <div className="grid grid-cols-4 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="price">{t("Narx (UZS)", "Цена (UZS)")} <span className="text-red-500">*</span></Label>
+                                <Label htmlFor="price">
+                                    {t("Narx (UZS)", "Цена (UZS)")}{" "}
+                                    <span className="text-red-500">*</span>
+                                </Label>
                                 <Input
                                     id="price"
                                     type="number"
                                     value={formData.price}
                                     onChange={(e) => {
-                                        setFormData({ ...formData, price: Number(e.target.value) });
+                                        setFormData({
+                                            ...formData,
+                                            price: Number(e.target.value),
+                                        });
                                         setUsdPrice(""); // Clear USD when manually editing UZS
                                     }}
                                     placeholder="0"
@@ -555,35 +765,63 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="oldPrice">{t("Eski narx", "Старая цена")}</Label>
+                                <Label htmlFor="oldPrice">
+                                    {t("Eski narx", "Старая цена")}
+                                </Label>
                                 <Input
                                     id="oldPrice"
                                     type="number"
                                     value={formData.oldPrice || ""}
-                                    onChange={(e) => setFormData({ ...formData, oldPrice: e.target.value ? Number(e.target.value) : undefined })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            oldPrice: e.target.value
+                                                ? Number(e.target.value)
+                                                : undefined,
+                                        })
+                                    }
                                     placeholder="0"
                                     min="0"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="discount">{t("Chegirma (%)", "Скидка (%)")}</Label>
+                                <Label htmlFor="discount">
+                                    {t("Chegirma (%)", "Скидка (%)")}
+                                </Label>
                                 <Input
                                     id="discount"
                                     type="number"
                                     value={formData.discount || ""}
-                                    onChange={(e) => setFormData({ ...formData, discount: e.target.value ? Number(e.target.value) : undefined })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            discount: e.target.value
+                                                ? Number(e.target.value)
+                                                : undefined,
+                                        })
+                                    }
                                     placeholder="0"
                                     min="0"
                                     max="100"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="stockQuantity">{t("Ombor", "Склад")} <span className="text-red-500">*</span></Label>
+                                <Label htmlFor="stockQuantity">
+                                    {t("Ombor", "Склад")}{" "}
+                                    <span className="text-red-500">*</span>
+                                </Label>
                                 <Input
                                     id="stockQuantity"
                                     type="number"
                                     value={formData.stockQuantity}
-                                    onChange={(e) => setFormData({ ...formData, stockQuantity: Number(e.target.value) })}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            ...formData,
+                                            stockQuantity: Number(
+                                                e.target.value
+                                            ),
+                                        })
+                                    }
                                     placeholder="0"
                                     required
                                     min="0"
@@ -604,45 +842,108 @@ export function ProductForm({ productId }: ProductFormProps) {
                             {formData.coverImage ? (
                                 <div className="relative group w-full max-w-md">
                                     <div className="relative aspect-video overflow-hidden rounded-lg border">
-                                        <img src={coverImageUrl || formData.coverImage} alt="Cover" className="w-full h-full object-cover" />
+                                        <img
+                                            src={
+                                                coverImageUrl ||
+                                                formData.coverImage
+                                            }
+                                            alt="Cover"
+                                            className="w-full h-full object-cover"
+                                        />
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                            <Button type="button" variant="secondary" size="sm" onClick={() => setCoverImageModalOpen(true)}>
+                                            <Button
+                                                type="button"
+                                                variant="secondary"
+                                                size="sm"
+                                                onClick={() =>
+                                                    setCoverImageModalOpen(true)
+                                                }
+                                            >
                                                 {t("O'zgartirish", "Изменить")}
                                             </Button>
-                                            <Button type="button" variant="secondary" size="sm" onClick={() => {
-                                                setFormData({ ...formData, coverImage: "" });
-                                                setCoverImageUrl("");
-                                            }}>
+                                            <Button
+                                                type="button"
+                                                variant="secondary"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setFormData({
+                                                        ...formData,
+                                                        coverImage: "",
+                                                    });
+                                                    setCoverImageUrl("");
+                                                }}
+                                            >
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="relative aspect-video w-full max-w-md overflow-hidden rounded-lg border-2 border-dashed hover:border-primary transition-colors cursor-pointer" onClick={() => setCoverImageModalOpen(true)}>
+                                <div
+                                    className="relative aspect-video w-full max-w-md overflow-hidden rounded-lg border-2 border-dashed hover:border-primary transition-colors cursor-pointer"
+                                    onClick={() => setCoverImageModalOpen(true)}
+                                >
                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
                                         <ImageIcon className="h-12 w-12" />
-                                        <p className="text-sm font-medium">{t("Cover rasm tanlash", "Выбрать обложку")}</p>
+                                        <p className="text-sm font-medium">
+                                            {t(
+                                                "Cover rasm tanlash",
+                                                "Выбрать обложку"
+                                            )}
+                                        </p>
                                     </div>
                                 </div>
                             )}
                         </div>
                         <Separator />
                         <div className="space-y-2">
-                            <Label>{t("Gallery rasmlar (3-10 ta)", "Изображения галереи (3-10)")}</Label>
+                            <Label>
+                                {t(
+                                    "Gallery rasmlar (3-10 ta)",
+                                    "Изображения галереи (3-10)"
+                                )}
+                            </Label>
                             <div className="grid grid-cols-5 gap-4">
                                 {formData.galleryImages?.map((key, index) => (
                                     <div key={index} className="relative group">
                                         <div className="aspect-square rounded-lg overflow-hidden border">
-                                            <img src={galleryImageUrls[index] || key} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover" />
+                                            <img
+                                                src={
+                                                    galleryImageUrls[index] ||
+                                                    key
+                                                }
+                                                alt={`Gallery ${index + 1}`}
+                                                className="w-full h-full object-cover"
+                                            />
                                         </div>
-                                        <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setFormData({ ...formData, galleryImages: formData.galleryImages?.filter((_, i) => i !== index) || [] })}>
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="icon"
+                                            className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={() =>
+                                                setFormData({
+                                                    ...formData,
+                                                    galleryImages:
+                                                        formData.galleryImages?.filter(
+                                                            (_, i) =>
+                                                                i !== index
+                                                        ) || [],
+                                                })
+                                            }
+                                        >
                                             <X className="h-3 w-3" />
                                         </Button>
                                     </div>
                                 ))}
-                                {(!formData.galleryImages || formData.galleryImages.length < 10) && (
-                                    <div className="aspect-square rounded-lg border-2 border-dashed hover:border-primary transition-colors cursor-pointer flex items-center justify-center" onClick={() => setGalleryModalOpen(true)}>
+                                {(!formData.galleryImages ||
+                                    formData.galleryImages.length < 10) && (
+                                    <div
+                                        className="aspect-square rounded-lg border-2 border-dashed hover:border-primary transition-colors cursor-pointer flex items-center justify-center"
+                                        onClick={() =>
+                                            setGalleryModalOpen(true)
+                                        }
+                                    >
                                         <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                     </div>
                                 )}
@@ -654,12 +955,22 @@ export function ProductForm({ productId }: ProductFormProps) {
                 {/* Specifications Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t("Texnik xususiyatlar", "Технические характеристики")}</CardTitle>
+                        <CardTitle>
+                            {t(
+                                "Texnik xususiyatlar",
+                                "Технические характеристики"
+                            )}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <SpecificationsManager
                             specifications={formData.specifications || []}
-                            onChange={(specs) => setFormData({ ...formData, specifications: specs })}
+                            onChange={(specs) =>
+                                setFormData({
+                                    ...formData,
+                                    specifications: specs,
+                                })
+                            }
                             disabled={submitting}
                         />
                     </CardContent>
@@ -672,21 +983,41 @@ export function ProductForm({ productId }: ProductFormProps) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="metaTitle">{t("Meta Title", "Meta Title")}</Label>
+                            <Label htmlFor="metaTitle">
+                                {t("Meta Title", "Meta Title")}
+                            </Label>
                             <Input
                                 id="metaTitle"
                                 value={formData.metaTitle}
-                                onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
-                                placeholder={t("SEO uchun sarlavha", "Заголовок для SEO")}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        metaTitle: e.target.value,
+                                    })
+                                }
+                                placeholder={t(
+                                    "SEO uchun sarlavha",
+                                    "Заголовок для SEO"
+                                )}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="metaDescription">{t("Meta Description", "Meta Description")}</Label>
+                            <Label htmlFor="metaDescription">
+                                {t("Meta Description", "Meta Description")}
+                            </Label>
                             <Textarea
                                 id="metaDescription"
                                 value={formData.metaDescription}
-                                onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-                                placeholder={t("SEO uchun tavsif", "Описание для SEO")}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        metaDescription: e.target.value,
+                                    })
+                                }
+                                placeholder={t(
+                                    "SEO uchun tavsif",
+                                    "Описание для SEO"
+                                )}
                                 rows={3}
                             />
                         </div>
@@ -695,23 +1026,42 @@ export function ProductForm({ productId }: ProductFormProps) {
                             <div className="flex gap-2">
                                 <Input
                                     value={keywordInput}
-                                    onChange={(e) => setKeywordInput(e.target.value)}
+                                    onChange={(e) =>
+                                        setKeywordInput(e.target.value)
+                                    }
                                     onKeyPress={(e) => {
                                         if (e.key === "Enter") {
                                             e.preventDefault();
                                             if (keywordInput.trim()) {
-                                                setFormData({ ...formData, keywords: [...(formData.keywords || []), keywordInput.trim()] });
+                                                setFormData({
+                                                    ...formData,
+                                                    keywords: [
+                                                        ...(formData.keywords ||
+                                                            []),
+                                                        keywordInput.trim(),
+                                                    ],
+                                                });
                                                 setKeywordInput("");
                                             }
                                         }
                                     }}
-                                    placeholder={t("Keyword kiriting", "Введите ключевое слово")}
+                                    placeholder={t(
+                                        "Keyword kiriting",
+                                        "Введите ключевое слово"
+                                    )}
                                 />
                                 <Button
                                     type="button"
                                     onClick={() => {
                                         if (keywordInput.trim()) {
-                                            setFormData({ ...formData, keywords: [...(formData.keywords || []), keywordInput.trim()] });
+                                            setFormData({
+                                                ...formData,
+                                                keywords: [
+                                                    ...(formData.keywords ||
+                                                        []),
+                                                    keywordInput.trim(),
+                                                ],
+                                            });
                                             setKeywordInput("");
                                         }
                                     }}
@@ -719,22 +1069,42 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     {t("Qo'shish", "Добавить")}
                                 </Button>
                             </div>
-                            {formData.keywords && formData.keywords.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                    {formData.keywords.map((keyword, index) => (
-                                        <Badge key={index} variant="secondary" className="gap-1">
-                                            {keyword}
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, keywords: formData.keywords?.filter((_, i) => i !== index) || [] })}
-                                                className="ml-1 hover:text-destructive"
-                                            >
-                                                <X className="h-3 w-3" />
-                                            </button>
-                                        </Badge>
-                                    ))}
-                                </div>
-                            )}
+                            {formData.keywords &&
+                                formData.keywords.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {formData.keywords.map(
+                                            (keyword, index) => (
+                                                <Badge
+                                                    key={index}
+                                                    variant="secondary"
+                                                    className="gap-1"
+                                                >
+                                                    {keyword}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setFormData({
+                                                                ...formData,
+                                                                keywords:
+                                                                    formData.keywords?.filter(
+                                                                        (
+                                                                            _,
+                                                                            i
+                                                                        ) =>
+                                                                            i !==
+                                                                            index
+                                                                    ) || [],
+                                                            })
+                                                        }
+                                                        className="ml-1 hover:text-destructive"
+                                                    >
+                                                        <X className="h-3 w-3" />
+                                                    </button>
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                )}
                         </div>
                     </CardContent>
                 </Card>
@@ -746,27 +1116,48 @@ export function ProductForm({ productId }: ProductFormProps) {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="isActive">{t("Faol", "Активный")}</Label>
+                            <Label htmlFor="isActive">
+                                {t("Faol", "Активный")}
+                            </Label>
                             <Switch
                                 id="isActive"
                                 checked={formData.isActive}
-                                onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
+                                onCheckedChange={(checked) =>
+                                    setFormData({
+                                        ...formData,
+                                        isActive: checked,
+                                    })
+                                }
                             />
                         </div>
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="isFeatured">{t("Featured (Tavsiya etilgan)", "Featured (Рекомендуем)")}</Label>
+                            <Label htmlFor="isFeatured">
+                                {t(
+                                    "Featured (Tavsiya etilgan)",
+                                    "Featured (Рекомендуем)"
+                                )}
+                            </Label>
                             <Switch
                                 id="isFeatured"
                                 checked={formData.isFeatured}
-                                onCheckedChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
+                                onCheckedChange={(checked) =>
+                                    setFormData({
+                                        ...formData,
+                                        isFeatured: checked,
+                                    })
+                                }
                             />
                         </div>
                         <div className="flex items-center justify-between">
-                            <Label htmlFor="isNew">{t("Yangi mahsulot", "Новинка")}</Label>
+                            <Label htmlFor="isNew">
+                                {t("Yangi mahsulot", "Новинка")}
+                            </Label>
                             <Switch
                                 id="isNew"
                                 checked={formData.isNew}
-                                onCheckedChange={(checked) => setFormData({ ...formData, isNew: checked })}
+                                onCheckedChange={(checked) =>
+                                    setFormData({ ...formData, isNew: checked })
+                                }
                             />
                         </div>
                     </CardContent>
@@ -775,16 +1166,25 @@ export function ProductForm({ productId }: ProductFormProps) {
                 {/* Additional Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t("Qo'shimcha", "Дополнительно")}</CardTitle>
+                        <CardTitle>
+                            {t("Qo'shimcha", "Дополнительно")}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="order">{t("Tartib raqami", "Порядковый номер")}</Label>
+                            <Label htmlFor="order">
+                                {t("Tartib raqami", "Порядковый номер")}
+                            </Label>
                             <Input
                                 id="order"
                                 type="number"
                                 value={formData.order}
-                                onChange={(e) => setFormData({ ...formData, order: Number(e.target.value) })}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        order: Number(e.target.value),
+                                    })
+                                }
                                 min="0"
                                 placeholder="0"
                             />
@@ -802,7 +1202,9 @@ export function ProductForm({ productId }: ProductFormProps) {
                         {t("Bekor qilish", "Отмена")}
                     </Button>
                     <Button type="submit" disabled={submitting}>
-                        {submitting ? t("Saqlanmoqda...", "Сохранение...") : t("Saqlash", "Сохранить")}
+                        {submitting
+                            ? t("Saqlanmoqda...", "Сохранение...")
+                            : t("Saqlash", "Сохранить")}
                     </Button>
                 </div>
             </form>
@@ -827,7 +1229,9 @@ export function ProductForm({ productId }: ProductFormProps) {
                 onSelect={(keys) => {
                     setFormData({ ...formData, galleryImages: keys });
                     // Generate URLs for display
-                    Promise.all(keys.map(key => getImageUrl(key))).then(setGalleryImageUrls);
+                    Promise.all(keys.map((key) => getImageUrl(key))).then(
+                        setGalleryImageUrls
+                    );
                 }}
                 mode="multiple"
                 selectedUrls={formData.galleryImages || []}

@@ -127,7 +127,7 @@ export function CategoryTable() {
             <CrudModal
                 open={dialogOpen}
                 onOpenChange={setDialogOpen}
-                titleUz={
+                titleEn={
                     editingCategory
                         ? "Kategoriyani tahrirlash"
                         : "Yangi kategoriya"
@@ -137,7 +137,7 @@ export function CategoryTable() {
                         ? "Редактировать категорию"
                         : "Новая категория"
                 }
-                descriptionUz="Kategoriya ma'lumotlarini kiriting"
+                descriptionEn="Kategoriya ma'lumotlarini kiriting"
                 descriptionRu="Введите данные категории"
             >
                 <CategoryForm
@@ -209,7 +209,7 @@ export function CategoryTable() {
                                     {parent.image ? (
                                         <S3Image
                                             src={parent.image}
-                                            alt={parent.nameUz}
+                                            alt={parent.nameEn}
                                             fill
                                             className="object-cover"
                                         />
@@ -222,7 +222,7 @@ export function CategoryTable() {
 
                                 <div className="flex-1">
                                     <h3 className="font-semibold">
-                                        {parent.nameUz}
+                                        {parent.nameEn}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
                                         {parent.nameRu}
@@ -316,7 +316,7 @@ export function CategoryTable() {
                                                 {sub.image ? (
                                                     <S3Image
                                                         src={sub.image}
-                                                        alt={sub.nameUz}
+                                                        alt={sub.nameEn}
                                                         fill
                                                         className="object-cover"
                                                     />
@@ -329,7 +329,7 @@ export function CategoryTable() {
 
                                             <div className="flex-1">
                                                 <h4 className="font-medium text-sm">
-                                                    {sub.nameUz}
+                                                    {sub.nameEn}
                                                 </h4>
                                                 <p className="text-xs text-muted-foreground">
                                                     {sub.nameRu}

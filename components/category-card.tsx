@@ -12,7 +12,7 @@ interface CategoryCardProps {
 
 export function CategoryCard({ category }: CategoryCardProps) {
     const { language } = useLanguage();
-    const name = language === "en" ? category.nameUz : category.nameRu;
+    const name = language === "en" ? category.nameEn : category.nameRu;
 
     // If this is a subcategory (has parentId), go to catalog with filter
     // Otherwise, go to category page

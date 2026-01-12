@@ -12,7 +12,7 @@ interface BrandCardProps {
 
 export function BrandCard({ brand }: BrandCardProps) {
     const { language } = useLanguage();
-    const name = language === "en" ? brand.nameUz : brand.nameRu;
+    const name = language === "en" ? brand.nameEn : brand.nameRu;
 
     return (
         <Link

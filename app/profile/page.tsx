@@ -86,7 +86,7 @@ function ProfileContent() {
             setOrders(data);
         } catch (error) {
             console.error("Failed to load orders:", error);
-            toast.error(t("Buyurtmalarni yuklashda xatolik", "Ошибка загрузки заказов"));
+            toast.error(t("Error loading orders", "Ошибка загрузки заказов"));
         } finally {
             setOrdersLoading(false);
         }
@@ -100,7 +100,7 @@ function ProfileContent() {
         if (!user) return;
         
         if (!formData.firstName.trim() || !formData.lastName.trim()) {
-            toast.error(t("Ism va familiyani to'ldiring", "Заполните имя и фамилию"));
+            toast.error(t("Please fill in first and last name", "Заполните имя и фамилию"));
             return;
         }
 
@@ -113,10 +113,10 @@ function ProfileContent() {
             });
             // Refresh user data from server
             await refreshUser();
-            toast.success(t("Profil yangilandi", "Профиль обновлен"));
+            toast.success(t("Profile updated", "Профиль обновлен"));
         } catch (error) {
             console.error("Failed to update profile:", error);
-            toast.error(t("Profilni yangilashda xatolik", "Ошибка обновления профиля"));
+            toast.error(t("Error updating profile", "Ошибка обновления профиля"));
         } finally {
             setUpdateLoading(false);
         }
@@ -130,7 +130,7 @@ function ProfileContent() {
                 <main className="flex-1 flex items-center justify-center">
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                        <p className="mt-4 text-muted-foreground">{t("Yuklanmoqda...", "Загрузка...")}</p>
+                        <p className="mt-4 text-muted-foreground">{t("Loading...", "Загрузка...")}</p>
                     </div>
                 </main>
                 <Footer />
@@ -157,13 +157,13 @@ function ProfileContent() {
     const getStatusText = (status: string) => {
         switch (status) {
             case "delivered":
-                return t("Yetkazildi", "Доставлено");
+                return t("Delivered", "Доставлено");
             case "processing":
-                return t("Jarayonda", "В обработке");
+                return t("Processing", "В обработке");
             case "cancelled":
-                return t("Bekor qilindi", "Отменено");
+                return t("Cancelled", "Отменено");
             case "pending":
-                return t("Kutilmoqda", "Ожидание");
+                return t("Pending", "Ожидание");
             default:
                 return status;
         }
@@ -185,9 +185,8 @@ function ProfileContent() {
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <SEO
-                title={t("Profil", "Профиль")}
-                description={t(
-                    "Foydalanuvchi profili va buyurtmalar tarixi",
+                title={t("Profile", "Профиль")}
+                description={t("User profile and order history",
                     "Профиль пользователя и история заказов"
                 )}
                 canonical="/profile"
@@ -231,7 +230,7 @@ function ProfileContent() {
                                         onClick={() => setActiveTab("profile")}
                                     >
                                         <User className="h-5 w-5" />
-                                        {t("Profil", "Профиль")}
+                                        {t("Profile", "Профиль")}
                                     </Button>
                                     <Button
                                         variant={
@@ -243,7 +242,7 @@ function ProfileContent() {
                                         onClick={() => setActiveTab("orders")}
                                     >
                                         <ShoppingBag className="h-5 w-5" />
-                                        {t("Buyurtmalar", "Заказы")}
+                                        {t("Orders", "Заказы")}
                                     </Button>
                                     
                                     {user.role === "admin" && (
@@ -268,7 +267,7 @@ function ProfileContent() {
                                         onClick={handleLogout}
                                     >
                                         <LogOut className="h-5 w-5" />
-                                        {t("Chiqish", "Выйти")}
+                                        {t("Logout", "Выйти")}
                                     </Button>
                                 </nav>
                             </CardContent>
@@ -281,8 +280,7 @@ function ProfileContent() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="text-2xl">
-                                        {t(
-                                            "Shaxsiy ma'lumotlar",
+                                        {t("Personal Information",
                                             "Личная информация"
                                         )}
                                     </CardTitle>
@@ -290,14 +288,14 @@ function ProfileContent() {
                                 <CardContent className="space-y-6">
                                     <div className="space-y-2">
                                         <Label htmlFor="name">
-                                            {t("Ism va Familiya", "Имя и Фамилия")}
+                                            {t("First and Last Name", "Имя и Фамилия")}
                                         </Label>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="relative">
                                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                                 <Input
                                                     id="firstName"
-                                                    placeholder={t("Ism", "Имя")}
+                                                    placeholder={t("First Name", "Имя")}
                                                     value={formData.firstName}
                                                     onChange={(e) => setFormData({...formData, firstName: e.target.value})}
                                                     className="pl-10 h-12"
@@ -307,7 +305,7 @@ function ProfileContent() {
                                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                                 <Input
                                                     id="lastName"
-                                                    placeholder={t("Familiya", "Фамилия")}
+                                                    placeholder={t("Last Name", "Фамилия")}
                                                     value={formData.lastName}
                                                     onChange={(e) => setFormData({...formData, lastName: e.target.value})}
                                                     className="pl-10 h-12"
@@ -318,7 +316,7 @@ function ProfileContent() {
 
                                     <div className="space-y-2">
                                         <Label htmlFor="phone">
-                                            {t("Telefon", "Телефон")}
+                                            {t("Phone", "Телефон")}
                                         </Label>
                                         <div className="relative">
                                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -361,8 +359,7 @@ function ProfileContent() {
                                         ) : (
                                             <>
                                                 <Edit className="h-5 w-5" />
-                                                {t(
-                                                    "O'zgarishlarni saqlash",
+                                                {t("Save Changes",
                                                     "Сохранить изменения"
                                                 )}
                                             </>
@@ -376,14 +373,14 @@ function ProfileContent() {
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="text-2xl">
-                                        {t("Buyurtmalar tarixi", "История заказов")}
+                                        {t("Order History", "История заказов")}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     {ordersLoading ? (
                                         <div className="text-center py-12">
                                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                                            <p className="text-muted-foreground">{t("Yuklanmoqda...", "Загрузка...")}</p>
+                                            <p className="text-muted-foreground">{t("Loading...", "Загрузка...")}</p>
                                         </div>
                                     ) : orders.length === 0 ? (
                                         <div className="text-center py-12">
@@ -443,8 +440,7 @@ function ProfileContent() {
                                                                     size="sm"
                                                                     onClick={() => router.push(`/orders/${order.id}`)}
                                                                 >
-                                                                    {t(
-                                                                        "Batafsil",
+                                                                    {t("Details",
                                                                         "Подробнее"
                                                                     )}
                                                                 </Button>

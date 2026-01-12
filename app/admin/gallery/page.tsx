@@ -18,10 +18,8 @@ import {
     ChevronRight,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
-import { listObjectsFromS3, type S3ObjectInfo } from "@/lib/s3/list";
-import { uploadToObjectStorage } from "@/lib/s3/upload";
-import { deleteFromObjectStorage } from "@/lib/s3/delete";
-import { getPresignedUrl } from "@/lib/s3/get-url";
+import { uploadFile, deleteFile } from "@/lib/s3/client-upload";
+import { getToken } from "@/lib/api/auth";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -39,18 +37,15 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-const BUCKET_NAME = process.env.NEXT_PUBLIC_S3_BUCKET || "elektromart";
-const S3_BASE_URL = process.env.NEXT_PUBLIC_S3_URL || "";
+type S3ObjectInfo = {
+    key: string;
+    size: number;
+    lastModified: string;
+    type: "image" | "video" | "other";
+    url?: string;
+};
 
-console.log("S3 Config:", {
-    BUCKET_NAME,
-    S3_BASE_URL,
-    S3_REGION: process.env.NEXT_PUBLIC_S3_REGION,
-    HAS_ACCESS_KEY: !!process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID,
-    HAS_SECRET_KEY: !!process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY,
-});
-
-type ImageWithUrl = S3ObjectInfo & { url?: string };
+type ImageWithUrl = S3ObjectInfo;
 
 export default function AdminGalleryPage() {
     const { t } = useLanguage();
@@ -63,8 +58,10 @@ export default function AdminGalleryPage() {
     const [uploading, setUploading] = useState(false);
     const [itemsPerPage, setItemsPerPage] = useState(20);
     const [currentPage, setCurrentPage] = useState(1);
-    const [viewImageModal, setViewImageModal] = useState<ImageWithUrl | null>(null);
-    
+    const [viewImageModal, setViewImageModal] = useState<ImageWithUrl | null>(
+        null
+    );
+
     // Delete modal
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deletingKeys, setDeletingKeys] = useState<string[]>([]);
@@ -73,31 +70,37 @@ export default function AdminGalleryPage() {
     const loadImages = useCallback(async () => {
         try {
             setLoading(true);
-            console.log("Loading images from bucket:", BUCKET_NAME);
-            const result = await listObjectsFromS3(BUCKET_NAME, "", undefined, 100);
-            console.log("List result:", result);
-            console.log("All objects:", result.objects);
-            const imageObjects = result.objects.filter(obj => obj.type === "image");
-            console.log("Filtered images:", imageObjects);
-            
-            // Generate presigned URLs for each image
-            const imagesWithUrls = await Promise.all(
-                imageObjects.map(async (img) => {
-                    try {
-                        const url = await getPresignedUrl(BUCKET_NAME, img.key, 3600);
-                        return { ...img, url };
-                    } catch (error) {
-                        console.error("Failed to generate URL for:", img.key, error);
-                        return img;
-                    }
-                })
+            const token = getToken();
+            if (!token) {
+                toast.error(
+                    t("Avtorizatsiya talab qilinadi", "Требуется авторизация")
+                );
+                return;
+            }
+
+            const response = await fetch("/api/s3/list?maxKeys=100", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to load images");
+            }
+
+            const result = await response.json();
+            const imageObjects = result.objects.filter(
+                (obj: S3ObjectInfo) => obj.type === "image"
             );
-            
-            setImages(imagesWithUrls);
+            setImages(imageObjects);
         } catch (error) {
             console.error("Failed to load images:", error);
-            console.error("Error details:", JSON.stringify(error, null, 2));
-            toast.error(t("Rasmlarni yuklashda xatolik", "Ошибка при загрузке изображений"));
+            toast.error(
+                t(
+                    "Rasmlarni yuklashda xatolik",
+                    "Ошибка при загрузке изображений"
+                )
+            );
         } finally {
             setLoading(false);
         }
@@ -109,11 +112,11 @@ export default function AdminGalleryPage() {
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        setUploadFiles(prev => [...prev, ...files]);
+        setUploadFiles((prev) => [...prev, ...files]);
     };
 
     const removeUploadFile = (index: number) => {
-        setUploadFiles(prev => prev.filter((_, i) => i !== index));
+        setUploadFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
     const handleUpload = async () => {
@@ -121,24 +124,20 @@ export default function AdminGalleryPage() {
 
         try {
             setUploading(true);
-            
+
             for (const file of uploadFiles) {
-                const arrayBuffer = await file.arrayBuffer();
-                const uint8Array = new Uint8Array(arrayBuffer);
-                const key = `images/${Date.now()}-${file.name}`;
-                
-                await uploadToObjectStorage(
-                    BUCKET_NAME,
-                    key,
-                    uint8Array,
-                    file.type
-                );
+                const result = await uploadFile(file, "images");
+                if (!result.success) {
+                    throw new Error(result.error || "Upload failed");
+                }
             }
 
-            toast.success(t(
-                `${uploadFiles.length} ta rasm yuklandi`,
-                `Загружено ${uploadFiles.length} изображений`
-            ));
+            toast.success(
+                t(
+                    `${uploadFiles.length} ta rasm yuklandi`,
+                    `Загружено ${uploadFiles.length} изображений`
+                )
+            );
             setUploadFiles([]);
             setUploadModalOpen(false);
             loadImages();
@@ -158,17 +157,22 @@ export default function AdminGalleryPage() {
 
     const handleDeleteConfirm = async () => {
         if (deletingKeys.length === 0) return;
-        
+
         setDeleteLoading(true);
         try {
             for (const key of deletingKeys) {
-                await deleteFromObjectStorage(BUCKET_NAME, key);
+                const success = await deleteFile(key);
+                if (!success) {
+                    throw new Error(`Failed to delete ${key}`);
+                }
             }
 
-            toast.success(t(
-                `${deletingKeys.length} ta rasm o'chirildi`,
-                `Удалено ${deletingKeys.length} изображений`
-            ));
+            toast.success(
+                t(
+                    `${deletingKeys.length} ta rasm o'chirildi`,
+                    `Удалено ${deletingKeys.length} изображений`
+                )
+            );
             setSelectedImages([]);
             setDeleteDialogOpen(false);
             setDeletingKeys([]);
@@ -182,30 +186,30 @@ export default function AdminGalleryPage() {
     };
 
     const toggleImageSelection = (key: string) => {
-        setSelectedImages(prev =>
-            prev.includes(key)
-                ? prev.filter(k => k !== key)
-                : [...prev, key]
+        setSelectedImages((prev) =>
+            prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
         );
     };
 
     const toggleSelectAll = () => {
-        if (selectedImages.length === paginatedImages.length && paginatedImages.length > 0) {
+        if (
+            selectedImages.length === paginatedImages.length &&
+            paginatedImages.length > 0
+        ) {
             setSelectedImages([]);
         } else {
-            setSelectedImages(paginatedImages.map(img => img.key));
+            setSelectedImages(paginatedImages.map((img) => img.key));
         }
     };
 
     const getImageUrl = (image: ImageWithUrl) => {
-        // Use presigned URL if available, otherwise fallback to public URL
+        // Use presigned URL if available
         if (image.url) {
             return image.url;
         }
-        
-        // Fallback to public URL format
-        const baseUrl = S3_BASE_URL.replace(/\/$/, '');
-        return `${baseUrl}/${BUCKET_NAME}/${image.key}`;
+
+        // Fallback - this shouldn't happen as API returns URLs
+        return "";
     };
 
     const formatFileSize = (bytes: number) => {
@@ -213,10 +217,12 @@ export default function AdminGalleryPage() {
         const k = 1024;
         const sizes = ["B", "KB", "MB", "GB"];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+        return (
+            Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i]
+        );
     };
 
-    const filteredImages = images.filter(img =>
+    const filteredImages = images.filter((img) =>
         img.key.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -246,7 +252,8 @@ export default function AdminGalleryPage() {
                                 "Управление всеми изображениями"
                             )}
                             {" • "}
-                            {filteredImages.length} {t("ta rasm", "изображений")}
+                            {filteredImages.length}{" "}
+                            {t("ta rasm", "изображений")}
                         </p>
                     </div>
                     <div className="flex gap-2">
@@ -254,7 +261,9 @@ export default function AdminGalleryPage() {
                             <Button
                                 variant="destructive"
                                 className="gap-2 h-11"
-                                onClick={() => handleDeleteClick(selectedImages)}
+                                onClick={() =>
+                                    handleDeleteClick(selectedImages)
+                                }
                             >
                                 <Trash2 className="h-5 w-5" />
                                 {t(
@@ -279,7 +288,11 @@ export default function AdminGalleryPage() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                             <div className="flex items-center gap-2">
                                 <Checkbox
-                                    checked={selectedImages.length === paginatedImages.length && paginatedImages.length > 0}
+                                    checked={
+                                        selectedImages.length ===
+                                            paginatedImages.length &&
+                                        paginatedImages.length > 0
+                                    }
                                     onCheckedChange={toggleSelectAll}
                                 />
                                 <span className="text-sm text-muted-foreground whitespace-nowrap">
@@ -294,7 +307,9 @@ export default function AdminGalleryPage() {
                                         "Поиск изображения..."
                                     )}
                                     value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onChange={(e) =>
+                                        setSearchQuery(e.target.value)
+                                    }
                                     className="pl-10 h-10"
                                 />
                             </div>
@@ -304,7 +319,9 @@ export default function AdminGalleryPage() {
                                 </span>
                                 <Select
                                     value={itemsPerPage.toString()}
-                                    onValueChange={(value) => setItemsPerPage(parseInt(value))}
+                                    onValueChange={(value) =>
+                                        setItemsPerPage(parseInt(value))
+                                    }
                                 >
                                     <SelectTrigger className="w-[80px] h-10">
                                         <SelectValue />
@@ -342,9 +359,12 @@ export default function AdminGalleryPage() {
                 {!loading && (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                         {paginatedImages.map((image) => {
-                            const isSelected = selectedImages.includes(image.key);
-                            const fileName = image.key.split("/").pop() || image.key;
-                            
+                            const isSelected = selectedImages.includes(
+                                image.key
+                            );
+                            const fileName =
+                                image.key.split("/").pop() || image.key;
+
                             return (
                                 <Card
                                     key={image.key}
@@ -359,15 +379,25 @@ export default function AdminGalleryPage() {
                                                 alt={fileName}
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => {
-                                                    console.error("Image load error for:", image.key);
-                                                    e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EError%3C/text%3E%3C/svg%3E";
+                                                    console.error(
+                                                        "Image load error for:",
+                                                        image.key
+                                                    );
+                                                    e.currentTarget.src =
+                                                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EError%3C/text%3E%3C/svg%3E";
                                                 }}
                                             />
                                             <div className="absolute top-2 left-2 z-10">
                                                 <Checkbox
                                                     checked={isSelected}
-                                                    onCheckedChange={() => toggleImageSelection(image.key)}
-                                                    onClick={(e) => e.stopPropagation()}
+                                                    onCheckedChange={() =>
+                                                        toggleImageSelection(
+                                                            image.key
+                                                        )
+                                                    }
+                                                    onClick={(e) =>
+                                                        e.stopPropagation()
+                                                    }
                                                     className="bg-white shadow-md"
                                                 />
                                             </div>
@@ -378,7 +408,9 @@ export default function AdminGalleryPage() {
                                                     className="h-9 w-9 bg-white hover:bg-white/90"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        setViewImageModal(image);
+                                                        setViewImageModal(
+                                                            image
+                                                        );
                                                     }}
                                                 >
                                                     <Eye className="h-4 w-4" />
@@ -389,7 +421,9 @@ export default function AdminGalleryPage() {
                                                     className="h-9 w-9"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDeleteClick([image.key]);
+                                                        handleDeleteClick([
+                                                            image.key,
+                                                        ]);
                                                     }}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
@@ -397,7 +431,10 @@ export default function AdminGalleryPage() {
                                             </div>
                                         </div>
                                         <div className="py-0 px-2 pb-2">
-                                            <p className="font-medium text-xs truncate mb-0.5 mt-2" title={fileName}>
+                                            <p
+                                                className="font-medium text-xs truncate mb-0.5 mt-2"
+                                                title={fileName}
+                                            >
                                                 {fileName}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
@@ -418,7 +455,10 @@ export default function AdminGalleryPage() {
                             <div className="flex flex-col items-center justify-center text-center">
                                 <ImageIcon className="h-16 w-16 text-muted-foreground mb-4" />
                                 <h3 className="text-xl font-bold mb-2">
-                                    {t("Rasmlar topilmadi", "Изображения не найдены")}
+                                    {t(
+                                        "Rasmlar topilmadi",
+                                        "Изображения не найдены"
+                                    )}
                                 </h3>
                                 <p className="text-muted-foreground mb-4">
                                     {t(
@@ -438,48 +478,81 @@ export default function AdminGalleryPage() {
                             <div className="flex items-center justify-between">
                                 <p className="text-sm text-muted-foreground">
                                     {t(
-                                        `${startIndex + 1}-${Math.min(endIndex, filteredImages.length)} / ${filteredImages.length} ta rasm`,
-                                        `${startIndex + 1}-${Math.min(endIndex, filteredImages.length)} из ${filteredImages.length} изображений`
+                                        `${startIndex + 1}-${Math.min(
+                                            endIndex,
+                                            filteredImages.length
+                                        )} / ${filteredImages.length} ta rasm`,
+                                        `${startIndex + 1}-${Math.min(
+                                            endIndex,
+                                            filteredImages.length
+                                        )} из ${
+                                            filteredImages.length
+                                        } изображений`
                                     )}
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        onClick={() =>
+                                            setCurrentPage((prev) =>
+                                                Math.max(1, prev - 1)
+                                            )
+                                        }
                                         disabled={currentPage === 1}
                                     >
                                         <ChevronLeft className="h-4 w-4" />
                                     </Button>
                                     <div className="flex items-center gap-1">
-                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                            let pageNum;
-                                            if (totalPages <= 5) {
-                                                pageNum = i + 1;
-                                            } else if (currentPage <= 3) {
-                                                pageNum = i + 1;
-                                            } else if (currentPage >= totalPages - 2) {
-                                                pageNum = totalPages - 4 + i;
-                                            } else {
-                                                pageNum = currentPage - 2 + i;
+                                        {Array.from(
+                                            { length: Math.min(5, totalPages) },
+                                            (_, i) => {
+                                                let pageNum;
+                                                if (totalPages <= 5) {
+                                                    pageNum = i + 1;
+                                                } else if (currentPage <= 3) {
+                                                    pageNum = i + 1;
+                                                } else if (
+                                                    currentPage >=
+                                                    totalPages - 2
+                                                ) {
+                                                    pageNum =
+                                                        totalPages - 4 + i;
+                                                } else {
+                                                    pageNum =
+                                                        currentPage - 2 + i;
+                                                }
+                                                return (
+                                                    <Button
+                                                        key={pageNum}
+                                                        variant={
+                                                            currentPage ===
+                                                            pageNum
+                                                                ? "default"
+                                                                : "outline"
+                                                        }
+                                                        size="icon"
+                                                        className="h-9 w-9"
+                                                        onClick={() =>
+                                                            setCurrentPage(
+                                                                pageNum
+                                                            )
+                                                        }
+                                                    >
+                                                        {pageNum}
+                                                    </Button>
+                                                );
                                             }
-                                            return (
-                                                <Button
-                                                    key={pageNum}
-                                                    variant={currentPage === pageNum ? "default" : "outline"}
-                                                    size="icon"
-                                                    className="h-9 w-9"
-                                                    onClick={() => setCurrentPage(pageNum)}
-                                                >
-                                                    {pageNum}
-                                                </Button>
-                                            );
-                                        })}
+                                        )}
                                     </div>
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        onClick={() =>
+                                            setCurrentPage((prev) =>
+                                                Math.min(totalPages, prev + 1)
+                                            )
+                                        }
                                         disabled={currentPage === totalPages}
                                     >
                                         <ChevronRight className="h-4 w-4" />
@@ -491,11 +564,17 @@ export default function AdminGalleryPage() {
                 )}
 
                 {/* Upload Modal */}
-                <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
+                <Dialog
+                    open={uploadModalOpen}
+                    onOpenChange={setUploadModalOpen}
+                >
                     <DialogContent className="max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>
-                                {t("Rasmlarni yuklash", "Загрузить изображения")}
+                                {t(
+                                    "Rasmlarni yuklash",
+                                    "Загрузить изображения"
+                                )}
                             </DialogTitle>
                             <DialogDescription>
                                 {t(
@@ -540,7 +619,11 @@ export default function AdminGalleryPage() {
                             {uploadFiles.length > 0 && (
                                 <div className="space-y-2">
                                     <p className="text-sm font-medium">
-                                        {t("Tanlangan fayllar", "Выбранные файлы")} ({uploadFiles.length})
+                                        {t(
+                                            "Tanlangan fayllar",
+                                            "Выбранные файлы"
+                                        )}{" "}
+                                        ({uploadFiles.length})
                                     </p>
                                     <div className="max-h-60 overflow-y-auto space-y-2">
                                         {uploadFiles.map((file, index) => (
@@ -555,7 +638,9 @@ export default function AdminGalleryPage() {
                                                             {file.name}
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
-                                                            {formatFileSize(file.size)}
+                                                            {formatFileSize(
+                                                                file.size
+                                                            )}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -563,7 +648,9 @@ export default function AdminGalleryPage() {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 shrink-0"
-                                                    onClick={() => removeUploadFile(index)}
+                                                    onClick={() =>
+                                                        removeUploadFile(index)
+                                                    }
                                                 >
                                                     <X className="h-4 w-4" />
                                                 </Button>
@@ -587,7 +674,9 @@ export default function AdminGalleryPage() {
                                 </Button>
                                 <Button
                                     onClick={handleUpload}
-                                    disabled={uploadFiles.length === 0 || uploading}
+                                    disabled={
+                                        uploadFiles.length === 0 || uploading
+                                    }
                                     className="gap-2"
                                 >
                                     {uploading ? (
@@ -608,14 +697,18 @@ export default function AdminGalleryPage() {
                 </Dialog>
 
                 {/* View Image Modal */}
-                <Dialog open={!!viewImageModal} onOpenChange={() => setViewImageModal(null)}>
+                <Dialog
+                    open={!!viewImageModal}
+                    onOpenChange={() => setViewImageModal(null)}
+                >
                     <DialogContent className="max-w-4xl">
                         <DialogHeader>
                             <DialogTitle>
                                 {viewImageModal?.key.split("/").pop() || ""}
                             </DialogTitle>
                             <DialogDescription>
-                                {viewImageModal && formatFileSize(viewImageModal.size)}
+                                {viewImageModal &&
+                                    formatFileSize(viewImageModal.size)}
                             </DialogDescription>
                         </DialogHeader>
                         {viewImageModal && (
@@ -649,12 +742,20 @@ export default function AdminGalleryPage() {
                         </div>
                     </DialogContent>
                 </Dialog>
-                
+
                 {/* Delete Confirmation Dialog */}
-                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <Dialog
+                    open={deleteDialogOpen}
+                    onOpenChange={setDeleteDialogOpen}
+                >
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>{t("Rasmlarni o'chirish", "Удалить изображения")}</DialogTitle>
+                            <DialogTitle>
+                                {t(
+                                    "Rasmlarni o'chirish",
+                                    "Удалить изображения"
+                                )}
+                            </DialogTitle>
                             <DialogDescription>
                                 {t(
                                     `Haqiqatan ham ${deletingKeys.length} ta rasmni o'chirmoqchimisiz? Bu amalni bekor qilib bo'lmaydi.`,
@@ -675,7 +776,9 @@ export default function AdminGalleryPage() {
                                 onClick={handleDeleteConfirm}
                                 disabled={deleteLoading}
                             >
-                                {deleteLoading ? t("O'chirilmoqda...", "Удаление...") : t("O'chirish", "Удалить")}
+                                {deleteLoading
+                                    ? t("O'chirilmoqda...", "Удаление...")
+                                    : t("O'chirish", "Удалить")}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

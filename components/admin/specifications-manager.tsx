@@ -8,9 +8,9 @@ import { Plus, Trash2, GripVertical } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
 export interface SpecificationItem {
-    labelUz: string;
+    labelEn: string;
     labelRu: string;
-    valueUz: string;
+    valueEn: string;
     valueRu: string;
     order?: number;
 }
@@ -32,9 +32,9 @@ export function SpecificationsManager({
         onChange([
             ...specifications,
             {
-                labelUz: "",
+                labelEn: "",
                 labelRu: "",
-                valueUz: "",
+                valueEn: "",
                 valueRu: "",
                 order: specifications.length,
             },
@@ -68,8 +68,11 @@ export function SpecificationsManager({
 
         const updated = [...specifications];
         const targetIndex = direction === "up" ? index - 1 : index + 1;
-        [updated[index], updated[targetIndex]] = [updated[targetIndex], updated[index]];
-        
+        [updated[index], updated[targetIndex]] = [
+            updated[targetIndex],
+            updated[index],
+        ];
+
         // Update order
         const reordered = updated.map((spec, i) => ({ ...spec, order: i }));
         onChange(reordered);
@@ -120,8 +123,15 @@ export function SpecificationsManager({
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-6 w-6"
-                                                    onClick={() => moveSpecification(index, "up")}
-                                                    disabled={disabled || index === 0}
+                                                    onClick={() =>
+                                                        moveSpecification(
+                                                            index,
+                                                            "up"
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        disabled || index === 0
+                                                    }
                                                 >
                                                     <GripVertical className="h-4 w-4 rotate-180" />
                                                 </Button>
@@ -130,8 +140,18 @@ export function SpecificationsManager({
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-6 w-6"
-                                                    onClick={() => moveSpecification(index, "down")}
-                                                    disabled={disabled || index === specifications.length - 1}
+                                                    onClick={() =>
+                                                        moveSpecification(
+                                                            index,
+                                                            "down"
+                                                        )
+                                                    }
+                                                    disabled={
+                                                        disabled ||
+                                                        index ===
+                                                            specifications.length -
+                                                                1
+                                                    }
                                                 >
                                                     <GripVertical className="h-4 w-4" />
                                                 </Button>
@@ -145,7 +165,9 @@ export function SpecificationsManager({
                                             variant="ghost"
                                             size="icon"
                                             className="text-red-500 hover:text-red-600"
-                                            onClick={() => removeSpecification(index)}
+                                            onClick={() =>
+                                                removeSpecification(index)
+                                            }
                                             disabled={disabled}
                                         >
                                             <Trash2 className="h-4 w-4" />
@@ -156,28 +178,48 @@ export function SpecificationsManager({
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <Label className="text-xs">
-                                                {t("Xususiyat nomi (O'zbek)", "Название характеристики (Узбек)")}
+                                                {t(
+                                                    "Label (English)",
+                                                    "Название (Английский)"
+                                                )}
                                             </Label>
                                             <Input
-                                                value={spec.labelUz}
+                                                value={spec.labelEn}
                                                 onChange={(e) =>
-                                                    updateSpecification(index, "labelUz", e.target.value)
+                                                    updateSpecification(
+                                                        index,
+                                                        "labelEn",
+                                                        e.target.value
+                                                    )
                                                 }
-                                                placeholder={t("Masalan: Ekran", "Например: Экран")}
+                                                placeholder={t(
+                                                    "Masalan: Ekran",
+                                                    "Например: Экран"
+                                                )}
                                                 disabled={disabled}
                                                 className="mt-1"
                                             />
                                         </div>
                                         <div>
                                             <Label className="text-xs">
-                                                {t("Xususiyat nomi (Rus)", "Название характеристики (Русский)")}
+                                                {t(
+                                                    "Label (Russian)",
+                                                    "Название (Русский)"
+                                                )}
                                             </Label>
                                             <Input
                                                 value={spec.labelRu}
                                                 onChange={(e) =>
-                                                    updateSpecification(index, "labelRu", e.target.value)
+                                                    updateSpecification(
+                                                        index,
+                                                        "labelRu",
+                                                        e.target.value
+                                                    )
                                                 }
-                                                placeholder={t("Masalan: Экран", "Например: Экран")}
+                                                placeholder={t(
+                                                    "Masalan: Экран",
+                                                    "Например: Экран"
+                                                )}
                                                 disabled={disabled}
                                                 className="mt-1"
                                             />
@@ -188,28 +230,48 @@ export function SpecificationsManager({
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <Label className="text-xs">
-                                                {t("Qiymat (O'zbek)", "Значение (Узбек)")}
+                                                {t(
+                                                    "Value (English)",
+                                                    "Значение (Английский)"
+                                                )}
                                             </Label>
                                             <Input
-                                                value={spec.valueUz}
+                                                value={spec.valueEn}
                                                 onChange={(e) =>
-                                                    updateSpecification(index, "valueUz", e.target.value)
+                                                    updateSpecification(
+                                                        index,
+                                                        "valueEn",
+                                                        e.target.value
+                                                    )
                                                 }
-                                                placeholder={t('Masalan: 6.8" AMOLED', 'Например: 6.8" AMOLED')}
+                                                placeholder={t(
+                                                    'Masalan: 6.8" AMOLED',
+                                                    'Например: 6.8" AMOLED'
+                                                )}
                                                 disabled={disabled}
                                                 className="mt-1"
                                             />
                                         </div>
                                         <div>
                                             <Label className="text-xs">
-                                                {t("Qiymat (Rus)", "Значение (Русский)")}
+                                                {t(
+                                                    "Value (Russian)",
+                                                    "Значение (Русский)"
+                                                )}
                                             </Label>
                                             <Input
                                                 value={spec.valueRu}
                                                 onChange={(e) =>
-                                                    updateSpecification(index, "valueRu", e.target.value)
+                                                    updateSpecification(
+                                                        index,
+                                                        "valueRu",
+                                                        e.target.value
+                                                    )
                                                 }
-                                                placeholder={t('Masalan: 6.8" AMOLED', 'Например: 6.8" AMOLED')}
+                                                placeholder={t(
+                                                    'Masalan: 6.8" AMOLED',
+                                                    'Например: 6.8" AMOLED'
+                                                )}
                                                 disabled={disabled}
                                                 className="mt-1"
                                             />

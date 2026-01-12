@@ -97,8 +97,12 @@ export function BrandsSlider({ brands: propBrands }: BrandsSliderProps) {
                                             {brand.image ? (
                                                 <S3Image
                                                     src={brand.image}
-                                                    alt={t(brand.nameUz, brand.nameRu)}
+                                                    alt={t(
+                                                        brand.nameEn,
+                                                        brand.nameRu
+                                                    )}
                                                     fill
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 33vw, 16vw"
                                                     className="object-cover group-hover:scale-110 transition-transform duration-300"
                                                 />
                                             ) : (
@@ -109,7 +113,7 @@ export function BrandsSlider({ brands: propBrands }: BrandsSliderProps) {
                                         </CardContent>
                                     </Card>
                                     <h3 className="font-bold text-sm md:text-base text-center mt-3 group-hover:text-primary transition-colors">
-                                        {t(brand.nameUz, brand.nameRu)}
+                                        {t(brand.nameEn, brand.nameRu)}
                                     </h3>
                                 </div>
                             </Link>

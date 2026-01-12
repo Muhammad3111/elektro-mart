@@ -40,7 +40,7 @@ export function CategoryForm({
     const [formData, setFormData] = useState<
         CreateCategoryDto | UpdateCategoryDto
     >({
-        nameUz: category?.nameUz || "",
+        nameEn: category?.nameEn || "",
         nameRu: category?.nameRu || "",
         parentId: category?.parentId || null,
         order: category?.order || 1,
@@ -108,7 +108,7 @@ export function CategoryForm({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.nameUz || !formData.nameRu) {
+        if (!formData.nameEn || !formData.nameRu) {
             toast.error(
                 t(
                     "Barcha majburiy maydonlarni to'ldiring",
@@ -170,12 +170,13 @@ export function CategoryForm({
             <div className="space-y-2">
                 <Label>{t("Rasm", "Изображение")}</Label>
                 <div className="flex items-center gap-4">
-                    {imagePreview ? (
+                    {imagePreview && imagePreview.startsWith("http") ? (
                         <div className="relative w-32 h-32 rounded-lg overflow-hidden border">
                             <Image
                                 src={imagePreview}
                                 alt="Preview"
                                 fill
+                                sizes="128px"
                                 className="object-cover"
                             />
                             <button
@@ -213,15 +214,15 @@ export function CategoryForm({
 
             {/* Name Uzbek */}
             <div className="space-y-2">
-                <Label htmlFor="nameUz">
-                    {t("Nomi (O'zbek)", "Название (Узбек)")}{" "}
+                <Label htmlFor="nameEn">
+                    {t("Name (English)", "Название (Английский)")}{" "}
                     <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                    id="nameUz"
-                    value={formData.nameUz}
+                    id="nameEn"
+                    value={formData.nameEn}
                     onChange={(e) =>
-                        setFormData({ ...formData, nameUz: e.target.value })
+                        setFormData({ ...formData, nameEn: e.target.value })
                     }
                     placeholder="Maishiy texnika"
                     required
@@ -231,7 +232,7 @@ export function CategoryForm({
             {/* Name Russian */}
             <div className="space-y-2">
                 <Label htmlFor="nameRu">
-                    {t("Nomi (Rus)", "Название (Русский)")}{" "}
+                    {t("Name (Russian)", "Название (Русский)")}{" "}
                     <span className="text-red-500">*</span>
                 </Label>
                 <Input

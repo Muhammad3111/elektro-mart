@@ -26,7 +26,7 @@ export default function FavoritesPage() {
                             <div className="flex items-center gap-3">
                                 <Heart className="h-8 w-8 text-red-500 fill-current" />
                                 <h1 className="text-3xl md:text-4xl font-black">
-                                    {t("Sevimlilar", "Избранное")}
+                                    {t("Favorites", "Избранное")}
                                 </h1>
                             </div>
                             {favorites.length > 0 && (
@@ -36,7 +36,7 @@ export default function FavoritesPage() {
                                     className="text-red-500 hover:text-red-600 hover:bg-red-50 w-full md:w-auto"
                                 >
                                     <Trash2 className="h-4 w-4 mr-2" />
-                                    {t("Hammasini o'chirish", "Очистить все")}
+                                    {t("Clear All", "Очистить все")}
                                 </Button>
                             )}
                         </div>
@@ -48,11 +48,11 @@ export default function FavoritesPage() {
                             <CardContent className="flex flex-col items-center justify-center py-16">
                                 <Heart className="h-20 w-20 text-muted-foreground mb-4" />
                                 <h2 className="text-2xl font-bold mb-2">
-                                    {t("Sevimlilar bo'sh", "Избранное пусто")}
+                                    {t("Favorites is empty", "Избранное пусто")}
                                 </h2>
                                 <p className="text-muted-foreground mb-6 text-center max-w-md">
                                     {t(
-                                        "Siz hali hech qanday mahsulotni sevimlilarga qo'shmagansiz. Mahsulotlarni ko'rib chiqing va yoqtirganlaringizni saqlang!",
+                                        "You haven't added any products to favorites yet. Browse products and save the ones you like!",
                                         "Вы еще не добавили товары в избранное. Просмотрите товары и сохраните понравившиеся!"
                                     )}
                                 </p>
@@ -60,7 +60,7 @@ export default function FavoritesPage() {
                                     <Button size="lg" className="gap-2">
                                         <ShoppingBag className="h-5 w-5" />
                                         {t(
-                                            "Katalogga o'tish",
+                                            "Go to Catalog",
                                             "Перейти в каталог"
                                         )}
                                     </Button>
@@ -72,7 +72,7 @@ export default function FavoritesPage() {
                             {/* Products Count */}
                             <p className="text-muted-foreground mb-6">
                                 {t(
-                                    `Jami ${favorites.length} ta mahsulot`,
+                                    `Total ${favorites.length} products`,
                                     `Всего ${favorites.length} товаров`
                                 )}
                             </p>
@@ -101,7 +101,7 @@ export default function FavoritesPage() {
                                     >
                                         <ShoppingBag className="h-5 w-5" />
                                         {t(
-                                            "Xaridni davom ettirish",
+                                            "Continue Shopping",
                                             "Продолжить покупки"
                                         )}
                                     </Button>

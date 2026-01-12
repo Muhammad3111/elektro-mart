@@ -13,9 +13,9 @@ import { useLanguage } from "@/contexts/language-context";
 interface CrudModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    titleUz: string;
+    titleEn: string;
     titleRu: string;
-    descriptionUz?: string;
+    descriptionEn?: string;
     descriptionRu?: string;
     children: ReactNode;
     maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl";
@@ -24,15 +24,15 @@ interface CrudModalProps {
 export function CrudModal({
     open,
     onOpenChange,
-    titleUz,
+    titleEn,
     titleRu,
-    descriptionUz,
+    descriptionEn,
     descriptionRu,
     children,
     maxWidth = "2xl",
 }: CrudModalProps) {
     const { t } = useLanguage();
-    
+
     const maxWidthClass = {
         sm: "max-w-sm",
         md: "max-w-md",
@@ -47,12 +47,12 @@ export function CrudModal({
                 className={`${maxWidthClass} max-h-[90vh] overflow-y-auto`}
             >
                 <DialogHeader>
-                    <DialogTitle>{t(titleUz, titleRu)}</DialogTitle>
-                    {descriptionUz && descriptionRu && (
-                        <DialogDescription>
-                            {t(descriptionUz, descriptionRu)}
-                        </DialogDescription>
-                    )}
+                    <DialogTitle>{t(titleEn, titleRu)}</DialogTitle>
+                    <DialogDescription>
+                        {descriptionEn && descriptionRu
+                            ? t(descriptionEn, descriptionRu)
+                            : t(titleEn, titleRu)}
+                    </DialogDescription>
                 </DialogHeader>
                 {children}
             </DialogContent>

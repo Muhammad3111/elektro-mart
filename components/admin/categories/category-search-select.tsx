@@ -38,7 +38,7 @@ export function CategorySearchSelect({
             </option>
             {parentCategories.map((category) => (
                 <option key={category.id} value={category.id}>
-                    {t(category.nameUz, category.nameRu)}
+                    {t(category.nameEn, category.nameRu)}
                 </option>
             ))}
         </select>

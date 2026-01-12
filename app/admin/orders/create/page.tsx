@@ -41,7 +41,7 @@ export default function CreateOrderPage() {
     const [productSearch, setProductSearch] = useState("");
     const [searchResults, setSearchResults] = useState<Array<{
         id: string;
-        nameUz?: string;
+        nameEn?: string;
         nameRu?: string;
         price: string;
     }>>([]);
@@ -73,7 +73,7 @@ export default function CreateOrderPage() {
 
     const handleAddProduct = (product: {
         id: string;
-        nameUz?: string;
+        nameEn?: string;
         nameRu?: string;
         price: string;
     }) => {
@@ -85,7 +85,7 @@ export default function CreateOrderPage() {
         } else {
             setProducts([...products, {
                 id: product.id,
-                name: product.nameUz || product.nameRu || '',
+                name: product.nameEn || product.nameRu || '',
                 price: product.price,
                 quantity: 1
             }]);
@@ -291,7 +291,7 @@ export default function CreateOrderPage() {
                                                             className="p-3 hover:bg-accent cursor-pointer rounded-md transition-colors"
                                                             onClick={() => handleAddProduct(product)}
                                                         >
-                                                            <p className="font-medium">{product.nameUz || product.nameRu}</p>
+                                                            <p className="font-medium">{product.nameEn || product.nameRu}</p>
                                                             <p className="text-sm text-muted-foreground">
                                                                 {formatPrice(product.price)} UZS
                                                             </p>

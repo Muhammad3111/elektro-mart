@@ -94,7 +94,7 @@ export function CatalogBannerTable() {
   };
 
   const filteredBanners = banners.filter((banner) =>
-    banner.titleUz.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    banner.titleEn.toLowerCase().includes(searchTerm.toLowerCase()) ||
     banner.titleRu.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -125,14 +125,14 @@ export function CatalogBannerTable() {
             <div className="flex items-center gap-4">
               <div className="relative w-24 h-24 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0">
                 {banner.coverImage ? (
-                  <S3Image src={banner.coverImage} alt={banner.titleUz} fill className="object-cover" />
+                  <S3Image src={banner.coverImage} alt={banner.titleEn} fill className="object-cover" />
                 ) : (
                   <ImageOff className="w-6 h-6 text-muted-foreground" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-lg">{t(banner.titleUz, banner.titleRu)}</div>
+                <div className="font-medium text-lg">{t(banner.titleEn, banner.titleRu)}</div>
                 <div className="text-xs text-muted-foreground mt-1">{t("Havola", "Ссылка")}: {banner.link}</div>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge variant="outline">{t("Tartib", "Порядок")}: {banner.order}</Badge>
