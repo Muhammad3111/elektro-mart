@@ -66,8 +66,8 @@ export const siteConfig = {
 
     // Contact
     contact: {
-        phone: "+998 33 470 47 00",
-        phoneRaw: "+998334704700",
+        phone: "+998 93 432 45 65",
+        phoneRaw: "+998934324565",
         email: "info@wwts.uz",
         address: {
             en: "Tashkent, Shaykhontohur district, Alisher Navoi street, 16A",

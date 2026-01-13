@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, Phone, Mail, Clock, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { toast } from "sonner";
+import { YandexMap } from "@/components/yandex-map";
 
 export default function ContactPage() {
     const { t } = useLanguage();
@@ -288,7 +289,7 @@ export default function ContactPage() {
                                     "Контактная информация"
                                 )}
                             </h2>
-                            <div className="space-y-6">
+                            <div className="space-y-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {contactInfo.map((info) => {
                                     const Icon = info.icon;
                                     return (
@@ -319,16 +320,7 @@ export default function ContactPage() {
 
                 {/* Yandex Map - Full Width in Container */}
                 <section className="container mx-auto px-4 pb-16">
-                    <div className="w-full h-96 rounded-lg overflow-hidden">
-                        <iframe
-                            src="https://yandex.com/map-widget/v1/?ll=69.240562,41.299496&z=12&l=map&pt=69.240562,41.299496,pm2rdm"
-                            width="100%"
-                            height="100%"
-                            frameBorder="0"
-                            allowFullScreen
-                            style={{ position: "relative" }}
-                        />
-                    </div>
+                    <YandexMap />
                 </section>
             </main>
 

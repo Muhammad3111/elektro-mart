@@ -46,7 +46,8 @@ export default function Home() {
                     (sub) => sub.parentId === parent.id && sub.isActive
                 ),
             }));
-            setCategories(categoriesWithSubs);
+            // Limit to 12 categories for slider
+            setCategories(categoriesWithSubs.slice(0, 12));
         } catch (err) {
             console.error("Failed to load categories:", err);
         } finally {
@@ -139,7 +140,7 @@ export default function Home() {
 
                 {/* Featured Products with Category Filter */}
                 <section
-                    className="bg-primary/5 py-16"
+                    className="bg-[#ECF7F7] py-16"
                     aria-labelledby="featured-title"
                 >
                     <div className="container mx-auto px-4">
@@ -152,7 +153,7 @@ export default function Home() {
 
                         {/* Category Filter Tabs */}
                         <div
-                            className="flex gap-2 mb-8 overflow-x-auto pb-2"
+                            className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide"
                             role="tablist"
                             aria-label={t(
                                 "Filter by category",
@@ -383,7 +384,7 @@ export default function Home() {
 
                 {/* Brands Section */}
                 <section
-                    className="bg-primary/5 py-16"
+                    className="bg-[#ECF7F7] py-16"
                     aria-labelledby="brands-title"
                 >
                     <div className="container mx-auto px-4">

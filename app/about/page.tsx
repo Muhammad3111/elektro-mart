@@ -132,7 +132,7 @@ export default function AboutPage() {
                     </div>
 
                     {/* Stats */}
-                    <div className="bg-primary/5 rounded-2xl p-8 md:p-12">
+                    <div className="bg-[#ECF7F7] rounded-2xl p-8 md:p-12">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                             <div>
                                 <div className="text-4xl font-black text-primary mb-2">
