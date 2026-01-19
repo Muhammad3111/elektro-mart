@@ -16,7 +16,7 @@ export default function AboutPage() {
             title: t("High Quality", "Высокое качество"),
             description: t(
                 "Only certified and verified products",
-                "Только сертифицированные и проверенные товары"
+                "Только сертифицированные и проверенные товары",
             ),
         },
         {
@@ -24,7 +24,7 @@ export default function AboutPage() {
             title: t("Professional Team", "Профессиональная команда"),
             description: t(
                 "Experienced specialists will help you",
-                "Опытные специалисты помогут вам"
+                "Опытные специалисты помогут вам",
             ),
         },
         {
@@ -32,7 +32,7 @@ export default function AboutPage() {
             title: t("Trusted Brands", "Надежные бренды"),
             description: t(
                 "World-renowned manufacturers",
-                "Всемирно известные производители"
+                "Всемирно известные производители",
             ),
         },
         {
@@ -40,7 +40,7 @@ export default function AboutPage() {
             title: t("Fast Delivery", "Быстрая доставка"),
             description: t(
                 "Timely and safe delivery",
-                "Своевременная и безопасная доставка"
+                "Своевременная и безопасная доставка",
             ),
         },
     ];
@@ -49,8 +49,8 @@ export default function AboutPage() {
         <div className="min-h-screen flex flex-col">
             <SEO
                 title="Biz haqimizda"
-                description="Sobirov Market - O'zbekistonda professional elektr mahsulotlari yetkazib beruvchi. Siemens, Schneider, ABB, Legrand brendlari. Yuqori sifat, ishonchli xizmat va professional jamoa."
-                keywords="sobirov market haqida, elektr mahsulotlari kompaniya, professional elektr, Toshkent elektr do'kon"
+                description="WWTS - O'zbekistonda professional elektr va texnologik mahsulotlar yetkazib beruvchi. Siemens, Schneider, ABB, Legrand brendlari. Yuqori sifat, ishonchli xizmat va professional jamoa."
+                keywords="WWTS haqida, wwts.uz, elektr mahsulotlari kompaniya, texnologik mahsulotlar, professional elektr, Toshkent elektr do'kon"
                 canonical="/about"
             />
             <Header />
@@ -66,7 +66,7 @@ export default function AboutPage() {
                             <p className="text-lg text-muted-foreground">
                                 {t(
                                     "WWTS - leading supplier of electrical products and accessories",
-                                    "SobirovMarket - ведущий поставщик электрических товаров и аксессуаров"
+                                    "WWTS - ведущий поставщик электрических и технологических товаров и аксессуаров",
                                 )}
                             </p>
                         </div>
@@ -84,19 +84,19 @@ export default function AboutPage() {
                                 <p>
                                     {t(
                                         "WWTS was founded in 2010 and holds a leading position in the Uzbekistan market in the field of electrical products and accessories.",
-                                        "WWTS была основана в 2010 году и занимает ведущее положение на рынке Узбекистана в области электрических товаров и аксессуаров."
+                                        "WWTS была основана в 2010 году и занимает ведущее положение на рынке Узбекистана в области электрических товаров и аксессуаров.",
                                     )}
                                 </p>
                                 <p>
                                     {t(
                                         "We offer our customers high-quality products, professional service and competitive prices. Our goal is to help successfully implement each of your projects.",
-                                        "Мы предлагаем нашим клиентам высококачественные товары, профессиональное обслуживание и конкурентные цены. Наша цель - помочь успешно реализовать каждый ваш проект."
+                                        "Мы предлагаем нашим клиентам высококачественные товары, профессиональное обслуживание и конкурентные цены. Наша цель - помочь успешно реализовать каждый ваш проект.",
                                     )}
                                 </p>
                                 <p>
                                     {t(
                                         "Our company supplies products that meet international standards and constantly expands its range.",
-                                        "Наша компания поставляет продукцию, соответствующую международным стандартам, и постоянно расширяет ассортимент."
+                                        "Наша компания поставляет продукцию, соответствующую международным стандартам, и постоянно расширяет ассортимент.",
                                     )}
                                 </p>
                             </div>

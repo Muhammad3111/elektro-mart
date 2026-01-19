@@ -8,7 +8,7 @@ interface YmapsAPI {
     Placemark: new (
         coords: number[],
         properties: object,
-        options: object
+        options: object,
     ) => YmapsPlacemark;
 }
 
@@ -38,21 +38,21 @@ export function YandexMap() {
 
         try {
             const map = new window.ymaps.Map(mapRef.current, {
-                center: [41.326418, 69.279737],
+                center: [41.321652, 69.25946],
                 zoom: 17,
                 controls: ["zoomControl", "fullscreenControl"],
             });
 
             const placemark = new window.ymaps.Placemark(
-                [41.326418, 69.279737],
+                [41.321652, 69.25946],
                 {
                     balloonContent:
-                        "WWTS - г.Ташкент, Шайхонтохурский район, ул.Алишера Навои, дом 16А",
+                        "WWTS - Toshkent, Shayxontohur tumani, Taxtapul, Turakurgan ko'chasi 12b",
                     hintContent: "WWTS",
                 },
                 {
                     preset: "islands#redDotIcon",
-                }
+                },
             );
 
             map.geoObjects.add(placemark);

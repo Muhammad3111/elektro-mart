@@ -25,7 +25,7 @@ export default function CartPage() {
 
     const subtotal = cartItems.reduce(
         (sum, item) => sum + parsePrice(item.price) * item.quantity,
-        0
+        0,
     );
     const shipping = 20000;
     const tax = subtotal * 0.12;
@@ -35,7 +35,7 @@ export default function CartPage() {
         <div className="min-h-screen flex flex-col">
             <SEO
                 title="Savat - Xarid qilish"
-                description="Sizning xarid savatangiz. Buyurtmani rasmiylashtirish va tez yetkazib berish xizmati. Sobirov Market - professional elektr mahsulotlari."
+                description="Sizning xarid savatangiz. Buyurtmani rasmiylashtirish va tez yetkazib berish xizmati. WWTS - professional elektr va texnologik mahsulotlar."
                 canonical="/cart"
                 noindex={true}
             />
@@ -54,9 +54,7 @@ export default function CartPage() {
                                 href="/"
                                 className="text-sm font-medium text-primary hover:underline"
                             >
-                                {t("Continue Shopping",
-                                    "Продолжить покупки"
-                                )}
+                                {t("Continue Shopping", "Продолжить покупки")}
                             </Link>
                         </div>
 
@@ -67,8 +65,9 @@ export default function CartPage() {
                             </h1>
                             <Link href="/" className="block">
                                 <Button variant="outline" className="w-full">
-                                    {t("Continue Shopping",
-                                        "Продолжить покупки"
+                                    {t(
+                                        "Continue Shopping",
+                                        "Продолжить покупки",
                                     )}
                                 </Button>
                             </Link>
@@ -77,15 +76,14 @@ export default function CartPage() {
                         {cartItems.length === 0 ? (
                             <div className="text-center py-12">
                                 <p className="text-xl text-muted-foreground mb-4">
-                                    {t("Your cart is empty",
-                                        "Ваша корзина пуста"
+                                    {t(
+                                        "Your cart is empty",
+                                        "Ваша корзина пуста",
                                     )}
                                 </p>
                                 <Link href="/">
                                     <Button className="bg-primary hover:bg-primary/90 text-white">
-                                        {t("Start Shopping",
-                                            "Начать покупки"
-                                        )}
+                                        {t("Start Shopping", "Начать покупки")}
                                     </Button>
                                 </Link>
                             </div>
@@ -133,7 +131,7 @@ export default function CartPage() {
                                                             updateQuantity(
                                                                 item.id,
                                                                 item.quantity -
-                                                                    1
+                                                                    1,
                                                             )
                                                         }
                                                     >
@@ -147,8 +145,8 @@ export default function CartPage() {
                                                                 item.id,
                                                                 parseInt(
                                                                     e.target
-                                                                        .value
-                                                                ) || 1
+                                                                        .value,
+                                                                ) || 1,
                                                             )
                                                         }
                                                         className="w-16 text-center h-8"
@@ -161,7 +159,7 @@ export default function CartPage() {
                                                             updateQuantity(
                                                                 item.id,
                                                                 item.quantity +
-                                                                    1
+                                                                    1,
                                                             )
                                                         }
                                                     >
@@ -173,8 +171,8 @@ export default function CartPage() {
                                                     <p className="font-bold">
                                                         {formatPrice(
                                                             parsePrice(
-                                                                item.price
-                                                            ) * item.quantity
+                                                                item.price,
+                                                            ) * item.quantity,
                                                         )}{" "}
                                                         UZS
                                                     </p>
@@ -232,7 +230,7 @@ export default function CartPage() {
                                                                 updateQuantity(
                                                                     item.id,
                                                                     item.quantity -
-                                                                        1
+                                                                        1,
                                                                 )
                                                             }
                                                         >
@@ -248,8 +246,8 @@ export default function CartPage() {
                                                                     item.id,
                                                                     parseInt(
                                                                         e.target
-                                                                            .value
-                                                                    ) || 1
+                                                                            .value,
+                                                                    ) || 1,
                                                                 )
                                                             }
                                                             className="w-12 text-center h-8 text-sm"
@@ -262,7 +260,7 @@ export default function CartPage() {
                                                                 updateQuantity(
                                                                     item.id,
                                                                     item.quantity +
-                                                                        1
+                                                                        1,
                                                                 )
                                                             }
                                                         >
@@ -274,9 +272,9 @@ export default function CartPage() {
                                                         <p className="font-bold text-sm">
                                                             {formatPrice(
                                                                 parsePrice(
-                                                                    item.price
+                                                                    item.price,
                                                                 ) *
-                                                                    item.quantity
+                                                                    item.quantity,
                                                             )}{" "}
                                                             UZS
                                                         </p>
@@ -286,7 +284,7 @@ export default function CartPage() {
                                                             className="text-destructive hover:text-destructive h-8 w-8"
                                                             onClick={() =>
                                                                 removeFromCart(
-                                                                    item.id
+                                                                    item.id,
                                                                 )
                                                             }
                                                         >
@@ -313,8 +311,9 @@ export default function CartPage() {
                                 <div className="space-y-3">
                                     <div className="flex justify-between py-2">
                                         <p className="text-sm text-muted-foreground">
-                                            {t("Subtotal",
-                                                "Промежуточный итог"
+                                            {t(
+                                                "Subtotal",
+                                                "Промежуточный итог",
                                             )}
                                         </p>
                                         <p className="text-sm font-medium">
@@ -325,9 +324,7 @@ export default function CartPage() {
                                     <div className="flex justify-between py-2">
                                         <div className="flex items-center gap-1">
                                             <p className="text-sm text-muted-foreground">
-                                                {t("Delivery",
-                                                    "Доставка"
-                                                )}
+                                                {t("Delivery", "Доставка")}
                                             </p>
                                             <Info className="h-3 w-3 text-muted-foreground" />
                                         </div>
@@ -339,9 +336,7 @@ export default function CartPage() {
                                     <div className="flex justify-between py-2">
                                         <div className="flex items-center gap-1">
                                             <p className="text-sm text-muted-foreground">
-                                                {t("Tax (12%)",
-                                                    "Налог (12%)"
-                                                )}
+                                                {t("Tax (12%)", "Налог (12%)")}
                                             </p>
                                             <Info className="h-3 w-3 text-muted-foreground" />
                                         </div>
@@ -364,8 +359,9 @@ export default function CartPage() {
 
                                 <Link href="/checkout">
                                     <Button className="w-full mt-6 h-12 bg-primary hover:bg-primary/90 text-white">
-                                        {t("Proceed to Checkout",
-                                            "Перейти к оплате"
+                                        {t(
+                                            "Proceed to Checkout",
+                                            "Перейти к оплате",
                                         )}
                                     </Button>
                                 </Link>

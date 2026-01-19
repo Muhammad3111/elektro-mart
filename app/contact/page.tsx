@@ -13,6 +13,7 @@ import { MapPin, Phone, Mail, Clock, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 import { toast } from "sonner";
 import { YandexMap } from "@/components/yandex-map";
+import { siteConfig } from "@/lib/config/site";
 
 export default function ContactPage() {
     const { t } = useLanguage();
@@ -66,15 +67,15 @@ export default function ContactPage() {
                         text: message,
                         parse_mode: "HTML",
                     }),
-                }
+                },
             );
 
             if (response.ok) {
                 toast.success(
                     t(
                         "Message sent! We will contact you soon.",
-                        "Сообщение отправлено! Мы свяжемся с вами в ближайшее время."
-                    )
+                        "Сообщение отправлено! Мы свяжемся с вами в ближайшее время.",
+                    ),
                 );
                 setFormData({
                     firstName: "",
@@ -90,8 +91,8 @@ export default function ContactPage() {
             toast.error(
                 t(
                     "An error occurred. Please try again.",
-                    "Произошла ошибка. Пожалуйста, попробуйте снова."
-                )
+                    "Произошла ошибка. Пожалуйста, попробуйте снова.",
+                ),
             );
         } finally {
             setLoading(false);
@@ -103,26 +104,26 @@ export default function ContactPage() {
             icon: MapPin,
             title: t("Address", "Адрес"),
             content: t(
-                "Uzbekistan, Tashkent, Shaykhantakhur district, Takhtapul, Turakurgan street 12b, Landmark: Malika market",
-                "Узбекистан, Ташкент, Шайхантахурский район, Тахтапуль, улица Туракурган 12б, Ориентир: рынок Малика"
+                siteConfig.contact.address.en,
+                siteConfig.contact.address.ru,
             ),
         },
         {
             icon: Phone,
             title: t("Phone", "Телефон"),
-            content: "+998 33 470 47 00",
+            content: siteConfig.contact.phone,
         },
         {
             icon: Mail,
             title: t("Email", "Email"),
-            content: "sobirovsardor138@gmail.com",
+            content: siteConfig.contact.email,
         },
         {
             icon: Clock,
             title: t("Working Hours", "Время работы"),
             content: t(
                 "07:00 to 00:00, no days off",
-                "07:00 до 00:00, без выходных"
+                "07:00 до 00:00, без выходных",
             ),
         },
     ];
@@ -142,7 +143,7 @@ export default function ContactPage() {
                             <p className="text-lg text-muted-foreground">
                                 {t(
                                     "Have questions? We are ready to help!",
-                                    "Есть вопросы? Мы готовы помочь!"
+                                    "Есть вопросы? Мы готовы помочь!",
                                 )}
                             </p>
                         </div>
@@ -182,7 +183,7 @@ export default function ContactPage() {
                                                 }
                                                 placeholder={t(
                                                     "Your Name",
-                                                    "Ваше имя"
+                                                    "Ваше имя",
                                                 )}
                                                 required
                                             />
@@ -225,7 +226,7 @@ export default function ContactPage() {
                                                 }
                                                 placeholder={t(
                                                     "Message subject",
-                                                    "Тема сообщения"
+                                                    "Тема сообщения",
                                                 )}
                                                 required
                                             />
@@ -249,7 +250,7 @@ export default function ContactPage() {
                                                 }
                                                 placeholder={t(
                                                     "Write your message...",
-                                                    "Напишите ваше сообщение..."
+                                                    "Напишите ваше сообщение...",
                                                 )}
                                                 rows={6}
                                                 required
@@ -266,13 +267,13 @@ export default function ContactPage() {
                                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                                     {t(
                                                         "Sending...",
-                                                        "Отправка..."
+                                                        "Отправка...",
                                                     )}
                                                 </>
                                             ) : (
                                                 t(
                                                     "Send Message",
-                                                    "Отправить сообщение"
+                                                    "Отправить сообщение",
                                                 )
                                             )}
                                         </Button>
@@ -286,7 +287,7 @@ export default function ContactPage() {
                             <h2 className="text-3xl font-bold mb-6">
                                 {t(
                                     "Contact Information",
-                                    "Контактная информация"
+                                    "Контактная информация",
                                 )}
                             </h2>
                             <div className="space-y-6 grid grid-cols-1 md:grid-cols-2 gap-6">

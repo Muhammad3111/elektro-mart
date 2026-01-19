@@ -28,7 +28,7 @@ export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
     maximumScale: 5,
-    themeColor: "#2563eb",
+    themeColor: "#106C71",
 };
 
 export const metadata: Metadata = {
@@ -56,23 +56,27 @@ export const metadata: Metadata = {
     },
     icons: {
         icon: [
-            { url: "/favicon/favicon.ico", sizes: "any" },
-            { url: "/favicon/favicon.svg", type: "image/svg+xml" },
+            { url: "/favicon_io/favicon.ico", sizes: "any" },
             {
-                url: "/favicon/favicon-96x96.png",
-                sizes: "96x96",
+                url: "/favicon_io/favicon-32x32.png",
+                sizes: "32x32",
+                type: "image/png",
+            },
+            {
+                url: "/favicon_io/favicon-16x16.png",
+                sizes: "16x16",
                 type: "image/png",
             },
         ],
         apple: [
             {
-                url: "/favicon/apple-touch-icon.png",
+                url: "/favicon_io/apple-touch-icon.png",
                 sizes: "180x180",
                 type: "image/png",
             },
         ],
     },
-    manifest: "/favicon/site.webmanifest",
+    manifest: "/favicon_io/site.webmanifest",
     openGraph: {
         title: `${siteConfig.name} - Professional Electrical Products`,
         description: siteConfig.description.en,

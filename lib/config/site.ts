@@ -12,9 +12,9 @@ export const siteConfig = {
 
     // SEO - 3 languages for SEO purposes
     description: {
-        en: "Leading provider of electrical cables, connectors, sockets and accessories. Siemens, Schneider, ABB, Legrand brands. Fast delivery and warranty.",
-        ru: "Ведущий поставщик электрических кабелей, разъемов, розеток и аксессуаров. Бренды Siemens, Schneider, ABB, Legrand. Быстрая доставка и гарантия.",
-        uz: "Elektr kabellari, ulagichlar, rozetkalar va aksessuarlarning yetakchi yetkazib beruvchisi. Siemens, Schneider, ABB, Legrand brendlari. Tez yetkazib berish va kafolat.",
+        en: "Leading provider of electrical and technology products - cables, connectors, sockets, smart devices, computers and accessories. Siemens, Schneider, ABB, Legrand brands. Fast delivery and warranty.",
+        ru: "Ведущий поставщик электрических и технологических товаров - кабели, разъемы, розетки, смарт-устройства, компьютеры и аксессуары. Бренды Siemens, Schneider, ABB, Legrand. Быстрая доставка и гарантия.",
+        uz: "Elektr va texnologik mahsulotlarning yetakchi yetkazib beruvchisi - kabellar, ulagichlar, rozetkalar, smart qurilmalar, kompyuterlar va aksessuarlar. Siemens, Schneider, ABB, Legrand brendlari. Tez yetkazib berish va kafolat.",
     },
     keywords: {
         en: [
@@ -24,6 +24,11 @@ export const siteConfig = {
             "sockets",
             "circuit breakers",
             "electrical accessories",
+            "technology products",
+            "smart devices",
+            "computers",
+            "laptops",
+            "electronics",
             "Siemens",
             "Schneider",
             "ABB",
@@ -31,6 +36,8 @@ export const siteConfig = {
             "electrical products",
             "Tashkent",
             "Uzbekistan",
+            "WWTS",
+            "wwts.uz",
         ],
         ru: [
             "электрические кабели",
@@ -39,6 +46,11 @@ export const siteConfig = {
             "розетки",
             "автоматы",
             "электрические аксессуары",
+            "технологические товары",
+            "смарт устройства",
+            "компьютеры",
+            "ноутбуки",
+            "электроника",
             "Siemens",
             "Schneider",
             "ABB",
@@ -46,6 +58,8 @@ export const siteConfig = {
             "электротовары",
             "Ташкент",
             "Узбекистан",
+            "WWTS",
+            "wwts.uz",
         ],
         uz: [
             "elektr kabellari",
@@ -54,6 +68,11 @@ export const siteConfig = {
             "rozetkalar",
             "avtomatlar",
             "elektr aksessuarlari",
+            "texnologik mahsulotlar",
+            "smart qurilmalar",
+            "kompyuterlar",
+            "noutbuklar",
+            "elektronika",
             "Siemens",
             "Schneider",
             "ABB",
@@ -61,6 +80,8 @@ export const siteConfig = {
             "elektr mahsulotlari",
             "Toshkent",
             "O'zbekiston",
+            "WWTS",
+            "wwts.uz",
         ],
     },
 
@@ -70,9 +91,9 @@ export const siteConfig = {
         phoneRaw: "+998934324565",
         email: "info@wwts.uz",
         address: {
-            en: "Tashkent, Shaykhontohur district, Alisher Navoi street, 16A",
-            ru: "г.Ташкент, Шайхонтохурский район, ул.Алишера Навои, дом 16А",
-            uz: "Toshkent, Shayxontohur tumani, Alisher Navoiy ko'chasi, 16A uy",
+            en: "Uzbekistan, Tashkent, Shaykhantakhur district, Takhtapul, Turakurgan street 12b, Landmark: Malika market",
+            ru: "Узбекистан, Ташкент, Шайхантахурский район, Тахтапуль, улица Туракурган 12б, Ориентир: рынок Малика",
+            uz: "O'zbekiston, Toshkent, Shayxontohur tumani, Taxtapul, Turakurgan ko'chasi 12b, Mo'ljal: Malika bozori",
         },
     },
 

@@ -64,12 +64,12 @@ async function getProduct(id: string): Promise<Product | null> {
 
 async function getRelatedProducts(
     categoryId: string,
-    productId: string
+    productId: string,
 ): Promise<Product[]> {
     try {
         const res = await fetch(
             `${API_URL}/products?categoryId=${categoryId}&limit=8&isActive=true`,
-            { next: { revalidate: 300 } } // 5 daqiqa cache
+            { next: { revalidate: 300 } }, // 5 daqiqa cache
         );
 
         if (!res.ok) return [];
@@ -114,10 +114,10 @@ export async function generateMetadata({
             product.category?.nameEn || ""
         }, electronics, WWTS`,
         openGraph: {
-            title: `${title} | Sobirov Market`,
+            title: `${title} | WWTS`,
             description,
             type: "website",
-            url: `https://elektromart.uz/products/${id}`,
+            url: `https://wwts.uz/products/${id}`,
             images: [
                 {
                     url: imageUrl,
@@ -131,12 +131,12 @@ export async function generateMetadata({
         },
         twitter: {
             card: "summary_large_image",
-            title: `${title} | Sobirov Market`,
+            title: `${title} | WWTS`,
             description,
             images: [imageUrl],
         },
         alternates: {
-            canonical: `https://elektromart.uz/products/${id}`,
+            canonical: `https://wwts.uz/products/${id}`,
         },
         robots: {
             index: true,

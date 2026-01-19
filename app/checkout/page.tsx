@@ -51,7 +51,7 @@ export default function CheckoutPage() {
     const subtotal = cartItems.reduce(
         (sum, item) =>
             sum + parseFloat(item.price.replace(/,/g, "")) * item.quantity,
-        0
+        0,
     );
     const total = subtotal;
 
@@ -68,8 +68,8 @@ export default function CheckoutPage() {
             toast.error(
                 t(
                     "Please fill in all required fields!",
-                    "Пожалуйста, заполните все обязательные поля!"
-                )
+                    "Пожалуйста, заполните все обязательные поля!",
+                ),
             );
             return;
         }
@@ -79,8 +79,8 @@ export default function CheckoutPage() {
             toast.error(
                 t(
                     "Please enter a valid phone number",
-                    "Введите полный номер телефона"
-                )
+                    "Введите полный номер телефона",
+                ),
             );
             return;
         }
@@ -119,7 +119,7 @@ export default function CheckoutPage() {
                     (item, index) =>
                         `${index + 1}. ${item.name} - ${item.quantity} dona - ${
                             item.price
-                        } UZS`
+                        } UZS`,
                 )
                 .join("\n");
 
@@ -153,21 +153,21 @@ export default function CheckoutPage() {
                                 text: message,
                                 parse_mode: "Markdown",
                             }),
-                        }
+                        },
                     );
                 }
             } catch (telegramError) {
                 console.error(
                     "Failed to send Telegram notification:",
-                    telegramError
+                    telegramError,
                 );
             }
 
             toast.success(
                 t(
                     "Order placed successfully! We will contact you soon.",
-                    "Заказ успешно отправлен! Мы свяжемся с вами в ближайшее время."
-                )
+                    "Заказ успешно отправлен! Мы свяжемся с вами в ближайшее время.",
+                ),
             );
 
             // Clear cart after successful order
@@ -186,8 +186,8 @@ export default function CheckoutPage() {
             toast.error(
                 t(
                     "An error occurred. Please try again.",
-                    "Произошла ошибка. Пожалуйста, попробуйте еще раз."
-                )
+                    "Произошла ошибка. Пожалуйста, попробуйте еще раз.",
+                ),
             );
         } finally {
             setIsSubmitting(false);
@@ -198,7 +198,7 @@ export default function CheckoutPage() {
         <div className="min-h-screen flex flex-col bg-background">
             <SEO
                 title="Buyurtmani rasmiylashtirish"
-                description="Buyurtmangizni rasmiylashtiring. Tez yetkazib berish va xavfsiz to'lov. Sobirov Market - professional elektr mahsulotlari."
+                description="Buyurtmangizni rasmiylashtiring. Tez yetkazib berish va xavfsiz to'lov. WWTS - professional elektr va texnologik mahsulotlar."
                 canonical="/checkout"
                 noindex={true}
             />
@@ -215,7 +215,7 @@ export default function CheckoutPage() {
                             <p className="text-muted-foreground">
                                 {t(
                                     "Ma'lumotlaringizni kiriting va biz siz bilan bog'lanamiz",
-                                    "Введите ваши данные и мы свяжемся с вами"
+                                    "Введите ваши данные и мы свяжемся с вами",
                                 )}
                             </p>
                         </div>
@@ -226,7 +226,7 @@ export default function CheckoutPage() {
                                 <h2 className="text-2xl font-bold mb-6">
                                     {t(
                                         "Contact Information",
-                                        "Контактная информация"
+                                        "Контактная информация",
                                     )}
                                 </h2>
 
@@ -251,7 +251,7 @@ export default function CheckoutPage() {
                                                 }
                                                 placeholder={t(
                                                     "Your Name",
-                                                    "Ваше имя"
+                                                    "Ваше имя",
                                                 )}
                                                 className="mt-2"
                                                 disabled={isAuthenticated}
@@ -275,7 +275,7 @@ export default function CheckoutPage() {
                                                 }
                                                 placeholder={t(
                                                     "Your Last Name",
-                                                    "Ваша фамилия"
+                                                    "Ваша фамилия",
                                                 )}
                                                 className="mt-2"
                                                 disabled={isAuthenticated}
@@ -295,7 +295,7 @@ export default function CheckoutPage() {
                                                     (
                                                     {t(
                                                         "optional",
-                                                        "необязательно"
+                                                        "необязательно",
                                                     )}
                                                     )
                                                 </span>
@@ -319,7 +319,7 @@ export default function CheckoutPage() {
                                             >
                                                 {t(
                                                     "Phone Number",
-                                                    "Номер телефона"
+                                                    "Номер телефона",
                                                 )}{" "}
                                                 <span className="text-red-500">
                                                     *
@@ -357,7 +357,7 @@ export default function CheckoutPage() {
                                             }
                                             placeholder={t(
                                                 "Full Address",
-                                                "Полный адрес"
+                                                "Полный адрес",
                                             )}
                                             className="h-12 mt-2"
                                         />
@@ -402,7 +402,7 @@ export default function CheckoutPage() {
                                                 }
                                                 placeholder={t(
                                                     "Region",
-                                                    "Регион"
+                                                    "Регион",
                                                 )}
                                                 className="mt-2"
                                             />
@@ -417,7 +417,7 @@ export default function CheckoutPage() {
                                         >
                                             {t(
                                                 "Notes (optional)",
-                                                "Примечание (необязательно)"
+                                                "Примечание (необязательно)",
                                             )}
                                         </Label>
                                         <Textarea
@@ -428,7 +428,7 @@ export default function CheckoutPage() {
                                             }
                                             placeholder={t(
                                                 "Additional information...",
-                                                "Дополнительная информация..."
+                                                "Дополнительная информация...",
                                             )}
                                             className="mt-2 min-h-[100px]"
                                         />
@@ -438,7 +438,7 @@ export default function CheckoutPage() {
                                         <p className="text-sm text-muted-foreground">
                                             {t(
                                                 "After receiving your order, we will contact you shortly to clarify delivery details.",
-                                                "После получения вашего заказа мы свяжемся с вами в ближайшее время для уточнения деталей доставки."
+                                                "После получения вашего заказа мы свяжемся с вами в ближайшее время для уточнения деталей доставки.",
                                             )}
                                         </p>
                                     </div>
@@ -458,7 +458,7 @@ export default function CheckoutPage() {
                                                 <Loader2 className="h-5 w-5 animate-spin" />
                                                 {t(
                                                     "Submitting...",
-                                                    "Отправка..."
+                                                    "Отправка...",
                                                 )}
                                             </>
                                         ) : (
@@ -466,7 +466,7 @@ export default function CheckoutPage() {
                                                 <Send className="h-5 w-5" />
                                                 {t(
                                                     "Place Order",
-                                                    "Оформить заказ"
+                                                    "Оформить заказ",
                                                 )}
                                             </>
                                         )}
@@ -509,7 +509,7 @@ export default function CheckoutPage() {
                                                         <p className="text-sm text-muted-foreground">
                                                             {t(
                                                                 "Quantity",
-                                                                "Количество"
+                                                                "Количество",
                                                             )}
                                                             : {item.quantity}
                                                         </p>
@@ -528,7 +528,7 @@ export default function CheckoutPage() {
                                                 <p className="text-muted-foreground">
                                                     {t(
                                                         "Mahsulotlar soni",
-                                                        "Количество товаров"
+                                                        "Количество товаров",
                                                     )}
                                                 </p>
                                                 <p className="font-semibold">
@@ -540,14 +540,14 @@ export default function CheckoutPage() {
                                                 <p className="text-muted-foreground">
                                                     {t(
                                                         "Jami miqdor",
-                                                        "Общее количество"
+                                                        "Общее количество",
                                                     )}
                                                 </p>
                                                 <p className="font-semibold">
                                                     {cartItems.reduce(
                                                         (sum, item) =>
                                                             sum + item.quantity,
-                                                        0
+                                                        0,
                                                     )}{" "}
                                                     {t("pcs", "шт")}
                                                 </p>
@@ -567,7 +567,7 @@ export default function CheckoutPage() {
                                             <p className="text-sm text-center">
                                                 {t(
                                                     "Yetkazib berish narxi telefon orqali aniqlanadi",
-                                                    "Стоимость доставки уточняется по телефону"
+                                                    "Стоимость доставки уточняется по телефону",
                                                 )}
                                             </p>
                                         </div>

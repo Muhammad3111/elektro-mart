@@ -22,8 +22,8 @@ export function SEO({
     canonical,
     noindex = false,
 }: SEOProps) {
-    const fullTitle = `${title} | Sobirov Market`;
-    const siteUrl = "https://elektromart.uz";
+    const fullTitle = `${title} | WWTS`;
+    const siteUrl = "https://wwts.uz";
     const canonicalUrl = canonical ? `${siteUrl}${canonical}` : siteUrl;
 
     useEffect(() => {
@@ -31,7 +31,9 @@ export function SEO({
         document.title = fullTitle;
 
         // Update meta description
-        let metaDescription = document.querySelector('meta[name="description"]');
+        let metaDescription = document.querySelector(
+            'meta[name="description"]',
+        );
         if (!metaDescription) {
             metaDescription = document.createElement("meta");
             metaDescription.setAttribute("name", "description");
@@ -51,7 +53,9 @@ export function SEO({
         }
 
         // Update canonical link
-        let linkCanonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+        let linkCanonical = document.querySelector(
+            'link[rel="canonical"]',
+        ) as HTMLLinkElement;
         if (!linkCanonical) {
             linkCanonical = document.createElement("link");
             linkCanonical.setAttribute("rel", "canonical");
@@ -66,7 +70,10 @@ export function SEO({
             metaRobots.setAttribute("name", "robots");
             document.head.appendChild(metaRobots);
         }
-        metaRobots.setAttribute("content", noindex ? "noindex,nofollow" : "index,follow");
+        metaRobots.setAttribute(
+            "content",
+            noindex ? "noindex,nofollow" : "index,follow",
+        );
 
         // Update Open Graph tags
         const ogTags = [
@@ -75,7 +82,7 @@ export function SEO({
             { property: "og:type", content: ogType },
             { property: "og:url", content: canonicalUrl },
             { property: "og:image", content: `${siteUrl}${ogImage}` },
-            { property: "og:site_name", content: "Sobirov Market" },
+            { property: "og:site_name", content: "WWTS" },
         ];
 
         ogTags.forEach(({ property, content }) => {
@@ -105,7 +112,17 @@ export function SEO({
             }
             meta.setAttribute("content", content);
         });
-    }, [title, description, keywords, ogImage, ogType, canonicalUrl, noindex, fullTitle, siteUrl]);
+    }, [
+        title,
+        description,
+        keywords,
+        ogImage,
+        ogType,
+        canonicalUrl,
+        noindex,
+        fullTitle,
+        siteUrl,
+    ]);
 
     return null;
 }

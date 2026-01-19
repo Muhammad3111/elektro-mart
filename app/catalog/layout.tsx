@@ -1,26 +1,29 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Katalog - Barcha mahsulotlar",
-  description: "Sobirov Market katalogi - elektr kabel, ulagichlar, rozetkalar, avtomatlar va boshqa elektr aksessuarlar. Siemens, Schneider, ABB, Legrand brendlari. Eng yaxshi narxlar va sifat kafolati.",
-  keywords: "elektr katalog, kabel katalog, elektr mahsulotlari, ulagichlar, rozetkalar, avtomatlar, elektr aksessuarlar katalog, Sobirov Market",
-  openGraph: {
-    title: "Katalog - Barcha mahsulotlar | Sobirov Market",
-    description: "Sobirov Market katalogi - elektr kabel, ulagichlar, rozetkalar va boshqa elektr aksessuarlar.",
-    type: "website",
-    url: "https://elektromart.uz/catalog",
-    siteName: "Sobirov Market",
-    locale: "uz_UZ",
-  },
-  alternates: {
-    canonical: "https://elektromart.uz/catalog",
-  },
+    title: "Katalog - Barcha mahsulotlar",
+    description:
+        "WWTS katalogi - elektr va texnologik mahsulotlar, kabellar, ulagichlar, rozetkalar, avtomatlar, smart qurilmalar va aksessuarlar. Siemens, Schneider, ABB, Legrand brendlari. Eng yaxshi narxlar va sifat kafolati.",
+    keywords:
+        "elektr katalog, kabel katalog, elektr mahsulotlari, ulagichlar, rozetkalar, avtomatlar, elektr aksessuarlar katalog, texnologik mahsulotlar, smart qurilmalar, WWTS, wwts.uz",
+    openGraph: {
+        title: "Katalog - Barcha mahsulotlar | WWTS",
+        description:
+            "WWTS katalogi - elektr va texnologik mahsulotlar, kabellar, ulagichlar, rozetkalar va aksessuarlar.",
+        type: "website",
+        url: "https://wwts.uz/catalog",
+        siteName: "WWTS",
+        locale: "uz_UZ",
+    },
+    alternates: {
+        canonical: "https://wwts.uz/catalog",
+    },
 };
 
 export default function CatalogLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  return children;
+    return children;
 }
