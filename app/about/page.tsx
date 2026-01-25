@@ -4,7 +4,16 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SEO } from "@/components/seo";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle, Users, Award, TrendingUp } from "lucide-react";
+import {
+    CheckCircle,
+    Users,
+    Award,
+    TrendingUp,
+    Globe,
+    Microscope,
+    Factory,
+    Handshake,
+} from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
 
 export default function AboutPage() {
@@ -12,35 +21,70 @@ export default function AboutPage() {
 
     const features = [
         {
-            icon: CheckCircle,
-            title: t("High Quality", "Высокое качество"),
+            icon: Microscope,
+            title: t("Laboratory Equipment", "Лабораторное оборудование"),
             description: t(
-                "Only certified and verified products",
-                "Только сертифицированные и проверенные товары",
+                "Certified equipment for scientific institutions",
+                "Сертифицированное оборудование для научных учреждений",
+            ),
+        },
+        {
+            icon: Factory,
+            title: t("Industrial Equipment", "Промышленное оборудование"),
+            description: t(
+                "Modern solutions for manufacturing enterprises",
+                "Современные решения для производственных предприятий",
+            ),
+        },
+        {
+            icon: Globe,
+            title: t("International Logistics", "Международная логистика"),
+            description: t(
+                "Direct supplies from world manufacturers",
+                "Прямые поставки от мировых производителей",
+            ),
+        },
+        {
+            icon: Handshake,
+            title: t("Long-term Partnership", "Долгосрочное партнёрство"),
+            description: t(
+                "Professional approach and technical expertise",
+                "Профессиональный подход и техническая экспертиза",
+            ),
+        },
+    ];
+
+    const values = [
+        {
+            icon: CheckCircle,
+            title: t("Quality", "Качество"),
+            description: t(
+                "Only certified products meeting international standards",
+                "Только сертифицированная продукция, соответствующая международным стандартам",
             ),
         },
         {
             icon: Users,
-            title: t("Professional Team", "Профессиональная команда"),
+            title: t("Expertise", "Экспертиза"),
             description: t(
-                "Experienced specialists will help you",
-                "Опытные специалисты помогут вам",
+                "Technical support at all project stages",
+                "Техническая поддержка на всех этапах проекта",
             ),
         },
         {
             icon: Award,
-            title: t("Trusted Brands", "Надежные бренды"),
+            title: t("Reliability", "Надёжность"),
             description: t(
-                "World-renowned manufacturers",
-                "Всемирно известные производители",
+                "Transparency and responsibility in every decision",
+                "Прозрачность и ответственность в каждом решении",
             ),
         },
         {
             icon: TrendingUp,
-            title: t("Fast Delivery", "Быстрая доставка"),
+            title: t("Efficiency", "Эффективность"),
             description: t(
-                "Timely and safe delivery",
-                "Своевременная и безопасная доставка",
+                "Optimal terms, cost and delivery times",
+                "Оптимальные условия по срокам, стоимости и доставке",
             ),
         },
     ];
@@ -48,9 +92,9 @@ export default function AboutPage() {
     return (
         <div className="min-h-screen flex flex-col">
             <SEO
-                title="Biz haqimizda"
-                description="WWTS - O'zbekistonda professional elektr va texnologik mahsulotlar yetkazib beruvchi. Siemens, Schneider, ABB, Legrand brendlari. Yuqori sifat, ishonchli xizmat va professional jamoa."
-                keywords="WWTS haqida, wwts.uz, elektr mahsulotlari kompaniya, texnologik mahsulotlar, professional elektr, Toshkent elektr do'kon"
+                title={t("About Us", "О нас")}
+                description="WWTS - надёжный поставщик лабораторного и промышленного оборудования мировых брендов на рынке Узбекистана. Прямые поставки, техническая экспертиза, долгосрочное партнёрство."
+                keywords="WWTS, wwts.uz, лабораторное оборудование, промышленное оборудование, поставщик оборудования Узбекистан, научное оборудование"
                 canonical="/about"
             />
             <Header />
@@ -59,52 +103,67 @@ export default function AboutPage() {
                 {/* Hero Section */}
                 <section className="bg-linear-to-r from-primary/10 to-primary/5 py-20">
                     <div className="container mx-auto px-4">
-                        <div className="max-w-3xl mx-auto text-center space-y-6">
+                        <div className="max-w-4xl mx-auto text-center space-y-6">
                             <h1 className="text-4xl md:text-5xl font-black">
                                 {t("About Us", "О нас")}
                             </h1>
-                            <p className="text-lg text-muted-foreground">
+                            <p className="text-xl text-muted-foreground">
                                 {t(
-                                    "WWTS - leading supplier of electrical products and accessories",
-                                    "WWTS - ведущий поставщик электрических и технологических товаров и аксессуаров",
+                                    "WORLDWIDE TECHNOLOGY SOLUTIONS (WWTS) — reliable supplier of laboratory and industrial equipment from world brands in the Uzbekistan market",
+                                    "WORLDWIDE TECHNOLOGY SOLUTIONS (WWTS) — надёжный поставщик лабораторного и промышленного оборудования мировых брендов на рынке Узбекистана",
                                 )}
                             </p>
                         </div>
                     </div>
                 </section>
 
-                {/* About Content */}
+                {/* Mission Section */}
                 <section className="container mx-auto px-4 py-16">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
-                        <div>
-                            <h2 className="text-3xl font-bold mb-6">
-                                {t("Our Mission", "Наша миссия")}
-                            </h2>
-                            <div className="space-y-4 text-muted-foreground">
-                                <p>
-                                    {t(
-                                        "WWTS was founded in 2010 and holds a leading position in the Uzbekistan market in the field of electrical products and accessories.",
-                                        "WWTS была основана в 2010 году и занимает ведущее положение на рынке Узбекистана в области электрических товаров и аксессуаров.",
-                                    )}
-                                </p>
-                                <p>
-                                    {t(
-                                        "We offer our customers high-quality products, professional service and competitive prices. Our goal is to help successfully implement each of your projects.",
-                                        "Мы предлагаем нашим клиентам высококачественные товары, профессиональное обслуживание и конкурентные цены. Наша цель - помочь успешно реализовать каждый ваш проект.",
-                                    )}
-                                </p>
-                                <p>
-                                    {t(
-                                        "Our company supplies products that meet international standards and constantly expands its range.",
-                                        "Наша компания поставляет продукцию, соответствующую международным стандартам, и постоянно расширяет ассортимент.",
-                                    )}
-                                </p>
-                            </div>
+                    <div className="max-w-4xl mx-auto mb-16">
+                        <h2 className="text-3xl font-bold mb-8 text-center">
+                            {t("Our Mission", "Наша миссия")}
+                        </h2>
+                        <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+                            <p>
+                                {t(
+                                    "Our mission is to provide companies, scientific institutions and manufacturing enterprises with modern, proven and certified technological solutions that meet international quality standards.",
+                                    "Наша миссия — обеспечивать компании, научные учреждения и производственные предприятия современными, проверенными и сертифицированными технологическими решениями, соответствующими международным стандартам качества.",
+                                )}
+                            </p>
+                            <p>
+                                {t(
+                                    "We specialize in direct supplies of laboratory and industrial equipment, consumables and components from leading manufacturers around the world. Thanks to established international logistics and experience with contracts and exchange supplies, we offer clients optimal conditions in terms of timing, cost and reliability.",
+                                    "Мы специализируемся на прямых поставках лабораторного и промышленного оборудования, расходных материалов и комплектующих от ведущих производителей со всего мира. Благодаря выстроенной международной логистике и опыту работы с контрактами и биржевыми поставками, мы предлагаем клиентам оптимальные условия по срокам, стоимости и надёжности.",
+                                )}
+                            </p>
+                            <p>
+                                {t(
+                                    "WWTS emphasizes professional approach, technical expertise and long-term partnership. We support projects at all stages — from equipment selection to delivery, ensuring transparency, accuracy and responsibility in every decision.",
+                                    "WWTS делает акцент на профессиональный подход, техническую экспертизу и долгосрочное партнёрство. Мы сопровождаем проекты на всех этапах — от подбора оборудования до поставки, обеспечивая прозрачность, точность и ответственность в каждом решении.",
+                                )}
+                            </p>
                         </div>
-                        <div className="bg-primary/10 rounded-2xl h-96" />
                     </div>
 
-                    {/* Features */}
+                    {/* Goal */}
+                    <div className="bg-primary/5 rounded-2xl p-8 md:p-12 mb-16">
+                        <div className="max-w-3xl mx-auto text-center">
+                            <h3 className="text-2xl font-bold mb-4">
+                                {t("Our Goal", "Наша цель")}
+                            </h3>
+                            <p className="text-lg text-muted-foreground">
+                                {t(
+                                    "To be your technological partner in the development of laboratories and industrial infrastructure.",
+                                    "Быть вашим технологическим партнёром в развитии лабораторий и промышленной инфраструктуры.",
+                                )}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* What We Do */}
+                    <h2 className="text-3xl font-bold mb-8 text-center">
+                        {t("What We Do", "Что мы делаем")}
+                    </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
                         {features.map((feature) => {
                             const Icon = feature.icon;
@@ -124,6 +183,36 @@ export default function AboutPage() {
                                         </h3>
                                         <p className="text-muted-foreground">
                                             {feature.description}
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
+                    </div>
+
+                    {/* Our Values */}
+                    <h2 className="text-3xl font-bold mb-8 text-center">
+                        {t("Our Values", "Наши ценности")}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+                        {values.map((value) => {
+                            const Icon = value.icon;
+                            return (
+                                <Card
+                                    key={value.title}
+                                    className="text-center border-none shadow-none bg-transparent hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
+                                >
+                                    <CardContent className="p-6 space-y-3">
+                                        <div className="flex justify-center">
+                                            <div className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300">
+                                                <Icon className="h-8 w-8 text-primary group-hover:scale-110 transition-transform duration-300" />
+                                            </div>
+                                        </div>
+                                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors duration-300">
+                                            {value.title}
+                                        </h3>
+                                        <p className="text-muted-foreground">
+                                            {value.description}
                                         </p>
                                     </CardContent>
                                 </Card>

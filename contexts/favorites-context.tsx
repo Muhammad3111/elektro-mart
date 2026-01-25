@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useLanguage } from "./language-context";
 
 interface FavoriteItem {
     id: number | string;
@@ -14,15 +16,18 @@ interface FavoritesContextType {
     favorites: FavoriteItem[];
     favoritesCount: number;
     addToFavorites: (item: FavoriteItem) => void;
-    removeFromFavorites: (id: number | string) => void;
+    removeFromFavorites: (id: number | string, name?: string) => void;
     isFavorite: (id: number | string) => boolean;
     clearFavorites: () => void;
 }
 
-const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
+const FavoritesContext = createContext<FavoritesContextType | undefined>(
+    undefined,
+);
 
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+    const { t } = useLanguage();
 
     // Load favorites from localStorage on mount
     useEffect(() => {
@@ -45,10 +50,26 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
             }
             return [...prev, item];
         });
+        toast.success(
+            t(
+                `"${item.name}" added to favorites`,
+                `"${item.name}" добавлен в избранное`,
+            ),
+        );
     };
 
-    const removeFromFavorites = (id: number | string) => {
+    const removeFromFavorites = (id: number | string, name?: string) => {
+        const item = favorites.find((fav) => fav.id === id);
+        const itemName = name || item?.name || "";
         setFavorites((prev) => prev.filter((item) => item.id !== id));
+        if (itemName) {
+            toast.success(
+                t(
+                    `"${itemName}" removed from favorites`,
+                    `"${itemName}" удален из избранного`,
+                ),
+            );
+        }
     };
 
     const isFavorite = (id: number | string) => {

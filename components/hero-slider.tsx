@@ -91,55 +91,56 @@ export function HeroSlider() {
                             index === currentSlide
                                 ? "opacity-100 translate-x-0"
                                 : index < currentSlide
-                                ? "opacity-0 -translate-x-full"
-                                : "opacity-0 translate-x-full"
+                                  ? "opacity-0 -translate-x-full"
+                                  : "opacity-0 translate-x-full"
                         }`}
                     >
-                        <div className="h-full bg-gradient-to-r from-primary/50 to-primary/10">
+                        {/* Background Image */}
+                        <div className="absolute inset-0">
+                            <S3Image
+                                src={slider.coverImage}
+                                alt={
+                                    language === "en"
+                                        ? slider.titleEn
+                                        : slider.titleRu
+                                }
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                            {/* Overlay for better text readability */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+                        </div>
+
+                        {/* Content */}
+                        <div className="relative h-full">
                             <div className="container mx-auto px-4 sm:px-6 h-full">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center h-full py-4 sm:py-8">
-                                    {/* Left side - Text content */}
-                                    <div className="space-y-3 sm:space-y-4 md:space-y-6 text-center md:text-left">
-                                        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-foreground">
+                                <div className="flex items-center h-full py-4 sm:py-8">
+                                    {/* Text content */}
+                                    <div className="space-y-3 sm:space-y-4 md:space-y-6 text-center md:text-left max-w-2xl">
+                                        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-white drop-shadow-lg">
                                             {language === "en"
                                                 ? slider.titleEn
                                                 : slider.titleRu}
                                         </h1>
-                                        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground/80 max-w-lg mx-auto md:mx-0">
+                                        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 max-w-lg mx-auto md:mx-0 drop-shadow-md">
                                             {language === "en"
                                                 ? slider.subtitleEn
                                                 : slider.subtitleRu}
                                         </p>
                                         <Link
                                             href={slider.link}
-                                            className="cursor-pointer"
+                                            className="cursor-pointer inline-block"
                                         >
                                             <Button
                                                 size="lg"
-                                                className="bg-primary hover:bg-primary/90 text-white h-10 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base md:text-lg"
+                                                className="bg-primary hover:bg-primary/90 text-white h-10 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base md:text-lg shadow-lg"
                                             >
                                                 {language === "en"
-                                                    ? "Ko'rish"
+                                                    ? "View"
                                                     : "Смотреть"}
                                             </Button>
                                         </Link>
-                                    </div>
-
-                                    {/* Right side - Product image */}
-                                    <div className="flex items-center justify-center mt-4 md:mt-0">
-                                        <div className="relative w-full max-w-[250px] sm:max-w-[300px] md:max-w-md aspect-square">
-                                            <S3Image
-                                                src={slider.coverImage}
-                                                alt={
-                                                    language === "en"
-                                                        ? slider.titleEn
-                                                        : slider.titleRu
-                                                }
-                                                fill
-                                                className="object-contain rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
-                                                priority
-                                            />
-                                        </div>
                                     </div>
                                 </div>
                             </div>

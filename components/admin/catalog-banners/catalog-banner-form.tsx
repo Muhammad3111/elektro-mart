@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { MediaGalleryModal } from "@/components/admin/media-gallery-modal";
 import { getImageUrl } from "@/lib/s3/get-image-url";
 import { S3Image } from "@/components/s3-image";
+import { checkAPI } from "@/lib/api";
 
 interface CatalogBannerFormProps {
     banner?: CatalogBanner;
@@ -40,9 +41,16 @@ export function CatalogBannerForm({
         isActive: banner?.isActive ?? true,
     });
     const [imagePreview, setImagePreview] = useState<string>(
-        banner?.coverImage || ""
+        banner?.coverImage || "",
     );
     const [imageModalOpen, setImageModalOpen] = useState(false);
+
+    // Check exists states
+    const [titleChecking, setTitleChecking] = useState(false);
+    const [titleExists, setTitleExists] = useState<boolean | null>(null);
+    const [titleCheckTimeout, setTitleCheckTimeout] =
+        useState<NodeJS.Timeout | null>(null);
+    const originalTitleRu = banner?.titleRu || "";
 
     useEffect(() => {
         if (banner?.coverImage) {
@@ -62,6 +70,32 @@ export function CatalogBannerForm({
         }
     };
 
+    // Banner title mavjudligini tekshirish
+    const checkTitleExists = async (title: string) => {
+        if (banner && title === originalTitleRu) {
+            setTitleExists(null);
+            return;
+        }
+        if (!title || title.length < 2) {
+            setTitleExists(null);
+            return;
+        }
+        if (titleCheckTimeout) clearTimeout(titleCheckTimeout);
+        setTitleChecking(true);
+        const timeout = setTimeout(async () => {
+            try {
+                const result = await checkAPI.banner.title(title);
+                setTitleExists(result.exists);
+            } catch (error) {
+                console.error("Banner title check error:", error);
+                setTitleExists(null);
+            } finally {
+                setTitleChecking(false);
+            }
+        }, 500);
+        setTitleCheckTimeout(timeout);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -74,8 +108,8 @@ export function CatalogBannerForm({
             toast.error(
                 t(
                     "Barcha majburiy maydonlarni to'ldiring",
-                    "Заполните все обязательные поля"
-                )
+                    "Заполните все обязательные поля",
+                ),
             );
             return;
         }
@@ -116,14 +150,30 @@ export function CatalogBannerForm({
                     <Input
                         id="titleRu"
                         value={formData.titleRu}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                            const value = e.target.value;
                             setFormData((prev) => ({
                                 ...prev,
-                                titleRu: e.target.value,
-                            }))
-                        }
+                                titleRu: value,
+                            }));
+                            checkTitleExists(value);
+                        }}
+                        className={titleExists ? "border-red-500" : ""}
                         required
                     />
+                    {titleChecking && (
+                        <p className="text-xs text-muted-foreground">
+                            {t("Tekshirilmoqda...", "Проверка...")}
+                        </p>
+                    )}
+                    {titleExists && (
+                        <p className="text-xs text-red-500">
+                            {t(
+                                "Bu sarlavha serverda mavjud",
+                                "Этот заголовок уже существует на сервере",
+                            )}
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -226,8 +276,8 @@ export function CatalogBannerForm({
                     {loading
                         ? t("Saqlanmoqda...", "Сохранение...")
                         : banner
-                        ? t("Yangilash", "Обновить")
-                        : t("Qo'shish", "Добавить")}
+                          ? t("Yangilash", "Обновить")
+                          : t("Qo'shish", "Добавить")}
                 </Button>
                 <Button
                     type="button"

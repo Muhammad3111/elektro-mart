@@ -18,6 +18,7 @@ import { useLanguage } from "@/contexts/language-context";
 import { useAuth } from "@/contexts/auth-context";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { checkAPI } from "@/lib/api";
 
 function AuthPageContent() {
     const [showPassword, setShowPassword] = useState(false);
@@ -44,6 +45,16 @@ function AuthPageContent() {
         phone: "",
     });
 
+    // Check exists states
+    const [emailChecking, setEmailChecking] = useState(false);
+    const [emailExists, setEmailExists] = useState<boolean | null>(null);
+    const [emailCheckTimeout, setEmailCheckTimeout] =
+        useState<NodeJS.Timeout | null>(null);
+    const [phoneChecking, setPhoneChecking] = useState(false);
+    const [phoneExists, setPhoneExists] = useState<boolean | null>(null);
+    const [phoneCheckTimeout, setPhoneCheckTimeout] =
+        useState<NodeJS.Timeout | null>(null);
+
     // Redirect if already authenticated
     useEffect(() => {
         if (isAuthenticated) {
@@ -62,6 +73,50 @@ function AuthPageContent() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Email mavjudligini tekshirish
+    const checkEmailExists = async (emailValue: string) => {
+        if (!emailValue || emailValue.length < 5) {
+            setEmailExists(null);
+            return;
+        }
+        if (emailCheckTimeout) clearTimeout(emailCheckTimeout);
+        setEmailChecking(true);
+        const timeout = setTimeout(async () => {
+            try {
+                const result = await checkAPI.user.email(emailValue);
+                setEmailExists(result.exists);
+            } catch (error) {
+                console.error("Email check error:", error);
+                setEmailExists(null);
+            } finally {
+                setEmailChecking(false);
+            }
+        }, 500);
+        setEmailCheckTimeout(timeout);
+    };
+
+    // Phone mavjudligini tekshirish
+    const checkPhoneExists = async (phoneValue: string) => {
+        if (!phoneValue || phoneValue.length < 13) {
+            setPhoneExists(null);
+            return;
+        }
+        if (phoneCheckTimeout) clearTimeout(phoneCheckTimeout);
+        setPhoneChecking(true);
+        const timeout = setTimeout(async () => {
+            try {
+                const result = await checkAPI.user.phone(phoneValue);
+                setPhoneExists(result.exists);
+            } catch (error) {
+                console.error("Phone check error:", error);
+                setPhoneExists(null);
+            } finally {
+                setPhoneChecking(false);
+            }
+        }, 500);
+        setPhoneCheckTimeout(timeout);
     };
 
     const handleRegister = async (e: React.FormEvent) => {
@@ -91,7 +146,7 @@ function AuthPageContent() {
                                 <CardDescription className="text-base">
                                     {t(
                                         "Sign in to your account",
-                                        "Войдите в свой аккаунт"
+                                        "Войдите в свой аккаунт",
                                     )}
                                 </CardDescription>
                             </CardHeader>
@@ -104,7 +159,7 @@ function AuthPageContent() {
                                         <Label htmlFor="login-phone">
                                             {t(
                                                 "Phone Number",
-                                                "Номер телефона"
+                                                "Номер телефона",
                                             )}{" "}
                                             <span className="text-red-500">
                                                 *
@@ -141,7 +196,7 @@ function AuthPageContent() {
                                                 }
                                                 placeholder={t(
                                                     "Enter your password",
-                                                    "Введите пароль"
+                                                    "Введите пароль",
                                                 )}
                                                 className="pr-10"
                                                 value={loginData.password}
@@ -159,7 +214,7 @@ function AuthPageContent() {
                                                 type="button"
                                                 onClick={() =>
                                                     setShowPassword(
-                                                        !showPassword
+                                                        !showPassword,
                                                     )
                                                 }
                                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -194,7 +249,7 @@ function AuthPageContent() {
                                     <p className="text-sm text-muted-foreground">
                                         {t(
                                             "Don't have an account?",
-                                            "Нет аккаунта?"
+                                            "Нет аккаунта?",
                                         )}{" "}
                                         <button
                                             onClick={() => setIsLogin(false)}
@@ -202,7 +257,7 @@ function AuthPageContent() {
                                         >
                                             {t(
                                                 "Register",
-                                                "Зарегистрироваться"
+                                                "Зарегистрироваться",
                                             )}
                                         </button>
                                     </p>
@@ -237,7 +292,7 @@ function AuthPageContent() {
                                                 type="text"
                                                 placeholder={t(
                                                     "Your Name",
-                                                    "Ваше имя"
+                                                    "Ваше имя",
                                                 )}
                                                 value={registerData.firstName}
                                                 onChange={(e) =>
@@ -263,7 +318,7 @@ function AuthPageContent() {
                                                 type="text"
                                                 placeholder={t(
                                                     "Your Last Name",
-                                                    "Ваша фамилия"
+                                                    "Ваша фамилия",
                                                 )}
                                                 value={registerData.lastName}
                                                 onChange={(e) =>
@@ -291,42 +346,87 @@ function AuthPageContent() {
                                             type="email"
                                             placeholder="email@example.com"
                                             value={registerData.email}
-                                            onChange={(e) =>
+                                            onChange={(e) => {
+                                                const value = e.target.value;
                                                 setRegisterData({
                                                     ...registerData,
-                                                    email: e.target.value,
-                                                })
+                                                    email: value,
+                                                });
+                                                checkEmailExists(value);
+                                            }}
+                                            className={
+                                                emailExists
+                                                    ? "border-red-500"
+                                                    : ""
                                             }
                                             required
                                             disabled={loading}
                                         />
+                                        {emailChecking && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {t(
+                                                    "Checking...",
+                                                    "Проверка...",
+                                                )}
+                                            </p>
+                                        )}
+                                        {emailExists && (
+                                            <p className="text-xs text-red-500">
+                                                {t(
+                                                    "This email is already registered",
+                                                    "Этот email уже зарегистрирован",
+                                                )}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="reg-phone">
                                             {t(
                                                 "Phone Number",
-                                                "Номер телефона"
+                                                "Номер телефона",
                                             )}
                                         </Label>
                                         <PhoneInput
                                             id="reg-phone"
                                             value={registerData.phone}
-                                            onChange={(value) =>
+                                            onChange={(value) => {
                                                 setRegisterData({
                                                     ...registerData,
                                                     phone: value,
-                                                })
+                                                });
+                                                checkPhoneExists(value);
+                                            }}
+                                            className={
+                                                phoneExists
+                                                    ? "border-red-500"
+                                                    : ""
                                             }
                                             disabled={loading}
                                         />
+                                        {phoneChecking && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {t(
+                                                    "Checking...",
+                                                    "Проверка...",
+                                                )}
+                                            </p>
+                                        )}
+                                        {phoneExists && (
+                                            <p className="text-xs text-red-500">
+                                                {t(
+                                                    "This phone number is already registered",
+                                                    "Этот номер телефона уже зарегистрирован",
+                                                )}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="space-y-2">
                                         <Label htmlFor="reg-password">
                                             {t(
                                                 "Create Password",
-                                                "Создать пароль"
+                                                "Создать пароль",
                                             )}{" "}
                                             <span className="text-red-500">
                                                 *
@@ -342,7 +442,7 @@ function AuthPageContent() {
                                                 }
                                                 placeholder={t(
                                                     "Create a strong password",
-                                                    "Создайте надежный пароль"
+                                                    "Создайте надежный пароль",
                                                 )}
                                                 className="pr-10"
                                                 value={registerData.password}
@@ -361,7 +461,7 @@ function AuthPageContent() {
                                                 type="button"
                                                 onClick={() =>
                                                     setShowRegPassword(
-                                                        !showRegPassword
+                                                        !showRegPassword,
                                                     )
                                                 }
                                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
@@ -396,7 +496,7 @@ function AuthPageContent() {
                                     <p className="text-sm text-muted-foreground">
                                         {t(
                                             "Already have an account?",
-                                            "Уже есть аккаунт?"
+                                            "Уже есть аккаунт?",
                                         )}{" "}
                                         <button
                                             onClick={() => setIsLogin(true)}

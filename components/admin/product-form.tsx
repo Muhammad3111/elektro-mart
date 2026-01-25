@@ -22,7 +22,7 @@ import { MediaGalleryModal } from "@/components/admin/media-gallery-modal";
 import { SpecificationsManager } from "@/components/admin/specifications-manager";
 import { ArrowLeft, Save, Image as ImageIcon, X } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
-import { productsAPI, categoriesAPI, brandsAPI } from "@/lib/api";
+import { productsAPI, categoriesAPI, brandsAPI, checkAPI } from "@/lib/api";
 import { toast } from "sonner";
 import type { Category } from "@/types/category";
 import type { Brand } from "@/types/brand";
@@ -79,6 +79,13 @@ export function ProductForm({ productId }: ProductFormProps) {
     const [galleryImageUrls, setGalleryImageUrls] = useState<string[]>([]);
     const [exchangeRate, setExchangeRate] = useState(12500);
 
+    // Check exists states
+    const [skuChecking, setSkuChecking] = useState(false);
+    const [skuExists, setSkuExists] = useState<boolean | null>(null);
+    const [skuCheckTimeout, setSkuCheckTimeout] =
+        useState<NodeJS.Timeout | null>(null);
+    const [originalSku, setOriginalSku] = useState<string>("");
+
     const loadProduct = useCallback(
         async (id: string) => {
             try {
@@ -120,13 +127,16 @@ export function ProductForm({ productId }: ProductFormProps) {
                         })) || [],
                 });
 
+                // Save original SKU for edit mode
+                setOriginalSku(product.sku);
+
                 // Load image URLs for display
                 if (product.coverImage) {
                     getImageUrl(product.coverImage).then(setCoverImageUrl);
                 }
                 if (product.galleryImages && product.galleryImages.length > 0) {
                     Promise.all(
-                        product.galleryImages.map((key) => getImageUrl(key))
+                        product.galleryImages.map((key) => getImageUrl(key)),
                     ).then(setGalleryImageUrls);
                 }
             } catch (error) {
@@ -134,15 +144,15 @@ export function ProductForm({ productId }: ProductFormProps) {
                 toast.error(
                     t(
                         "Mahsulotni yuklashda xatolik",
-                        "Ошибка при загрузке товара"
-                    )
+                        "Ошибка при загрузке товара",
+                    ),
                 );
                 router.push("/admin/products");
             } finally {
                 setLoading(false);
             }
         },
-        [t, router]
+        [t, router],
     );
 
     useEffect(() => {
@@ -175,7 +185,7 @@ export function ProductForm({ productId }: ProductFormProps) {
         try {
             const result = await categoriesAPI.getAll();
             setSubcategories(
-                result.filter((cat: Category) => cat.parentId === parentId)
+                result.filter((cat: Category) => cat.parentId === parentId),
             );
         } catch (error) {
             console.error("Error loading subcategories:", error);
@@ -190,6 +200,44 @@ export function ProductForm({ productId }: ProductFormProps) {
             console.error("Error loading brands:", error);
         }
     };
+
+    // SKU mavjudligini tekshirish
+    const checkSkuExists = useCallback(
+        async (sku: string) => {
+            // Edit modeda original SKU bilan bir xil bo'lsa tekshirmaymiz
+            if (isEditMode && sku === originalSku) {
+                setSkuExists(null);
+                return;
+            }
+
+            if (!sku || sku.length < 2) {
+                setSkuExists(null);
+                return;
+            }
+
+            // Clear previous timeout
+            if (skuCheckTimeout) {
+                clearTimeout(skuCheckTimeout);
+            }
+
+            setSkuChecking(true);
+
+            const timeout = setTimeout(async () => {
+                try {
+                    const result = await checkAPI.product.sku(sku);
+                    setSkuExists(result.exists);
+                } catch (error) {
+                    console.error("SKU check error:", error);
+                    setSkuExists(null);
+                } finally {
+                    setSkuChecking(false);
+                }
+            }, 500);
+
+            setSkuCheckTimeout(timeout);
+        },
+        [isEditMode, originalSku, skuCheckTimeout],
+    );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -206,14 +254,14 @@ export function ProductForm({ productId }: ProductFormProps) {
 
         if (!formData.nameEn || !formData.nameRu) {
             toast.error(
-                t("Mahsulot nomini kiriting", "Введите название товара")
+                t("Mahsulot nomini kiriting", "Введите название товара"),
             );
             return;
         }
 
         if (!formData.descriptionEn || !formData.descriptionRu) {
             toast.error(
-                t("Mahsulot tavsifini kiriting", "Введите описание товара")
+                t("Mahsulot tavsifini kiriting", "Введите описание товара"),
             );
             return;
         }
@@ -278,7 +326,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                 (error as any)?.response?.data?.message ||
                 (error as any)?.message;
             toast.error(
-                errorMessage || t("Xatolik yuz berdi", "Произошла ошибка")
+                errorMessage || t("Xatolik yuz berdi", "Произошла ошибка"),
             );
         } finally {
             setSubmitting(false);
@@ -319,22 +367,22 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 {isEditMode
                                     ? t(
                                           "Mahsulotni tahrirlash",
-                                          "Редактировать товар"
+                                          "Редактировать товар",
                                       )
                                     : t(
                                           "Yangi mahsulot qo'shish",
-                                          "Добавить новый товар"
+                                          "Добавить новый товар",
                                       )}
                             </h1>
                             <p className="text-muted-foreground mt-2">
                                 {isEditMode
                                     ? t(
                                           "Mahsulot ma'lumotlarini yangilang",
-                                          "Обновите информацию о товаре"
+                                          "Обновите информацию о товаре",
                                       )
                                     : t(
                                           "Asosiy ma'lumotlarni to'ldiring",
-                                          "Заполните основную информацию"
+                                          "Заполните основную информацию",
                                       )}
                             </p>
                         </div>
@@ -369,18 +417,36 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <Input
                                     id="sku"
                                     value={formData.sku}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
+                                        const value = e.target.value;
                                         setFormData({
                                             ...formData,
-                                            sku: e.target.value,
-                                        })
-                                    }
+                                            sku: value,
+                                        });
+                                        checkSkuExists(value);
+                                    }}
                                     placeholder={t(
                                         "Masalan: PROD-001",
-                                        "Например: PROD-001"
+                                        "Например: PROD-001",
                                     )}
+                                    className={
+                                        skuExists ? "border-red-500" : ""
+                                    }
                                     required
                                 />
+                                {skuChecking && (
+                                    <p className="text-xs text-muted-foreground">
+                                        {t("Tekshirilmoqda...", "Проверка...")}
+                                    </p>
+                                )}
+                                {skuExists && (
+                                    <p className="text-xs text-red-500">
+                                        {t(
+                                            "Bu SKU serverda mavjud",
+                                            "Этот SKU уже существует на сервере",
+                                        )}
+                                    </p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="productCode">
@@ -398,7 +464,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     }
                                     placeholder={t(
                                         "Masalan: PC-001",
-                                        "Например: PC-001"
+                                        "Например: PC-001",
                                     )}
                                     required
                                 />
@@ -411,7 +477,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <Label htmlFor="nameEn">
                                     {t(
                                         "Name (English)",
-                                        "Название (Английский)"
+                                        "Название (Английский)",
                                     )}{" "}
                                     <span className="text-red-500">*</span>
                                 </Label>
@@ -426,7 +492,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     }
                                     placeholder={t(
                                         "Mahsulot nomi",
-                                        "Название товара"
+                                        "Название товара",
                                     )}
                                     required
                                 />
@@ -447,7 +513,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     }
                                     placeholder={t(
                                         "Название товара",
-                                        "Название товара"
+                                        "Название товара",
                                     )}
                                     required
                                 />
@@ -460,7 +526,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <Label htmlFor="descriptionEn">
                                     {t(
                                         "Description (English)",
-                                        "Описание (Английский)"
+                                        "Описание (Английский)",
                                     )}{" "}
                                     <span className="text-red-500">*</span>
                                 </Label>
@@ -475,7 +541,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     }
                                     placeholder={t(
                                         "Mahsulot tavsifi",
-                                        "Описание товара"
+                                        "Описание товара",
                                     )}
                                     rows={4}
                                     required
@@ -485,7 +551,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <Label htmlFor="descriptionRu">
                                     {t(
                                         "Description (Russian)",
-                                        "Описание (Русский)"
+                                        "Описание (Русский)",
                                     )}{" "}
                                     <span className="text-red-500">*</span>
                                 </Label>
@@ -500,7 +566,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     }
                                     placeholder={t(
                                         "Описание товара",
-                                        "Описание товара"
+                                        "Описание товара",
                                     )}
                                     rows={4}
                                     required
@@ -514,7 +580,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <Label htmlFor="shortDescriptionEn">
                                     {t(
                                         "Short Description (English)",
-                                        "Краткое описание (Английский)"
+                                        "Краткое описание (Английский)",
                                     )}
                                 </Label>
                                 <Textarea
@@ -528,7 +594,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     }
                                     placeholder={t(
                                         "50-150 belgi",
-                                        "50-150 символов"
+                                        "50-150 символов",
                                     )}
                                     rows={2}
                                     maxLength={150}
@@ -542,7 +608,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <Label htmlFor="shortDescriptionRu">
                                     {t(
                                         "Short Description (Russian)",
-                                        "Краткое описание (Русский)"
+                                        "Краткое описание (Русский)",
                                     )}
                                 </Label>
                                 <Textarea
@@ -556,7 +622,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     }
                                     placeholder={t(
                                         "50-150 символов",
-                                        "50-150 символов"
+                                        "50-150 символов",
                                     )}
                                     rows={2}
                                     maxLength={150}
@@ -587,7 +653,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     <SelectValue
                                         placeholder={t(
                                             "Kategoriyani tanlang",
-                                            "Выберите категорию"
+                                            "Выберите категорию",
                                         )}
                                     />
                                 </SelectTrigger>
@@ -620,7 +686,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                         <SelectValue
                                             placeholder={t(
                                                 "Tanlang",
-                                                "Выберите"
+                                                "Выберите",
                                             )}
                                         />
                                     </SelectTrigger>
@@ -690,7 +756,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                         setUsdPrice(value);
                                         if (value) {
                                             const uzsValue = Math.round(
-                                                Number(value) * exchangeRate
+                                                Number(value) * exchangeRate,
                                             );
                                             setFormData({
                                                 ...formData,
@@ -705,7 +771,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <p className="text-xs text-muted-foreground">
                                     {t(
                                         "USD da kiritish uchun",
-                                        "Для ввода в USD"
+                                        "Для ввода в USD",
                                     )}
                                 </p>
                             </div>
@@ -713,7 +779,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <Label htmlFor="exchangeRate">
                                     {t(
                                         "Kurs (1 USD = ? UZS)",
-                                        "Курс (1 USD = ? UZS)"
+                                        "Курс (1 USD = ? UZS)",
                                     )}
                                 </Label>
                                 <Input
@@ -725,7 +791,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                         setExchangeRate(newRate);
                                         if (usdPrice) {
                                             const uzsValue = Math.round(
-                                                Number(usdPrice) * newRate
+                                                Number(usdPrice) * newRate,
                                             );
                                             setFormData({
                                                 ...formData,
@@ -818,7 +884,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                         setFormData({
                                             ...formData,
                                             stockQuantity: Number(
-                                                e.target.value
+                                                e.target.value,
                                             ),
                                         })
                                     }
@@ -888,7 +954,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                         <p className="text-sm font-medium">
                                             {t(
                                                 "Cover rasm tanlash",
-                                                "Выбрать обложку"
+                                                "Выбрать обложку",
                                             )}
                                         </p>
                                     </div>
@@ -900,7 +966,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                             <Label>
                                 {t(
                                     "Gallery rasmlar (3-10 ta)",
-                                    "Изображения галереи (3-10)"
+                                    "Изображения галереи (3-10)",
                                 )}
                             </Label>
                             <div className="grid grid-cols-5 gap-4">
@@ -927,7 +993,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                                     galleryImages:
                                                         formData.galleryImages?.filter(
                                                             (_, i) =>
-                                                                i !== index
+                                                                i !== index,
                                                         ) || [],
                                                 })
                                             }
@@ -958,7 +1024,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                         <CardTitle>
                             {t(
                                 "Texnik xususiyatlar",
-                                "Технические характеристики"
+                                "Технические характеристики",
                             )}
                         </CardTitle>
                     </CardHeader>
@@ -997,7 +1063,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 }
                                 placeholder={t(
                                     "SEO uchun sarlavha",
-                                    "Заголовок для SEO"
+                                    "Заголовок для SEO",
                                 )}
                             />
                         </div>
@@ -1016,7 +1082,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 }
                                 placeholder={t(
                                     "SEO uchun tavsif",
-                                    "Описание для SEO"
+                                    "Описание для SEO",
                                 )}
                                 rows={3}
                             />
@@ -1047,7 +1113,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                     }}
                                     placeholder={t(
                                         "Keyword kiriting",
-                                        "Введите ключевое слово"
+                                        "Введите ключевое слово",
                                     )}
                                 />
                                 <Button
@@ -1089,10 +1155,10 @@ export function ProductForm({ productId }: ProductFormProps) {
                                                                     formData.keywords?.filter(
                                                                         (
                                                                             _,
-                                                                            i
+                                                                            i,
                                                                         ) =>
                                                                             i !==
-                                                                            index
+                                                                            index,
                                                                     ) || [],
                                                             })
                                                         }
@@ -1101,7 +1167,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                                         <X className="h-3 w-3" />
                                                     </button>
                                                 </Badge>
-                                            )
+                                            ),
                                         )}
                                     </div>
                                 )}
@@ -1134,7 +1200,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                             <Label htmlFor="isFeatured">
                                 {t(
                                     "Featured (Tavsiya etilgan)",
-                                    "Featured (Рекомендуем)"
+                                    "Featured (Рекомендуем)",
                                 )}
                             </Label>
                             <Switch
@@ -1230,7 +1296,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                     setFormData({ ...formData, galleryImages: keys });
                     // Generate URLs for display
                     Promise.all(keys.map((key) => getImageUrl(key))).then(
-                        setGalleryImageUrls
+                        setGalleryImageUrls,
                     );
                 }}
                 mode="multiple"

@@ -205,7 +205,7 @@ export function Header() {
                                     className="w-full h-7 bg-transparent border-white/30 text-white hover:bg-white/10"
                                     aria-label={t(
                                         "Select language",
-                                        "Выберите язык"
+                                        "Выберите язык",
                                     )}
                                 >
                                     <Globe
@@ -332,7 +332,7 @@ export function Header() {
                                                 {searchResults.length}{" "}
                                                 {t(
                                                     "products found",
-                                                    "товаров найдено"
+                                                    "товаров найдено",
                                                 )}
                                             </div>
                                             {searchResults
@@ -344,7 +344,7 @@ export function Header() {
                                                             e.stopPropagation();
                                                             e.preventDefault();
                                                             router.push(
-                                                                `/products/${product.id}`
+                                                                `/products/${product.id}`,
                                                             );
                                                         }}
                                                         className="w-full flex items-center gap-3 p-3 hover:bg-accent rounded-lg transition-colors text-left"
@@ -370,14 +370,14 @@ export function Header() {
                                                                               .nameEn,
                                                                           product
                                                                               .category
-                                                                              .nameRu
+                                                                              .nameRu,
                                                                       )
                                                                     : ""}
                                                             </p>
                                                         </div>
                                                         <div className="text-sm font-bold text-primary">
                                                             {formatPrice(
-                                                                product.price
+                                                                product.price,
                                                             )}{" "}
                                                             {
                                                                 siteConfig.currencySymbol
@@ -392,7 +392,7 @@ export function Header() {
                                                 >
                                                     {t(
                                                         "View all results",
-                                                        "Посмотреть все результаты"
+                                                        "Посмотреть все результаты",
                                                     )}{" "}
                                                     ({totalResults})
                                                 </button>
@@ -408,7 +408,7 @@ export function Header() {
                             className="flex items-center gap-2"
                             aria-label={t(
                                 "User actions",
-                                "Действия пользователя"
+                                "Действия пользователя",
                             )}
                         >
                             {isAuthenticated && user ? (
@@ -539,6 +539,16 @@ export function Header() {
                         </li>
                         <li>
                             <Link
+                                href="/delivery"
+                                className={`text-sm font-medium hover:text-primary transition-colors ${
+                                    isActive("/delivery") ? "text-primary" : ""
+                                }`}
+                            >
+                                {t("Delivery", "Доставка")}
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
                                 href="/contact"
                                 className={`text-sm font-medium hover:text-primary transition-colors ${
                                     isActive("/contact") ? "text-primary" : ""
@@ -577,7 +587,7 @@ export function Header() {
                                 className="w-max h-9"
                                 aria-label={t(
                                     "Select language",
-                                    "Выберите язык"
+                                    "Выберите язык",
                                 )}
                             >
                                 <Globe
@@ -672,7 +682,7 @@ export function Header() {
                                     {product.category
                                         ? t(
                                               product.category.nameEn,
-                                              product.category.nameRu
+                                              product.category.nameRu,
                                           )
                                         : ""}
                                 </p>
@@ -808,7 +818,7 @@ export function Header() {
                                             e.stopPropagation();
                                             setCatalogOpen(false);
                                             router.push(
-                                                `/catalog?category=${category.id}`
+                                                `/catalog?category=${category.id}`,
                                             );
                                         }}
                                         className="w-full text-left px-4 py-3 hover:bg-accent rounded-lg transition-colors"

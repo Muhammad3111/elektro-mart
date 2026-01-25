@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { MediaGalleryModal } from "@/components/admin/media-gallery-modal";
 import { getImageUrl } from "@/lib/s3/get-image-url";
+import { checkAPI } from "@/lib/api";
 
 interface BrandFormProps {
     brand?: Brand;
@@ -35,9 +36,16 @@ export function BrandForm({
         order: brand?.order || 0,
     });
     const [imagePreview, setImagePreview] = useState<string>(
-        brand?.image || ""
+        brand?.image || "",
     );
     const [imageModalOpen, setImageModalOpen] = useState(false);
+
+    // Check exists states
+    const [nameChecking, setNameChecking] = useState(false);
+    const [nameExists, setNameExists] = useState<boolean | null>(null);
+    const [nameCheckTimeout, setNameCheckTimeout] =
+        useState<NodeJS.Timeout | null>(null);
+    const originalNameRu = brand?.nameRu || "";
 
     // Load image URL when brand is loaded
     useEffect(() => {
@@ -57,6 +65,34 @@ export function BrandForm({
             // Generate URL for preview
             getImageUrl(keys[0]).then(setImagePreview);
         }
+    };
+
+    // Brand name mavjudligini tekshirish
+    const checkNameExists = async (name: string) => {
+        if (brand && name === originalNameRu) {
+            setNameExists(null);
+            return;
+        }
+        if (!name || name.length < 2) {
+            setNameExists(null);
+            return;
+        }
+        if (nameCheckTimeout) {
+            clearTimeout(nameCheckTimeout);
+        }
+        setNameChecking(true);
+        const timeout = setTimeout(async () => {
+            try {
+                const result = await checkAPI.brand.name(name);
+                setNameExists(result.exists);
+            } catch (error) {
+                console.error("Brand name check error:", error);
+                setNameExists(null);
+            } finally {
+                setNameChecking(false);
+            }
+        }, 500);
+        setNameCheckTimeout(timeout);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -90,7 +126,7 @@ export function BrandForm({
                         }
                         placeholder={t(
                             "Brend nomini kiriting",
-                            "Введите название бренда"
+                            "Введите название бренда",
                         )}
                         required
                     />
@@ -103,18 +139,34 @@ export function BrandForm({
                     <Input
                         id="nameRu"
                         value={formData.nameRu}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                            const value = e.target.value;
                             setFormData((prev) => ({
                                 ...prev,
-                                nameRu: e.target.value,
-                            }))
-                        }
+                                nameRu: value,
+                            }));
+                            checkNameExists(value);
+                        }}
                         placeholder={t(
                             "Brend nomini kiriting",
-                            "Введите название бренда"
+                            "Введите название бренда",
                         )}
+                        className={nameExists ? "border-red-500" : ""}
                         required
                     />
+                    {nameChecking && (
+                        <p className="text-xs text-muted-foreground">
+                            {t("Tekshirilmoqda...", "Проверка...")}
+                        </p>
+                    )}
+                    {nameExists && (
+                        <p className="text-xs text-red-500">
+                            {t(
+                                "Bu nom serverda mavjud",
+                                "Это название уже существует на сервере",
+                            )}
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -201,8 +253,8 @@ export function BrandForm({
                     {loading
                         ? t("Saqlanmoqda...", "Сохранение...")
                         : brand
-                        ? t("Yangilash", "Обновить")
-                        : t("Qo'shish", "Добавить")}
+                          ? t("Yangilash", "Обновить")
+                          : t("Qo'shish", "Добавить")}
                 </Button>
                 <Button
                     type="button"

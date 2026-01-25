@@ -6,7 +6,7 @@ import {
     CreateCategoryDto,
     UpdateCategoryDto,
 } from "@/types/category";
-import { categoriesAPI } from "@/lib/api";
+import { categoriesAPI, checkAPI } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,9 +33,18 @@ export function CategoryForm({
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [imagePreview, setImagePreview] = useState<string | null>(
-        category?.image || null
+        category?.image || null,
     );
     const [imageModalOpen, setImageModalOpen] = useState(false);
+
+    // Check exists states
+    const [nameChecking, setNameChecking] = useState(false);
+    const [nameExists, setNameExists] = useState<boolean | null>(null);
+    const [nameCheckTimeout, setNameCheckTimeout] =
+        useState<NodeJS.Timeout | null>(null);
+    const [originalNameRu, setOriginalNameRu] = useState<string>(
+        category?.nameRu || "",
+    );
 
     const [formData, setFormData] = useState<
         CreateCategoryDto | UpdateCategoryDto
@@ -59,8 +68,8 @@ export function CategoryForm({
                 setCategories(
                     data.filter(
                         (c) =>
-                            c.id !== category.id && c.parentId !== category.id
-                    )
+                            c.id !== category.id && c.parentId !== category.id,
+                    ),
                 );
             } else {
                 setCategories(data);
@@ -74,8 +83,8 @@ export function CategoryForm({
                 toast.error(
                     t(
                         "Ruxsat yo'q. Qayta login qiling",
-                        "Нет доступа. Войдите снова"
-                    )
+                        "Нет доступа. Войдите снова",
+                    ),
                 );
             } else if (err?.message?.includes("500")) {
                 toast.error(t("Server xatosi", "Ошибка сервера"));
@@ -105,6 +114,41 @@ export function CategoryForm({
         }
     };
 
+    // Category name mavjudligini tekshirish
+    const checkNameExists = async (name: string) => {
+        // Edit modeda original name bilan bir xil bo'lsa tekshirmaymiz
+        if (category && name === originalNameRu) {
+            setNameExists(null);
+            return;
+        }
+
+        if (!name || name.length < 2) {
+            setNameExists(null);
+            return;
+        }
+
+        // Clear previous timeout
+        if (nameCheckTimeout) {
+            clearTimeout(nameCheckTimeout);
+        }
+
+        setNameChecking(true);
+
+        const timeout = setTimeout(async () => {
+            try {
+                const result = await checkAPI.category.name(name);
+                setNameExists(result.exists);
+            } catch (error) {
+                console.error("Category name check error:", error);
+                setNameExists(null);
+            } finally {
+                setNameChecking(false);
+            }
+        }, 500);
+
+        setNameCheckTimeout(timeout);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -112,8 +156,8 @@ export function CategoryForm({
             toast.error(
                 t(
                     "Barcha majburiy maydonlarni to'ldiring",
-                    "Заполните все обязательные поля"
-                )
+                    "Заполните все обязательные поля",
+                ),
             );
             return;
         }
@@ -123,10 +167,10 @@ export function CategoryForm({
             if (category) {
                 await categoriesAPI.update(
                     category.id,
-                    formData as UpdateCategoryDto
+                    formData as UpdateCategoryDto,
                 );
                 toast.success(
-                    t("Kategoriya yangilandi", "Категория обновлена")
+                    t("Kategoriya yangilandi", "Категория обновлена"),
                 );
             } else {
                 await categoriesAPI.create(formData as CreateCategoryDto);
@@ -144,8 +188,8 @@ export function CategoryForm({
                 toast.error(
                     t(
                         "Ruxsat yo'q. Qayta login qiling",
-                        "Нет доступа. Войдите снова"
-                    )
+                        "Нет доступа. Войдите снова",
+                    ),
                 );
             } else if (err?.message?.includes("404")) {
                 toast.error(t("Kategoriya topilmadi", "Категория не найдена"));
@@ -153,8 +197,8 @@ export function CategoryForm({
                 toast.error(
                     t(
                         "Server xatosi. Keyinroq urinib ko'ring",
-                        "Ошибка сервера. Попробуйте позже"
-                    )
+                        "Ошибка сервера. Попробуйте позже",
+                    ),
                 );
             } else {
                 toast.error(errorMessage);
@@ -238,12 +282,28 @@ export function CategoryForm({
                 <Input
                     id="nameRu"
                     value={formData.nameRu}
-                    onChange={(e) =>
-                        setFormData({ ...formData, nameRu: e.target.value })
-                    }
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData({ ...formData, nameRu: value });
+                        checkNameExists(value);
+                    }}
                     placeholder="Бытовая техника"
+                    className={nameExists ? "border-red-500" : ""}
                     required
                 />
+                {nameChecking && (
+                    <p className="text-xs text-muted-foreground">
+                        {t("Tekshirilmoqda...", "Проверка...")}
+                    </p>
+                )}
+                {nameExists && (
+                    <p className="text-xs text-red-500">
+                        {t(
+                            "Bu nom serverda mavjud",
+                            "Это название уже существует на сервере",
+                        )}
+                    </p>
+                )}
             </div>
 
             {/* Parent Category */}

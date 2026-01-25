@@ -16,12 +16,19 @@ import {
     Menu,
     X,
     LogOut,
-    Settings,
+    Home,
     Globe,
     Tag,
     ShoppingCart,
-    User,
 } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { useLanguage, Language } from "@/contexts/language-context";
 import {
     Select,
@@ -40,6 +47,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const { logout, user } = useAuth();
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
+    const handleLogout = () => {
+        setLogoutDialogOpen(false);
+        logout();
+    };
 
     const menuItems = [
         {
@@ -144,16 +157,22 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                             </SelectContent>
                         </Select>
 
-                        {/* Settings */}
-                        <Button variant="ghost" size="icon">
-                            <Settings className="h-5 w-5" />
-                        </Button>
+                        {/* Home - Front sahifasiga o'tish */}
+                        <Link href="/">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                title={t("Bosh sahifa", "Главная страница")}
+                            >
+                                <Home className="h-5 w-5" />
+                            </Button>
+                        </Link>
 
                         {/* Logout */}
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={logout}
+                            onClick={() => setLogoutDialogOpen(true)}
                             title={t("Chiqish", "Выход")}
                         >
                             <LogOut className="h-5 w-5" />
@@ -240,6 +259,33 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <main className="flex-1 p-6 lg:p-8">{children}</main>
                 </div>
             </div>
+            {/* Logout Confirmation Dialog */}
+            <Dialog open={logoutDialogOpen} onOpenChange={setLogoutDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            {t("Chiqishni tasdiqlash", "Подтверждение выхода")}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {t(
+                                "Haqiqatan ham tizimdan chiqmoqchimisiz?",
+                                "Вы действительно хотите выйти из системы?",
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                            variant="outline"
+                            onClick={() => setLogoutDialogOpen(false)}
+                        >
+                            {t("Yo'q", "Нет")}
+                        </Button>
+                        <Button variant="destructive" onClick={handleLogout}>
+                            {t("Ha, chiqish", "Да, выйти")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AdminGuard>
     );
 }

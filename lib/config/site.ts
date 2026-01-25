@@ -114,7 +114,7 @@ export const siteConfig = {
     currencySymbol: "$",
 
     // Default language
-    defaultLanguage: "en" as const,
+    defaultLanguage: "ru" as const,
     supportedLanguages: ["en", "ru"] as const,
 } as const;
 

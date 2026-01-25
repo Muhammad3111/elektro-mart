@@ -35,7 +35,7 @@ export function Footer() {
                         <p className="text-sm text-muted-foreground italic">
                             {t(
                                 "Your source of power and solutions",
-                                "Ваш источник энергии и решений"
+                                "Ваш источник энергии и решений",
                             )}
                         </p>
                         <div className="mt-4">
@@ -86,7 +86,7 @@ export function Footer() {
                         <nav
                             aria-label={t(
                                 "Footer navigation",
-                                "Навигация в подвале"
+                                "Навигация в подвале",
                             )}
                         >
                             <ul className="space-y-1 text-sm">
@@ -124,13 +124,10 @@ export function Footer() {
                                 </li>
                                 <li>
                                     <Link
-                                        href="#"
+                                        href="/delivery"
                                         className="hover:text-primary transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary rounded"
                                     >
-                                        {t(
-                                            "Shipping & Returns",
-                                            "Доставка и возврат"
-                                        )}
+                                        {t("Delivery", "Доставка")}
                                     </Link>
                                 </li>
                             </ul>
@@ -170,7 +167,7 @@ export function Footer() {
                                 <span>
                                     {t(
                                         siteConfig.contact.address.en,
-                                        siteConfig.contact.address.ru
+                                        siteConfig.contact.address.ru,
                                     )}
                                 </span>
                             </div>

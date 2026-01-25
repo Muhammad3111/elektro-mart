@@ -16,7 +16,13 @@ export { categoriesAPI } from "./categories";
 
 // Products
 export { productsAPI } from "./products";
-export type { Product, CreateProductDto, UpdateProductDto, ProductsResponse, QueryProductDto } from "@/types/product";
+export type {
+    Product,
+    CreateProductDto,
+    UpdateProductDto,
+    ProductsResponse,
+    QueryProductDto,
+} from "@/types/product";
 
 // Users
 export { usersAPI } from "./users";
@@ -43,4 +49,21 @@ export { statisticsAPI } from "./statistics";
 
 // Orders
 export { ordersAPI } from "./orders";
-export type { Order, CreateOrderDto, UpdateOrderDto, OrderItem } from "@/types/order";
+export type {
+    Order,
+    CreateOrderDto,
+    UpdateOrderDto,
+    OrderItem,
+} from "@/types/order";
+
+// Check API
+export { checkAPI } from "./check";
+export type { CheckResponse } from "./check";
+
+// Reviews
+export { reviewsAPI } from "./reviews";
+export type { Review, CreateReviewDto } from "./reviews";
+
+// Favorites
+export { favoritesAPI } from "./favorites";
+export type { Favorite } from "./favorites";
