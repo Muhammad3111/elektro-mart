@@ -28,7 +28,7 @@ export function FloatingButtons() {
     };
 
     const handleCall = () => {
-        window.location.href = "tel:+998334704700";
+        window.location.href = "tel:+998934324565";
     };
 
     // Hide buttons in admin panel
