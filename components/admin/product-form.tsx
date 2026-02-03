@@ -660,7 +660,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                 <SelectContent>
                                     {categories.map((cat) => (
                                         <SelectItem key={cat.id} value={cat.id}>
-                                            {cat.nameEn}
+                                            {cat.nameRu}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -696,7 +696,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                                 key={cat.id}
                                                 value={cat.id}
                                             >
-                                                {cat.nameEn}
+                                                {cat.nameRu}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -724,7 +724,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                                             key={brand.id}
                                             value={brand.id}
                                         >
-                                            {brand.nameEn}
+                                            {brand.nameRu}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
