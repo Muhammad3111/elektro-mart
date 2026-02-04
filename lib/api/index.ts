@@ -67,3 +67,13 @@ export type { Review, CreateReviewDto } from "./reviews";
 // Favorites
 export { favoritesAPI } from "./favorites";
 export type { Favorite } from "./favorites";
+
+// Blogs
+export { blogsAPI } from "./blogs";
+export type {
+    Blog,
+    CreateBlogDto,
+    UpdateBlogDto,
+    BlogsResponse,
+    QueryBlogDto,
+} from "@/types/blog";

@@ -236,7 +236,7 @@ export function ProductDetailClient({
                                                 className="object-contain"
                                             />
                                         </button>
-                                    )
+                                    ),
                                 )}
                             </div>
                         )}
@@ -284,17 +284,31 @@ export function ProductDetailClient({
                         {/* Price */}
                         <div className="space-y-2">
                             <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-black text-primary">
-                                    {formatPrice(product.price)}{" "}
-                                    {t("UZS", "сум")}
-                                </span>
-                                {product.oldPrice &&
-                                    product.oldPrice > product.price && (
-                                        <span className="text-xl text-muted-foreground line-through">
-                                            {formatPrice(product.oldPrice)}{" "}
+                                {product.price > 0 ? (
+                                    <>
+                                        <span className="text-4xl font-black text-primary">
+                                            {formatPrice(product.price)}{" "}
                                             {t("UZS", "сум")}
                                         </span>
-                                    )}
+                                        {product.oldPrice &&
+                                            product.oldPrice >
+                                                product.price && (
+                                                <span className="text-xl text-muted-foreground line-through">
+                                                    {formatPrice(
+                                                        product.oldPrice,
+                                                    )}{" "}
+                                                    {t("UZS", "сум")}
+                                                </span>
+                                            )}
+                                    </>
+                                ) : (
+                                    <span className="text-3xl font-bold text-primary">
+                                        {t(
+                                            "Price on request",
+                                            "Цена по запросу",
+                                        )}
+                                    </span>
+                                )}
                             </div>
                             {product.discount && product.discount > 0 && (
                                 <div className="inline-flex items-center gap-2 bg-red-500/10 text-red-500 px-3 py-1 rounded-full text-sm font-medium">
@@ -315,18 +329,24 @@ export function ProductDetailClient({
                                     </span>
                                 </>
                             ) : (
-                                <span className="text-red-500 font-medium">
-                                    {t("Out of Stock", "Нет в наличии")}
+                                <span className="text-orange-600 font-medium">
+                                    {t(
+                                        "Available on order",
+                                        "Доступно под заказ",
+                                    )}
                                 </span>
                             )}
                         </div>
 
-                        {/* Short Description */}
+                        {/* Short Description - render as HTML */}
                         {shortDescription && (
                             <div className="bg-accent/50 rounded-lg p-4">
-                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                    {shortDescription}
-                                </p>
+                                <div
+                                    className="prose prose-sm max-w-none text-muted-foreground leading-relaxed"
+                                    dangerouslySetInnerHTML={{
+                                        __html: shortDescription,
+                                    }}
+                                />
                             </div>
                         )}
 
@@ -346,8 +366,8 @@ export function ProductDetailClient({
                                                     setQuantity(
                                                         Math.max(
                                                             1,
-                                                            quantity - 1
-                                                        )
+                                                            quantity - 1,
+                                                        ),
                                                     )
                                                 }
                                                 disabled={quantity <= 1}
@@ -363,9 +383,9 @@ export function ProductDetailClient({
                                                         Math.max(
                                                             1,
                                                             parseInt(
-                                                                e.target.value
-                                                            ) || 1
-                                                        )
+                                                                e.target.value,
+                                                            ) || 1,
+                                                        ),
                                                     )
                                                 }
                                                 className="w-20 text-center"
@@ -394,7 +414,7 @@ export function ProductDetailClient({
                                             <ShoppingCart className="h-5 w-5 mr-2" />
                                             {t(
                                                 "Add to Cart",
-                                                "Добавить в корзину"
+                                                "Добавить в корзину",
                                             )}
                                         </Button>
                                         <Button
@@ -434,18 +454,19 @@ export function ProductDetailClient({
 
                 {/* Description and Specifications Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                    {/* Description */}
+                    {/* Description - render as HTML */}
                     {productDescription && (
                         <Card>
                             <CardContent className="p-6">
                                 <h2 className="text-2xl font-black mb-6">
                                     {t("Description", "Описание")}
                                 </h2>
-                                <div className="prose prose-sm max-w-none">
-                                    <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-                                        {productDescription}
-                                    </p>
-                                </div>
+                                <div
+                                    className="prose prose-sm max-w-none text-muted-foreground leading-relaxed"
+                                    dangerouslySetInnerHTML={{
+                                        __html: productDescription,
+                                    }}
+                                />
                             </CardContent>
                         </Card>
                     )}
@@ -458,7 +479,7 @@ export function ProductDetailClient({
                                     <h2 className="text-2xl font-black mb-6">
                                         {t(
                                             "Texnik xususiyatlar",
-                                            "Технические характеристики"
+                                            "Технические характеристики",
                                         )}
                                     </h2>
                                     <div className="space-y-3">
@@ -480,7 +501,7 @@ export function ProductDetailClient({
                                                               spec.valueEn}
                                                     </span>
                                                 </div>
-                                            )
+                                            ),
                                         )}
                                     </div>
                                 </CardContent>

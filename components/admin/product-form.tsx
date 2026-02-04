@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -271,11 +272,6 @@ export function ProductForm({ productId }: ProductFormProps) {
             return;
         }
 
-        if (formData.price <= 0) {
-            toast.error(t("Narxni kiriting", "Введите цену"));
-            return;
-        }
-
         setSubmitting(true);
 
         try {
@@ -520,117 +516,81 @@ export function ProductForm({ productId }: ProductFormProps) {
                             </div>
                         </div>
 
-                        {/* Descriptions */}
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Descriptions - Rich Text - Side by Side */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="descriptionEn">
+                                <Label>
                                     {t(
                                         "Description (English)",
                                         "Описание (Английский)",
                                     )}{" "}
                                     <span className="text-red-500">*</span>
                                 </Label>
-                                <Textarea
-                                    id="descriptionEn"
+                                <RichTextEditor
                                     value={formData.descriptionEn}
-                                    onChange={(e) =>
+                                    onChange={(value) =>
                                         setFormData({
                                             ...formData,
-                                            descriptionEn: e.target.value,
+                                            descriptionEn: value,
                                         })
                                     }
-                                    placeholder={t(
-                                        "Mahsulot tavsifi",
-                                        "Описание товара",
-                                    )}
-                                    rows={4}
-                                    required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="descriptionRu">
+                                <Label>
                                     {t(
                                         "Description (Russian)",
                                         "Описание (Русский)",
                                     )}{" "}
                                     <span className="text-red-500">*</span>
                                 </Label>
-                                <Textarea
-                                    id="descriptionRu"
+                                <RichTextEditor
                                     value={formData.descriptionRu}
-                                    onChange={(e) =>
+                                    onChange={(value) =>
                                         setFormData({
                                             ...formData,
-                                            descriptionRu: e.target.value,
+                                            descriptionRu: value,
                                         })
                                     }
-                                    placeholder={t(
-                                        "Описание товара",
-                                        "Описание товара",
-                                    )}
-                                    rows={4}
-                                    required
                                 />
                             </div>
                         </div>
 
-                        {/* Short Descriptions */}
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Short Descriptions - Rich Text - Side by Side */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="shortDescriptionEn">
+                                <Label>
                                     {t(
                                         "Short Description (English)",
                                         "Краткое описание (Английский)",
                                     )}
                                 </Label>
-                                <Textarea
-                                    id="shortDescriptionEn"
-                                    value={formData.shortDescriptionEn}
-                                    onChange={(e) =>
+                                <RichTextEditor
+                                    value={formData.shortDescriptionEn || ""}
+                                    onChange={(value) =>
                                         setFormData({
                                             ...formData,
-                                            shortDescriptionEn: e.target.value,
+                                            shortDescriptionEn: value,
                                         })
                                     }
-                                    placeholder={t(
-                                        "50-150 belgi",
-                                        "50-150 символов",
-                                    )}
-                                    rows={2}
-                                    maxLength={150}
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                    {formData.shortDescriptionEn?.length || 0}
-                                    /150
-                                </p>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="shortDescriptionRu">
+                                <Label>
                                     {t(
                                         "Short Description (Russian)",
                                         "Краткое описание (Русский)",
                                     )}
                                 </Label>
-                                <Textarea
-                                    id="shortDescriptionRu"
-                                    value={formData.shortDescriptionRu}
-                                    onChange={(e) =>
+                                <RichTextEditor
+                                    value={formData.shortDescriptionRu || ""}
+                                    onChange={(value) =>
                                         setFormData({
                                             ...formData,
-                                            shortDescriptionRu: e.target.value,
+                                            shortDescriptionRu: value,
                                         })
                                     }
-                                    placeholder={t(
-                                        "50-150 символов",
-                                        "50-150 символов",
-                                    )}
-                                    rows={2}
-                                    maxLength={150}
                                 />
-                                <p className="text-xs text-muted-foreground">
-                                    {formData.shortDescriptionRu?.length || 0}
-                                    /150
-                                </p>
                             </div>
                         </div>
 
@@ -811,8 +771,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                         <div className="grid grid-cols-4 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="price">
-                                    {t("Narx (UZS)", "Цена (UZS)")}{" "}
-                                    <span className="text-red-500">*</span>
+                                    {t("Narx (UZS)", "Цена (UZS)")}
                                 </Label>
                                 <Input
                                     id="price"
@@ -873,23 +832,21 @@ export function ProductForm({ productId }: ProductFormProps) {
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="stockQuantity">
-                                    {t("Ombor", "Склад")}{" "}
-                                    <span className="text-red-500">*</span>
+                                    {t("Ombor", "Склад")}
                                 </Label>
                                 <Input
                                     id="stockQuantity"
                                     type="number"
-                                    value={formData.stockQuantity}
+                                    value={formData.stockQuantity || ""}
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
-                                            stockQuantity: Number(
-                                                e.target.value,
-                                            ),
+                                            stockQuantity: e.target.value
+                                                ? Number(e.target.value)
+                                                : undefined,
                                         })
                                     }
                                     placeholder="0"
-                                    required
                                     min="0"
                                 />
                             </div>

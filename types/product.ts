@@ -96,7 +96,7 @@ export interface CreateProductDto {
     descriptionRu: string;
 
     // Pricing
-    price: number;
+    price?: number;
     oldPrice?: number;
     discount?: number;
 
@@ -113,7 +113,7 @@ export interface CreateProductDto {
     isActive?: boolean;
     isFeatured?: boolean;
     isNew?: boolean;
-    stockQuantity: number;
+    stockQuantity?: number;
 
     // Order & SEO
     order?: number;

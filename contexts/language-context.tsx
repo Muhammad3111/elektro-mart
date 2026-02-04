@@ -7,6 +7,7 @@ import {
     ReactNode,
     useEffect,
 } from "react";
+import { usePathname } from "next/navigation";
 
 export type Language = "en" | "ru";
 
@@ -21,20 +22,32 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [language, setLanguage] = useState<Language>("ru");
+    const pathname = usePathname();
+    const isAdminPanel = pathname?.startsWith("/admin");
+
+    // Admin panelda RU, frontend saytda EN default
+    const getDefaultLanguage = (): Language => {
+        if (typeof window !== "undefined") {
+            const savedLanguage = localStorage.getItem("language") as Language;
+            if (
+                savedLanguage &&
+                (savedLanguage === "en" || savedLanguage === "ru")
+            ) {
+                return savedLanguage;
+            }
+        }
+        return isAdminPanel ? "ru" : "en";
+    };
+
+    const [language, setLanguage] = useState<Language>("en");
     const [isHydrated, setIsHydrated] = useState(false);
 
     // Hydration tugagandan keyin localStorage dan o'qish
     useEffect(() => {
-        const savedLanguage = localStorage.getItem("language") as Language;
-        if (
-            savedLanguage &&
-            (savedLanguage === "en" || savedLanguage === "ru")
-        ) {
-            setLanguage(savedLanguage);
-        }
+        const defaultLang = getDefaultLanguage();
+        setLanguage(defaultLang);
         setIsHydrated(true);
-    }, []);
+    }, [isAdminPanel]);
 
     useEffect(() => {
         if (isHydrated) {

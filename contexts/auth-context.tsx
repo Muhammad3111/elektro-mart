@@ -12,6 +12,18 @@ import { authAPI, getToken, removeToken } from "@/lib/api";
 import type { User, LoginDto, RegisterDto } from "@/types/auth";
 import { toast } from "sonner";
 
+// Simple translation helper for auth context (can't use useLanguage hook in context)
+const getLanguage = (): "en" | "ru" => {
+    if (typeof window !== "undefined") {
+        return (localStorage.getItem("language") as "en" | "ru") || "ru";
+    }
+    return "ru";
+};
+
+const authT = (en: string, ru: string): string => {
+    return getLanguage() === "en" ? en : ru;
+};
+
 interface AuthContextType {
     user: User | null;
     loading: boolean;
@@ -56,8 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(response.user);
             toast.success(
                 response.user.role === "admin"
-                    ? "Admin logged in successfully"
-                    : "Logged in successfully"
+                    ? authT(
+                          "Admin logged in successfully",
+                          "Администратор успешно вошел",
+                      )
+                    : authT("Logged in successfully", "Вход выполнен успешно"),
             );
 
             // Redirect based on role
@@ -68,7 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
         } catch (error) {
             const message =
-                error instanceof Error ? error.message : "Login failed";
+                error instanceof Error
+                    ? error.message
+                    : authT("Login failed", "Ошибка входа");
             toast.error(message);
             throw error;
         }
@@ -78,11 +95,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             const response = await authAPI.register(data);
             setUser(response.user);
-            toast.success("Registered successfully");
+            toast.success(
+                authT("Registered successfully", "Регистрация успешна"),
+            );
             router.push("/");
         } catch (error) {
             const message =
-                error instanceof Error ? error.message : "Registration failed";
+                error instanceof Error
+                    ? error.message
+                    : authT("Registration failed", "Ошибка регистрации");
             toast.error(message);
             throw error;
         }
@@ -91,7 +112,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = () => {
         removeToken();
         setUser(null);
-        toast.success("Logged out successfully");
+        toast.success(
+            authT("Logged out successfully", "Выход выполнен успешно"),
+        );
         // Always redirect to /auth page for both admin and regular users
         router.push("/auth");
         // Force reload to clear any cached state

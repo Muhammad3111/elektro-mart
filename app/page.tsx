@@ -19,9 +19,13 @@ import { useLanguage } from "@/contexts/language-context";
 import { Category } from "@/types/category";
 import { Product } from "@/types/product";
 import { Brand } from "@/types/brand";
-import { categoriesAPI, productsAPI, brandsAPI } from "@/lib/api";
+import { categoriesAPI, productsAPI, brandsAPI, blogsAPI } from "@/lib/api";
 import { CategorySkeleton } from "@/components/category-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Blog } from "@/types/blog";
+import { getImageUrl } from "@/lib/s3/get-image-url";
+import { Calendar } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
     const { t } = useLanguage();
@@ -32,18 +36,24 @@ export default function Home() {
     const [loadingProducts, setLoadingProducts] = useState(true);
     const [brands, setBrands] = useState<Brand[]>([]);
     const [loadingBrands, setLoadingBrands] = useState(true);
+    const [blogs, setBlogs] = useState<Blog[]>([]);
+    const [loadingBlogs, setLoadingBlogs] = useState(true);
+    const [blogImageUrls, setBlogImageUrls] = useState<Record<string, string>>(
+        {},
+    );
+    const { language } = useLanguage();
 
     const loadCategories = async () => {
         try {
             setLoadingCategories(true);
             const data = await categoriesAPI.getAll();
             const parentCategories = data.filter(
-                (c) => !c.parentId && c.isActive
+                (c) => !c.parentId && c.isActive,
             );
             const categoriesWithSubs = parentCategories.map((parent) => ({
                 ...parent,
                 subCategories: data.filter(
-                    (sub) => sub.parentId === parent.id && sub.isActive
+                    (sub) => sub.parentId === parent.id && sub.isActive,
                 ),
             }));
             // Limit to 12 categories for slider
@@ -88,9 +98,36 @@ export default function Home() {
         }
     }, [selectedCategory]);
 
+    const loadBlogs = async () => {
+        try {
+            setLoadingBlogs(true);
+            // Avval featured bloglarni olishga harakat qilamiz, agar yo'q bo'lsa oddiy latest
+            let blogsData = await blogsAPI.getLatest(3, true);
+            if (blogsData.length === 0) {
+                // Agar featured bloglar yo'q bo'lsa, oddiy latest bloglarni olamiz
+                blogsData = await blogsAPI.getLatest(3);
+            }
+            setBlogs(blogsData);
+
+            // Load image URLs
+            const urls: Record<string, string> = {};
+            for (const blog of blogsData) {
+                if (blog.image) {
+                    urls[blog.id] = await getImageUrl(blog.image);
+                }
+            }
+            setBlogImageUrls(urls);
+        } catch (err) {
+            console.error("Failed to load blogs:", err);
+        } finally {
+            setLoadingBlogs(false);
+        }
+    };
+
     useEffect(() => {
         loadCategories();
         loadBrands();
+        loadBlogs();
     }, []);
 
     useEffect(() => {
@@ -157,7 +194,7 @@ export default function Home() {
                             role="tablist"
                             aria-label={t(
                                 "Filter by category",
-                                "Фильтр по категории"
+                                "Фильтр по категории",
                             )}
                         >
                             <Button
@@ -249,13 +286,13 @@ export default function Home() {
                                     <h3 className="text-2xl font-bold mb-2">
                                         {t(
                                             "No products found",
-                                            "Товары не найдены"
+                                            "Товары не найдены",
                                         )}
                                     </h3>
                                     <p className="text-muted-foreground">
                                         {t(
                                             "No products in this category yet",
-                                            "В этой категории пока нет товаров"
+                                            "В этой категории пока нет товаров",
                                         )}
                                     </p>
                                 </div>
@@ -304,7 +341,7 @@ export default function Home() {
                                     <p className="text-sm text-muted-foreground">
                                         {t(
                                             "Quick and reliable delivery service",
-                                            "Быстрая и надежная служба доставки"
+                                            "Быстрая и надежная служба доставки",
                                         )}
                                     </p>
                                 </CardContent>
@@ -326,7 +363,7 @@ export default function Home() {
                                     <p className="text-sm text-muted-foreground">
                                         {t(
                                             "Warranty on all products",
-                                            "Гарантия на все товары"
+                                            "Гарантия на все товары",
                                         )}
                                     </p>
                                 </CardContent>
@@ -348,7 +385,7 @@ export default function Home() {
                                     <p className="text-sm text-muted-foreground">
                                         {t(
                                             "Always at your service",
-                                            "Всегда к вашим услугам"
+                                            "Всегда к вашим услугам",
                                         )}
                                     </p>
                                 </CardContent>
@@ -367,18 +404,129 @@ export default function Home() {
                                     <h3 className="font-bold text-lg group-hover:text-primary transition-colors duration-300">
                                         {t(
                                             "Quality Guarantee",
-                                            "Гарантия качества"
+                                            "Гарантия качества",
                                         )}
                                     </h3>
                                     <p className="text-sm text-muted-foreground">
                                         {t(
                                             "Only certified products",
-                                            "Только сертифицированные товары"
+                                            "Только сертифицированные товары",
                                         )}
                                     </p>
                                 </CardContent>
                             </Card>
                         </div>
+                    </div>
+                </section>
+
+                {/* Blog Section */}
+                <section
+                    className="bg-background py-16"
+                    aria-labelledby="blog-title"
+                >
+                    <div className="container mx-auto px-4">
+                        <SectionTitle
+                            id="blog-title"
+                            highlight={t("News", "Новости")}
+                        >
+                            {t(
+                                "Latest News & Articles",
+                                "Последние новости и статьи",
+                            )}
+                        </SectionTitle>
+                        {loadingBlogs ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {[1, 2, 3].map((i) => (
+                                    <Card key={i} className="animate-pulse">
+                                        <div className="aspect-video bg-muted" />
+                                        <CardContent className="p-4">
+                                            <div className="h-4 bg-muted rounded w-1/4 mb-2" />
+                                            <div className="h-6 bg-muted rounded w-3/4 mb-2" />
+                                            <div className="h-4 bg-muted rounded w-full" />
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        ) : blogs.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {blogs.map((blog) => (
+                                    <Link
+                                        key={blog.id}
+                                        href={`/blog/${blog.slug}`}
+                                    >
+                                        <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full">
+                                            <div className="aspect-video relative bg-muted">
+                                                {blogImageUrls[blog.id] ? (
+                                                    <Image
+                                                        src={
+                                                            blogImageUrls[
+                                                                blog.id
+                                                            ]
+                                                        }
+                                                        alt={
+                                                            language === "en"
+                                                                ? blog.titleEn
+                                                                : blog.titleRu
+                                                        }
+                                                        fill
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                                                        <span className="text-4xl font-bold text-primary/30">
+                                                            {(language === "en"
+                                                                ? blog.titleEn
+                                                                : blog.titleRu
+                                                            ).charAt(0)}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <CardContent className="p-4">
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                                                    <Calendar className="h-4 w-4" />
+                                                    <span>
+                                                        {new Date(
+                                                            blog.createdAt,
+                                                        ).toLocaleDateString(
+                                                            language === "en"
+                                                                ? "en-US"
+                                                                : "ru-RU",
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                                                    {language === "en"
+                                                        ? blog.titleEn
+                                                        : blog.titleRu}
+                                                </h3>
+                                                <p className="text-muted-foreground line-clamp-3 text-sm">
+                                                    {(language === "en"
+                                                        ? blog.descriptionEn
+                                                        : blog.descriptionRu
+                                                    )
+                                                        .replace(/<[^>]*>/g, "")
+                                                        .substring(0, 100)}
+                                                    ...
+                                                </p>
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+                        ) : null}
+                        {blogs.length > 0 && (
+                            <div className="text-center mt-8">
+                                <Link href="/blog">
+                                    <Button variant="outline" size="lg">
+                                        {t(
+                                            "View All Articles",
+                                            "Смотреть все статьи",
+                                        )}
+                                    </Button>
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </section>
 
@@ -425,7 +573,7 @@ export default function Home() {
                         >
                             {t(
                                 "Our Contact Information",
-                                "Наша контактная информация"
+                                "Наша контактная информация",
                             )}
                         </SectionTitle>
                         <ContactInfo />
@@ -448,13 +596,13 @@ export default function Home() {
                         >
                             {t(
                                 "Special Offers for Professional Projects",
-                                "Специальные предложения для профессиональных проектов"
+                                "Специальные предложения для профессиональных проектов",
                             )}
                         </SectionTitle>
                         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             {t(
                                 "Special prices and personal manager for large orders",
-                                "Специальные цены и персональный менеджер для крупных заказов"
+                                "Специальные цены и персональный менеджер для крупных заказов",
                             )}
                         </p>
                         <Link href="/contact">

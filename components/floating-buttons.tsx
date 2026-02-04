@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowUp, Phone } from "lucide-react";
 import { useLanguage } from "@/contexts/language-context";
+import { siteConfig } from "@/lib/config/site";
 
 export function FloatingButtons() {
     const { t } = useLanguage();
@@ -28,7 +29,7 @@ export function FloatingButtons() {
     };
 
     const handleCall = () => {
-        window.location.href = "tel:+998934324565";
+        window.location.href = `tel:${siteConfig.contact.phoneRaw}`;
     };
 
     // Hide buttons in admin panel

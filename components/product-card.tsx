@@ -100,11 +100,11 @@ export function ProductCard({
                                 isInFavorites
                                     ? t(
                                           "Remove from favorites",
-                                          "Удалить из избранного"
+                                          "Удалить из избранного",
                                       )
                                     : t(
                                           "Add to favorites",
-                                          "Добавить в избранное"
+                                          "Добавить в избранное",
                                       )
                             }
                         >
@@ -167,8 +167,11 @@ export function ProductCard({
                                     </span>
                                 </div>
                             ) : (
-                                <span className="text-red-500 font-medium">
-                                    {t("Out of Stock", "Нет в наличии")}
+                                <span className="text-orange-600 font-medium">
+                                    {t(
+                                        "Available on order",
+                                        "Доступно под заказ",
+                                    )}
                                 </span>
                             )}
                         </div>
@@ -178,33 +181,40 @@ export function ProductCard({
                             {name}
                         </h3>
 
-                        {/* Description */}
+                        {/* Description - strip HTML tags for card display */}
                         <p className="text-[10px] md:text-xs text-muted-foreground line-clamp-2 min-h-10 md:min-h-12">
-                            {description ||
-                                t(
-                                    "No description available",
-                                    "Описание недоступно"
-                                )}
+                            {description
+                                ? description.replace(/<[^>]*>/g, "")
+                                : t(
+                                      "No description available",
+                                      "Описание недоступно",
+                                  )}
                         </p>
                     </div>
 
                     {/* Price and Cart */}
                     <div className="flex items-end justify-between gap-2 pt-2 mt-auto">
                         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                            {oldPrice && (
+                            {oldPrice && Number(oldPrice) > 0 && (
                                 <span className="text-[10px] md:text-xs text-muted-foreground line-through whitespace-nowrap">
                                     {formatPrice(oldPrice)}{" "}
                                     {siteConfig.currencySymbol}
                                 </span>
                             )}
-                            <div className="flex items-baseline gap-1 flex-wrap">
-                                <span className="text-base md:text-lg font-bold text-primary">
-                                    {formatPrice(price)}
+                            {Number(price) > 0 ? (
+                                <div className="flex items-baseline gap-1 flex-wrap">
+                                    <span className="text-base md:text-lg font-bold text-primary">
+                                        {formatPrice(price)}
+                                    </span>
+                                    <span className="text-xs md:text-sm font-bold text-primary whitespace-nowrap">
+                                        {siteConfig.currencySymbol}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-sm md:text-base font-semibold text-primary">
+                                    {t("Price on request", "Цена по запросу")}
                                 </span>
-                                <span className="text-xs md:text-sm font-bold text-primary whitespace-nowrap">
-                                    {siteConfig.currencySymbol}
-                                </span>
-                            </div>
+                            )}
                         </div>
 
                         <Button

@@ -20,6 +20,7 @@ import {
     Globe,
     Tag,
     ShoppingCart,
+    FileText,
 } from "lucide-react";
 import {
     Dialog,
@@ -94,6 +95,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             title: t("Slider/Banner", "Слайдер/Баннер"),
             icon: Sliders,
             href: "/admin/sliders",
+        },
+        {
+            title: t("Bloglar", "Блоги"),
+            icon: FileText,
+            href: "/admin/blogs",
         },
     ];
 

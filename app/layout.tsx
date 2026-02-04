@@ -33,7 +33,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
     title: {
-        default: `${siteConfig.name} | Professional Electrical Products`,
+        default: `${siteConfig.name} | Laboratory Equipment & Scientific Instruments`,
         template: `%s | ${siteConfig.shortName}`,
     },
     description: siteConfig.description.en,
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     },
     manifest: "/favicon_io/site.webmanifest",
     openGraph: {
-        title: `${siteConfig.name} - Professional Electrical Products`,
+        title: `${siteConfig.name} - Laboratory Equipment & Scientific Instruments`,
         description: siteConfig.description.en,
         url: siteConfig.url,
         siteName: siteConfig.name,
@@ -90,13 +90,13 @@ export const metadata: Metadata = {
                 url: "/og-image.jpg",
                 width: 1200,
                 height: 630,
-                alt: `${siteConfig.name} - Electrical Products`,
+                alt: `${siteConfig.name} - Laboratory Equipment`,
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title: `${siteConfig.name} - Professional Electrical Products`,
+        title: `${siteConfig.name} - Laboratory Equipment & Scientific Instruments`,
         description: siteConfig.description.en,
         images: ["/og-image.jpg"],
     },

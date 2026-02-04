@@ -549,6 +549,16 @@ export function Header() {
                         </li>
                         <li>
                             <Link
+                                href="/blog"
+                                className={`text-sm font-medium hover:text-primary transition-colors ${
+                                    isActive("/blog") ? "text-primary" : ""
+                                }`}
+                            >
+                                {t("Blog", "Блог")}
+                            </Link>
+                        </li>
+                        <li>
+                            <Link
                                 href="/contact"
                                 className={`text-sm font-medium hover:text-primary transition-colors ${
                                     isActive("/contact") ? "text-primary" : ""
@@ -911,6 +921,21 @@ export function Header() {
                                             }
                                         >
                                             {t("About Us", "О нас")}
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link
+                                            href="/blog"
+                                            className={`block px-4 py-3 rounded-lg hover:bg-accent transition-colors ${
+                                                isActive("/blog")
+                                                    ? "bg-accent text-primary"
+                                                    : ""
+                                            }`}
+                                            onClick={() =>
+                                                setMobileMenuOpen(false)
+                                            }
+                                        >
+                                            {t("Blog", "Блог")}
                                         </Link>
                                     </li>
                                     <li>
