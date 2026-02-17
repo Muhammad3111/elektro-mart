@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "@/contexts/language-context";
 
 const MIN_VISIBLE_MS = 420;
@@ -10,16 +10,12 @@ const MAX_VISIBLE_MS = 10000;
 export function PageLoading() {
     const { t } = useLanguage();
     const pathname = usePathname();
-    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
     const loadingRef = useRef(false);
     const startedAtRef = useRef(0);
     const stopTimerRef = useRef<number | null>(null);
 
-    const routeKey = useMemo(() => {
-        const query = searchParams?.toString();
-        return query ? `${pathname}?${query}` : pathname;
-    }, [pathname, searchParams]);
+    const routeKey = useMemo(() => pathname, [pathname]);
     const previousRouteRef = useRef(routeKey);
 
     useEffect(() => {
