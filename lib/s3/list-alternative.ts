@@ -1,7 +1,9 @@
 /**
- * Alternative S3 list implementation using fetch API
- * This is a fallback if AWS SDK has issues with XML parsing
+ * Alternative S3 list implementation through internal API
+ * Avoids exposing any storage credentials to the client.
  */
+
+import { getToken } from "@/lib/api/auth";
 
 const imageExt = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
 const videoExt = [".mp4", ".mov", ".webm", ".avi", ".mkv"];
@@ -14,86 +16,59 @@ export type S3ObjectInfo = {
 };
 
 export const listObjectsFromS3Alternative = async (
-  bucket: string,
+  // Kept for backward compatibility with previous signature
+  _bucket: string,
   prefix: string = "",
   maxKeys: number = 100
 ): Promise<{
   objects: S3ObjectInfo[];
   isTruncated: boolean;
+  nextContinuationToken?: string;
 }> => {
-  try {
-    const s3Url = process.env.NEXT_PUBLIC_S3_URL;
-    const accessKeyId = process.env.NEXT_PUBLIC_S3_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY;
+  const token = getToken();
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
 
-    if (!s3Url || !accessKeyId || !secretAccessKey) {
-      throw new Error("S3 credentials not configured");
-    }
+  const searchParams = new URLSearchParams();
+  if (prefix) searchParams.set("prefix", prefix);
+  searchParams.set("maxKeys", String(Math.min(Math.max(maxKeys, 1), 200)));
 
-    // Build URL
-    const url = new URL(`${s3Url}/${bucket}`);
-    if (prefix) url.searchParams.set("prefix", prefix);
-    url.searchParams.set("max-keys", maxKeys.toString());
+  const response = await fetch(`/api/s3/list?${searchParams.toString()}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-    console.log("Fetching from URL:", url.toString());
+  if (!response.ok) {
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Failed to list objects" }));
+    throw new Error(error.error || "Failed to list objects");
+  }
 
-    // Make request
-    const response = await fetch(url.toString(), {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/xml",
-      },
-    });
+  const data = (await response.json()) as {
+    objects: S3ObjectInfo[];
+    isTruncated: boolean;
+    nextContinuationToken?: string;
+  };
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const xmlText = await response.text();
-    console.log("XML Response:", xmlText);
-
-    // Parse XML manually
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-
-    // Check for parsing errors
-    const parserError = xmlDoc.querySelector("parsererror");
-    if (parserError) {
-      throw new Error("XML parsing error");
-    }
-
-    // Extract contents
-    const contents = xmlDoc.querySelectorAll("Contents");
-    const objects: S3ObjectInfo[] = [];
-
-    contents.forEach((content) => {
-      const key = content.querySelector("Key")?.textContent || "";
-      const sizeStr = content.querySelector("Size")?.textContent || "0";
-      const lastModified = content.querySelector("LastModified")?.textContent || "";
-
-      const ext = key.toLowerCase().split(".").pop() || "";
-      let type: "image" | "video" | "other" = "other";
-      if (imageExt.includes("." + ext)) type = "image";
-      else if (videoExt.includes("." + ext)) type = "video";
-
-      objects.push({
-        key,
-        size: parseInt(sizeStr, 10),
-        lastModified,
-        type,
-      });
-    });
-
-    const isTruncated = xmlDoc.querySelector("IsTruncated")?.textContent === "true";
-
-    console.log("Parsed objects:", objects);
+  const sanitizedObjects = (data.objects || []).map((item) => {
+    const ext = item.key.toLowerCase().split(".").pop() || "";
+    let type: "image" | "video" | "other" = "other";
+    if (imageExt.includes(`.${ext}`)) type = "image";
+    else if (videoExt.includes(`.${ext}`)) type = "video";
 
     return {
-      objects,
-      isTruncated,
+      ...item,
+      type,
     };
-  } catch (error) {
-    console.error("List error:", error);
-    throw error;
-  }
+  });
+
+  return {
+    objects: sanitizedObjects,
+    isTruncated: data.isTruncated,
+    nextContinuationToken: data.nextContinuationToken,
+  };
 };

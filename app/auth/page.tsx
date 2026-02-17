@@ -20,6 +20,31 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { checkAPI } from "@/lib/api";
 
+function getSafeRedirectPath(rawPath: string | null): string {
+    if (!rawPath) return "/";
+
+    try {
+        const parsed = new URL(rawPath, "http://localhost");
+        if (parsed.origin !== "http://localhost") {
+            return "/";
+        }
+
+        const safePath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+        if (!safePath.startsWith("/") || safePath.startsWith("//")) {
+            return "/";
+        }
+
+        // Avoid redirect loops back to auth pages
+        if (safePath.startsWith("/auth")) {
+            return "/";
+        }
+
+        return safePath;
+    } catch {
+        return "/";
+    }
+}
+
 function AuthPageContent() {
     const [showPassword, setShowPassword] = useState(false);
     const [showRegPassword, setShowRegPassword] = useState(false);
@@ -58,7 +83,7 @@ function AuthPageContent() {
     // Redirect if already authenticated
     useEffect(() => {
         if (isAuthenticated) {
-            const redirect = searchParams.get("redirect") || "/";
+            const redirect = getSafeRedirectPath(searchParams.get("redirect"));
             router.push(redirect);
         }
     }, [isAuthenticated, router, searchParams]);

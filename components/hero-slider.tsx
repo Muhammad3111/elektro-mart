@@ -68,10 +68,10 @@ export function HeroSlider() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center h-full py-4 sm:py-0">
                             <div className="space-y-3 sm:space-y-4 md:space-y-6 text-center md:text-left">
                                 <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-foreground">
-                                    Elektro Mart
+                                    WWTS Lab Technology
                                 </h1>
                                 <p className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground/80 max-w-lg mx-auto md:mx-0">
-                                    Professional Electrical Products
+                                    Professional Laboratory Technologies
                                 </p>
                             </div>
                         </div>

@@ -1,46 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-
-// Contabo S3 uchun endpoint formati: https://eu2.contabostorage.com
-// Bucket nomi endpointga qo'shilmaydi
-const getEndpoint = () => {
-    const url = process.env.S3_URL || "";
-    const bucketName = process.env.S3_BUCKET_NAME || "wwts";
-    if (url.endsWith(`/${bucketName}`)) {
-        return url.replace(`/${bucketName}`, "");
-    }
-    return url;
-};
-
-// Server-side S3 client - credentials brauzerga ko'rinmaydi
-const s3 = new S3Client({
-    region: process.env.S3_REGION || "eu",
-    endpoint: getEndpoint(),
-    credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY as string,
-    },
-    forcePathStyle: true,
-});
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { authorizeRequest } from "@/lib/server/auth";
+import {
+    ALLOWED_IMAGE_TYPES,
+    extensionFromMimeType,
+    sanitizeFolder,
+} from "@/lib/server/s3-validation";
+import { getS3Config } from "@/lib/server/s3-config";
 
 export async function POST(request: NextRequest) {
     try {
-        // Auth tekshiruvi
-        const authHeader = request.headers.get("authorization");
-        if (!authHeader) {
+        const s3Config = getS3Config();
+        if (!s3Config.ok) {
             return NextResponse.json(
-                { error: "Unauthorized" },
-                { status: 401 }
+                { error: s3Config.error, missing: s3Config.missing },
+                { status: 503 }
             );
+        }
+        const s3 = s3Config.client;
+        const bucketName = s3Config.bucketName;
+
+        const auth = await authorizeRequest(request, { requireAdmin: true });
+        if (!auth.ok) {
+            return NextResponse.json({ error: auth.error }, { status: auth.status });
         }
 
         const formData = await request.formData();
         const file = formData.get("file") as File;
-        const folder = (formData.get("folder") as string) || "uploads";
+        const folderInput = (formData.get("folder") as string) || "uploads";
+        const folder = sanitizeFolder(folderInput);
 
         if (!file) {
             return NextResponse.json(
                 { error: "File is required" },
+                { status: 400 }
+            );
+        }
+        if (!folder) {
+            return NextResponse.json(
+                { error: "Invalid folder value" },
                 { status: 400 }
             );
         }
@@ -54,24 +52,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const allowedTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/webp",
-            "image/gif",
-        ];
-        if (!allowedTypes.includes(file.type)) {
+        if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
             return NextResponse.json(
                 { error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF" },
                 { status: 400 }
             );
         }
 
-        // Generate unique filename
-        const timestamp = Date.now();
-        const randomString = Math.random().toString(36).substring(2, 8);
-        const extension = file.name.split(".").pop();
-        const key = `${folder}/${timestamp}-${randomString}.${extension}`;
+        const extension = extensionFromMimeType(file.type);
+        if (!extension) {
+            return NextResponse.json(
+                { error: "Unsupported image type" },
+                { status: 400 }
+            );
+        }
+
+        // Generate unique filename without trusting user-provided file names
+        const key = `${folder}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
 
         // Convert file to buffer
         const arrayBuffer = await file.arrayBuffer();
@@ -79,7 +76,7 @@ export async function POST(request: NextRequest) {
 
         // Upload to S3
         const command = new PutObjectCommand({
-            Bucket: process.env.S3_BUCKET_NAME as string,
+            Bucket: bucketName,
             Key: key,
             Body: buffer,
             ContentType: file.type,
@@ -91,7 +88,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             key,
-            url: `${process.env.NEXT_PUBLIC_S3_URL_IMAGE}/${key}`,
+            url: s3Config.publicBaseUrl
+                ? `${s3Config.publicBaseUrl}/${key}`
+                : null,
         });
     } catch (error) {
         console.error("Upload error:", error);

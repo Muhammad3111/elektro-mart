@@ -272,8 +272,8 @@ export const siteConfig = {
         phoneRaw: "+998934324565",
         email: "info@wwts.uz",
         address: {
-            en: "Uzbekistan, Tashkent, Shaykhantakhur district, Takhtapul, Turakurgan street 12b, Landmark: Malika market",
-            ru: "Узбекистан, Ташкент, Шайхантахурский район, Тахтапуль, улица Туракурган 12б, Ориентир: рынок Малика",
+            en: "Tashkent city, Shaykhontohur district, Alisher Navoi street, building 16A",
+            ru: "г. Ташкент, Шайхонтохурский район, ул. Алишера Навои, дом 16А",
             uz: "O'zbekiston, Toshkent, Shayxontohur tumani, Taxtapul, Turakurgan ko'chasi 12b, Mo'ljal: Malika bozori",
         },
     },

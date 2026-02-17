@@ -21,9 +21,30 @@ export interface ApiRequestOptions extends RequestInit {
 /**
  * Get auth token from localStorage
  */
+function getTokenFromCookie(): string | null {
+    if (typeof document === "undefined") return null;
+
+    const cookie = document.cookie
+        .split("; ")
+        .find((item) => item.startsWith("access_token="));
+    if (!cookie) return null;
+
+    return decodeURIComponent(cookie.split("=")[1] || "");
+}
+
 function getAuthToken(): string | null {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem("access_token");
+
+    const localToken = localStorage.getItem("access_token");
+    if (localToken) return localToken;
+
+    const cookieToken = getTokenFromCookie();
+    if (cookieToken) {
+        localStorage.setItem("access_token", cookieToken);
+        return cookieToken;
+    }
+
+    return null;
 }
 
 /**

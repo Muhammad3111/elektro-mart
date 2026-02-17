@@ -13,21 +13,78 @@ import type {
   ChangePasswordDto,
 } from "@/types/auth";
 
+const TOKEN_KEY = "access_token";
+const TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
+
+function getCookieToken(): string | null {
+  if (typeof document === "undefined") return null;
+
+  const prefix = `${TOKEN_KEY}=`;
+  const cookie = document.cookie
+    .split("; ")
+    .find((item) => item.startsWith(prefix));
+
+  if (!cookie) return null;
+  const rawValue = cookie.slice(prefix.length);
+  return rawValue ? decodeURIComponent(rawValue) : null;
+}
+
+function setTokenCookie(token: string): void {
+  if (typeof document === "undefined" || typeof window === "undefined") return;
+
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = [
+    `${TOKEN_KEY}=${encodeURIComponent(token)}`,
+    "Path=/",
+    `Max-Age=${TOKEN_MAX_AGE_SECONDS}`,
+    "SameSite=Strict",
+    secure,
+  ].join("; ");
+}
+
+function removeTokenCookie(): void {
+  if (typeof document === "undefined" || typeof window === "undefined") return;
+
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = [
+    `${TOKEN_KEY}=`,
+    "Path=/",
+    "Max-Age=0",
+    "SameSite=Strict",
+    secure,
+  ].join("; ");
+}
+
 // Token management
 export const getToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem("access_token");
+
+  const localToken = localStorage.getItem(TOKEN_KEY);
+  if (localToken) {
+    setTokenCookie(localToken);
+    return localToken;
+  }
+
+  const cookieToken = getCookieToken();
+  if (cookieToken) {
+    localStorage.setItem(TOKEN_KEY, cookieToken);
+    return cookieToken;
+  }
+
+  return null;
 };
 
 export const setToken = (token: string): void => {
   if (typeof window !== "undefined") {
-    localStorage.setItem("access_token", token);
+    localStorage.setItem(TOKEN_KEY, token);
+    setTokenCookie(token);
   }
 };
 
 export const removeToken = (): void => {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("access_token");
+    localStorage.removeItem(TOKEN_KEY);
+    removeTokenCookie();
   }
 };
 

@@ -83,23 +83,32 @@ export default function AdminGalleryPage() {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            const result = await response.json().catch(() => null);
 
             if (!response.ok) {
-                throw new Error("Failed to load images");
+                const missingVars = Array.isArray(result?.missing)
+                    ? ` Missing: ${result.missing.join(", ")}`
+                    : "";
+                throw new Error(
+                    result?.error ||
+                        result?.details ||
+                        `Failed to load images (${response.status})${missingVars}`
+                );
             }
 
-            const result = await response.json();
-            const imageObjects = result.objects.filter(
+            const imageObjects = (result?.objects || []).filter(
                 (obj: S3ObjectInfo) => obj.type === "image"
             );
             setImages(imageObjects);
         } catch (error) {
             console.error("Failed to load images:", error);
+            const message =
+                error instanceof Error ? error.message : "Unknown error";
             toast.error(
-                t(
+                `${t(
                     "Rasmlarni yuklashda xatolik",
                     "Ошибка при загрузке изображений"
-                )
+                )}: ${message}`
             );
         } finally {
             setLoading(false);

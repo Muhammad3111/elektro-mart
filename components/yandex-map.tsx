@@ -27,7 +27,15 @@ declare global {
     }
 }
 
-export function YandexMap() {
+type YandexMapProps = {
+    address?: string;
+    companyName?: string;
+};
+
+export function YandexMap({ address, companyName = "WWTS" }: YandexMapProps) {
+    const fallbackAddress =
+        "Tashkent city, Shaykhontohur district, Alisher Navoi street, building 16A";
+    const resolvedAddress = address?.trim() || fallbackAddress;
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<YmapsMap | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -46,9 +54,8 @@ export function YandexMap() {
             const placemark = new window.ymaps.Placemark(
                 [41.321652, 69.25946],
                 {
-                    balloonContent:
-                        "WWTS - Toshkent, Shayxontohur tumani, Taxtapul, Turakurgan ko'chasi 12b",
-                    hintContent: "WWTS",
+                    balloonContent: `${companyName} - ${resolvedAddress}`,
+                    hintContent: companyName,
                 },
                 {
                     preset: "islands#redDotIcon",
@@ -62,7 +69,7 @@ export function YandexMap() {
             console.error("Map initialization error:", err);
             setError("Failed to initialize map");
         }
-    }, []);
+    }, [companyName, resolvedAddress]);
 
     useEffect(() => {
         const apiKey = process.env.NEXT_PUBLIC_YANDEX_MAP_API_KEY;

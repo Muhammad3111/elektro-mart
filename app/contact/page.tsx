@@ -321,7 +321,13 @@ export default function ContactPage() {
 
                 {/* Yandex Map - Full Width in Container */}
                 <section className="container mx-auto px-4 pb-16">
-                    <YandexMap />
+                    <YandexMap
+                        companyName={siteConfig.shortName}
+                        address={t(
+                            siteConfig.contact.address.en,
+                            siteConfig.contact.address.ru,
+                        )}
+                    />
                 </section>
             </main>
 

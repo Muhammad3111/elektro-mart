@@ -1,5 +1,46 @@
 import type { NextConfig } from "next";
 
+type RemotePattern = {
+    protocol: "http" | "https";
+    hostname: string;
+};
+
+const candidateImageOrigins = [
+    process.env.NEXT_PUBLIC_S3_URL_IMAGE,
+    process.env.S3_URL,
+    process.env.NEXT_PUBLIC_SITE_URL,
+    "https://wwts.uz",
+    "https://api.wwts.uz",
+    "http://localhost:3000",
+    "http://localhost:3001",
+];
+
+function toRemotePattern(url: string): RemotePattern | null {
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+            return null;
+        }
+
+        return {
+            protocol: parsed.protocol === "https:" ? "https" : "http",
+            hostname: parsed.hostname,
+        };
+    } catch {
+        return null;
+    }
+}
+
+const remotePatternMap = new Map<string, RemotePattern>();
+for (const candidate of candidateImageOrigins) {
+    if (!candidate) continue;
+    const pattern = toRemotePattern(candidate);
+    if (!pattern) continue;
+    remotePatternMap.set(`${pattern.protocol}:${pattern.hostname}`, pattern);
+}
+
+const remotePatterns = Array.from(remotePatternMap.values());
+
 const nextConfig: NextConfig = {
     reactStrictMode: true,
 
@@ -16,35 +57,12 @@ const nextConfig: NextConfig = {
     images: {
         // For static export, use unoptimized images
         // unoptimized: true,
-        remotePatterns: [
-            {
-                protocol: "https",
-                hostname: "**",
-            },
-            {
-                protocol: "http",
-                hostname: "localhost",
-            },
-        ],
+        remotePatterns,
         formats: ["image/avif", "image/webp"],
         deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
         minimumCacheTTL: 60 * 60 * 24, // 24 hours cache
         qualities: [75, 100],
-    },
-
-    async headers() {
-        return [
-            {
-                source: "/(.*)",
-                headers: [
-                    {
-                        key: "Content-Security-Policy",
-                        value: "frame-src 'self' https://api-maps.yandex.ru https://yandex.ru https://yandex.uz https://*.yandex.ru https://*.yandex.uz https://yandex.uz/map-widget/ https://*.yandex.uz/map-widget/;",
-                    },
-                ],
-            },
-        ];
     },
 
     // Security & Performance
@@ -59,7 +77,7 @@ const nextConfig: NextConfig = {
     // Environment variables validation
     env: {
         NEXT_PUBLIC_SITE_URL:
-            process.env.NEXT_PUBLIC_SITE_URL || "https://wwsi.uz",
+            process.env.NEXT_PUBLIC_SITE_URL || "https://wwts.uz",
         NEXT_PUBLIC_API_URL:
             process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api",
     },

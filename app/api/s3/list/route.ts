@@ -1,29 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { ListObjectsV2Command, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-
-// Contabo S3 uchun endpoint formati
-const getEndpoint = () => {
-    const url = process.env.S3_URL || "";
-    const bucketName = process.env.S3_BUCKET_NAME || "wwts";
-    if (url.endsWith(`/${bucketName}`)) {
-        return url.replace(`/${bucketName}`, "");
-    }
-    return url;
-};
-
-const s3 = new S3Client({
-    region: process.env.S3_REGION || "eu",
-    endpoint: getEndpoint(),
-    credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY_ID as string,
-        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY as string,
-    },
-    forcePathStyle: true,
-});
-
-const BUCKET_NAME = process.env.S3_BUCKET_NAME || "wwts";
+import { authorizeRequest } from "@/lib/server/auth";
+import { isValidS3Key, sanitizeFolder } from "@/lib/server/s3-validation";
+import { getS3Config } from "@/lib/server/s3-config";
 
 const imageExt = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".avif"];
 const videoExt = [".mp4", ".mov", ".webm", ".avi", ".mkv"];
@@ -38,23 +18,44 @@ export type S3ObjectInfo = {
 
 export async function GET(request: NextRequest) {
     try {
-        // Auth tekshiruvi
-        const authHeader = request.headers.get("authorization");
-        if (!authHeader) {
+        const s3Config = getS3Config();
+        if (!s3Config.ok) {
             return NextResponse.json(
-                { error: "Unauthorized" },
-                { status: 401 }
+                { error: s3Config.error, missing: s3Config.missing },
+                { status: 503 }
             );
+        }
+        const s3 = s3Config.client;
+        const bucketName = s3Config.bucketName;
+
+        const auth = await authorizeRequest(request, { requireAdmin: true });
+        if (!auth.ok) {
+            return NextResponse.json({ error: auth.error }, { status: auth.status });
         }
 
         const { searchParams } = new URL(request.url);
-        const prefix = searchParams.get("prefix") || "";
-        const maxKeys = parseInt(searchParams.get("maxKeys") || "100");
+        const prefixRaw = searchParams.get("prefix") || "";
+        let prefix: string | undefined;
+        if (prefixRaw) {
+            const sanitizedPrefix = sanitizeFolder(prefixRaw);
+            if (!sanitizedPrefix) {
+                return NextResponse.json(
+                    { error: "Invalid prefix value" },
+                    { status: 400 }
+                );
+            }
+            prefix = sanitizedPrefix;
+        }
+
+        const maxKeysParam = parseInt(searchParams.get("maxKeys") || "100", 10);
+        const maxKeys = Number.isNaN(maxKeysParam)
+            ? 100
+            : Math.min(Math.max(maxKeysParam, 1), 200);
         const continuationToken =
             searchParams.get("continuationToken") || undefined;
 
         const command = new ListObjectsV2Command({
-            Bucket: BUCKET_NAME,
+            Bucket: bucketName,
             Prefix: prefix,
             ContinuationToken: continuationToken,
             MaxKeys: maxKeys,
@@ -65,6 +66,14 @@ export async function GET(request: NextRequest) {
         const objects: S3ObjectInfo[] = await Promise.all(
             (response.Contents || []).map(async (item) => {
                 const key = item.Key || "";
+                if (!isValidS3Key(key)) {
+                    return {
+                        key: "",
+                        size: 0,
+                        lastModified: "",
+                        type: "other" as const,
+                    };
+                }
                 const ext = key.toLowerCase().split(".").pop() || "";
 
                 let type: "image" | "video" | "other" = "other";
@@ -76,7 +85,7 @@ export async function GET(request: NextRequest) {
                 if (type === "image") {
                     try {
                         const getCommand = new GetObjectCommand({
-                            Bucket: BUCKET_NAME,
+                            Bucket: bucketName,
                             Key: key,
                         });
                         url = await getSignedUrl(s3, getCommand, {
@@ -101,8 +110,10 @@ export async function GET(request: NextRequest) {
             })
         );
 
+        const sanitizedObjects = objects.filter((item) => item.key);
+
         return NextResponse.json({
-            objects,
+            objects: sanitizedObjects,
             isTruncated: response.IsTruncated || false,
             nextContinuationToken: response.NextContinuationToken,
         });

@@ -3,13 +3,13 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Katalog - Barcha mahsulotlar",
     description:
-        "WWTS katalogi - elektr va texnologik mahsulotlar, kabellar, ulagichlar, rozetkalar, avtomatlar, smart qurilmalar va aksessuarlar. Siemens, Schneider, ABB, Legrand brendlari. Eng yaxshi narxlar va sifat kafolati.",
+        "WWTS katalogi - laboratoriya uskunalari, ilmiy asboblar, analitik qurilmalar va professional laboratoriya aksessuarlari. Eng yaxshi narxlar va sifat kafolati.",
     keywords:
-        "elektr katalog, kabel katalog, elektr mahsulotlari, ulagichlar, rozetkalar, avtomatlar, elektr aksessuarlar katalog, texnologik mahsulotlar, smart qurilmalar, WWTS, wwts.uz",
+        "laboratoriya uskunalari katalogi, ilmiy asboblar, analitik qurilmalar, laboratoriya aksessuarlari, professional laboratory equipment, WWTS, wwts.uz",
     openGraph: {
         title: "Katalog - Barcha mahsulotlar | WWTS",
         description:
-            "WWTS katalogi - elektr va texnologik mahsulotlar, kabellar, ulagichlar, rozetkalar va aksessuarlar.",
+            "WWTS katalogi - laboratoriya uskunalari, ilmiy asboblar va laboratoriya texnologiyalari yechimlari.",
         type: "website",
         url: "https://wwts.uz/catalog",
         siteName: "WWTS",

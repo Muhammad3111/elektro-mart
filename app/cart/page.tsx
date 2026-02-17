@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { SEO } from "@/components/seo";
@@ -35,7 +34,7 @@ export default function CartPage() {
         <div className="min-h-screen flex flex-col">
             <SEO
                 title="Savat - Xarid qilish"
-                description="Sizning xarid savatangiz. Buyurtmani rasmiylashtirish va tez yetkazib berish xizmati. WWTS - professional elektr va texnologik mahsulotlar."
+                description="Sizning xarid savatangiz. Buyurtmani rasmiylashtirish va tez yetkazib berish xizmati. WWTS - professional laboratoriya texnologiyalari va ilmiy uskunalar."
                 canonical="/cart"
                 noindex={true}
             />

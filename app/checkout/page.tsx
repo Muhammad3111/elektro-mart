@@ -137,25 +137,13 @@ export default function CheckoutPage() {
 
             // Send to Telegram (don't fail if this fails)
             try {
-                const botToken = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN;
-                const chatId = process.env.NEXT_PUBLIC_TELEGRAM_CHAT_ID;
-
-                if (botToken && chatId) {
-                    await fetch(
-                        `https://api.telegram.org/bot${botToken}/sendMessage`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({
-                                chat_id: chatId,
-                                text: message,
-                                parse_mode: "Markdown",
-                            }),
-                        },
-                    );
-                }
+                await fetch("/api/notifications/telegram", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ message }),
+                });
             } catch (telegramError) {
                 console.error(
                     "Failed to send Telegram notification:",
@@ -198,7 +186,7 @@ export default function CheckoutPage() {
         <div className="min-h-screen flex flex-col bg-background">
             <SEO
                 title="Buyurtmani rasmiylashtirish"
-                description="Buyurtmangizni rasmiylashtiring. Tez yetkazib berish va xavfsiz to'lov. WWTS - professional elektr va texnologik mahsulotlar."
+                description="Buyurtmangizni rasmiylashtiring. Tez yetkazib berish va xavfsiz to'lov. WWTS - professional laboratoriya texnologiyalari va ilmiy uskunalar."
                 canonical="/checkout"
                 noindex={true}
             />

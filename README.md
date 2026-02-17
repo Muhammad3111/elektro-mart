@@ -44,10 +44,19 @@ npm install
 # Environment o'zgaruvchilarni sozlash
 # .env.local faylini yarating va quyidagilarni qo'shing:
 NEXT_PUBLIC_API_URL=your_api_url
-NEXT_PUBLIC_AWS_REGION=your_aws_region
-NEXT_PUBLIC_AWS_BUCKET_NAME=your_bucket_name
-NEXT_PUBLIC_AWS_ACCESS_KEY_ID=your_access_key
-NEXT_PUBLIC_AWS_SECRET_ACCESS_KEY=your_secret_key
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_S3_URL_IMAGE=https://your-storage-domain/your-bucket
+
+# Server-side only (HECH QACHON NEXT_PUBLIC ishlatmang)
+S3_URL=https://your-storage-endpoint
+S3_REGION=your_s3_region
+S3_BUCKET_NAME=your_bucket_name
+S3_ACCESS_KEY_ID=your_access_key
+S3_SECRET_ACCESS_KEY=your_secret_key
+
+# Optional: checkout notification (server-side only)
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+TELEGRAM_CHAT_ID=your_telegram_chat_id
 
 # Development serverni ishga tushirish
 npm run dev
@@ -86,7 +95,7 @@ elektro-mart/
 
 ## 🔐 Admin Panel
 
-Admin panelga kirish: `/admin/login`
+Admin panelga kirish: `/auth` (admin user bilan)
 
 Admin panel funksiyalari:
 - Kategoriyalar boshqaruvi
