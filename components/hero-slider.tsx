@@ -1,16 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { S3Image } from "@/components/s3-image";
-import { useLanguage } from "@/contexts/language-context";
 import { homeSlidersAPI } from "@/lib/api";
 import type { HomeSlider } from "@/types/slider";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function HeroSlider() {
-    const { language } = useLanguage();
     const [sliders, setSliders] = useState<HomeSlider[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -92,59 +89,22 @@ export function HeroSlider() {
                                 ? "opacity-100 translate-x-0"
                                 : index < currentSlide
                                   ? "opacity-0 -translate-x-full"
-                                  : "opacity-0 translate-x-full"
+                                : "opacity-0 translate-x-full"
                         }`}
                     >
-                        {/* Background Image */}
-                        <div className="absolute inset-0">
+                        <Link
+                            href={slider.link?.trim() || "/"}
+                            aria-label={slider.titleEn || "Hero slide"}
+                            className="absolute inset-0 block"
+                        >
                             <S3Image
                                 src={slider.coverImage}
-                                alt={
-                                    language === "en"
-                                        ? slider.titleEn
-                                        : slider.titleRu
-                                }
+                                alt={slider.titleEn || slider.titleRu}
                                 fill
                                 className="object-cover"
                                 priority
                             />
-                            {/* Overlay for better text readability */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
-                        </div>
-
-                        {/* Content */}
-                        <div className="relative h-full">
-                            <div className="container mx-auto px-4 sm:px-6 h-full">
-                                <div className="flex items-center h-full py-4 sm:py-8">
-                                    {/* Text content */}
-                                    <div className="space-y-3 sm:space-y-4 md:space-y-6 text-center md:text-left max-w-2xl">
-                                        <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-white drop-shadow-lg">
-                                            {language === "en"
-                                                ? slider.titleEn
-                                                : slider.titleRu}
-                                        </h1>
-                                        <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 max-w-lg mx-auto md:mx-0 drop-shadow-md">
-                                            {language === "en"
-                                                ? slider.subtitleEn
-                                                : slider.subtitleRu}
-                                        </p>
-                                        <Link
-                                            href={slider.link}
-                                            className="cursor-pointer inline-block"
-                                        >
-                                            <Button
-                                                size="lg"
-                                                className="bg-primary hover:bg-primary/90 text-white h-10 sm:h-12 md:h-14 px-6 sm:px-8 text-sm sm:text-base md:text-lg shadow-lg"
-                                            >
-                                                {language === "en"
-                                                    ? "View"
-                                                    : "Смотреть"}
-                                            </Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        </Link>
                     </div>
                 ))}
             </div>
@@ -154,6 +114,7 @@ export function HeroSlider() {
                 {sliders.map((_, index) => (
                     <button
                         key={index}
+                        type="button"
                         onClick={() => setCurrentSlide(index)}
                         className={`h-2 sm:h-3 rounded-full transition-all ${
                             index === currentSlide
